@@ -1,0 +1,11 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+supabase.properties
+.idea/
+*.iml
+
+*.apk
+screenshots/
+tools_*.py

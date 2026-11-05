@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ahorra, vaca: cabeza de vaca con una moneda de euro. Todo dentro de la zona segura (círculo de 66 dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Cuernos -->
+    <path android:fillColor="#F2E3C6" android:pathData="M39,31 C33,27 32,21 34,17 C37,22 41,25 45,27 Z" />
+    <path android:fillColor="#F2E3C6" android:pathData="M69,31 C75,27 76,21 74,17 C71,22 67,25 63,27 Z" />
+    <!-- Orejas -->
+    <path android:fillColor="#FFFFFF" android:pathData="M38,36 C31,32 23,33 22,38 C24,43 32,44 38,42 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M70,36 C77,32 85,33 86,38 C84,43 76,44 70,42 Z" />
+    <path android:fillColor="#F7A8B8" android:pathData="M35,37 C31,35 27,35 26,38 C28,40 32,40 35,40 Z" />
+    <path android:fillColor="#F7A8B8" android:pathData="M73,37 C77,35 81,35 82,38 C80,40 76,40 73,40 Z" />
+    <!-- Cabeza -->
+    <path android:fillColor="#FFFFFF" android:pathData="M37,30 C38,24 70,24 71,30 L73,58 C73,70 35,70 35,58 Z" />
+    <!-- Manchas -->
+    <path android:fillColor="#1F1F1F" android:pathData="M38,29 C43,26 50,29 48,35 C46,40 39,39 37,36 Z" />
+    <path android:fillColor="#1F1F1F" android:pathData="M66,27 C70,28 71,32 69,35 C66,36 63,33 63,30 Z" />
+    <!-- Ojos -->
+    <path android:fillColor="#1F1F1F" android:pathData="M43,45 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 Z" />
+    <path android:fillColor="#1F1F1F" android:pathData="M59.8,45 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 Z" />
+    <!-- Hocico -->
+    <path android:fillColor="#F7A8B8" android:pathData="M39,59 a15,9.5 0 1,0 30,0 a15,9.5 0 1,0 -30,0 Z" />
+    <path android:fillColor="#C9667C" android:pathData="M46,59 a2,2.6 0 1,0 4,0 a2,2.6 0 1,0 -4,0 Z" />
+    <path android:fillColor="#C9667C" android:pathData="M58,59 a2,2.6 0 1,0 4,0 a2,2.6 0 1,0 -4,0 Z" />
+    <!-- Moneda de euro -->
+    <path android:fillColor="#0B2E1D" android:pathData="M58,73 a12.5,12.5 0 1,0 25,0 a12.5,12.5 0 1,0 -25,0 Z" />
+    <path android:fillColor="#3DDC97" android:pathData="M60.5,73 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0B2E1D"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M75.2,68.6 A5.6,5.6 0 1,0 75.2,77.4" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0B2E1D"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M64.6,71.6 H72.4 M64.6,74.6 H72.4" />
+</vector>

@@ -1,0 +1,112 @@
+/* Patrimonio (prefijo w-). Regla de los 8 puntos. */
+.w-overline { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+.w-mint { background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%); border: 1px solid var(--card-border); border-radius: 32px; padding: 24px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06); min-width: 0; }
+.w-h20 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.w-h24 { font-size: 24px; line-height: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.w-h28 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+.w-card32 { border-radius: 32px; padding: 24px; }
+.w-section { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 4px 0; }
+.w-section h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.w-add { display: inline-flex; align-items: center; gap: 4px; color: var(--gain); font-weight: 600; padding: 8px; border-radius: 999px; }
+.w-add:active { background: var(--chip); }
+.w-text-btn { color: var(--gain); font-size: 14px; padding: 8px; border-radius: 999px; flex-shrink: 0; }
+
+/* Tarjeta de patrimonio neto */
+.w-period { display: flex; background: color-mix(in srgb, var(--ink) 5%, transparent); border-radius: 999px; padding: 4px; }
+.w-period button { flex: 1 1 0; min-width: 0; height: 40px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap; letter-spacing: -0.02em; }
+.w-period button.on { background: var(--card); color: var(--ink); font-weight: 700; box-shadow: var(--shadow); }
+.w-net { display: flex; flex-direction: column; align-items: center; margin-top: 16px; gap: 4px; text-align: center; }
+.w-net-num { font-size: 40px; overflow-wrap: anywhere; }
+.w-change { font-size: 14px; font-weight: 600; padding: 4px 8px; border-radius: 999px; }
+.w-change:active { background: var(--chip); }
+@media (max-width: 400px) { .w-mint { padding: 16px; } .w-period button { font-size: 13px; } }
+
+.w-bucket { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
+.w-bucket + .w-bucket { border-top: 1px solid var(--line); }
+.w-bucket.clickable { cursor: pointer; }
+.w-bucket.clickable:active { opacity: 0.7; }
+
+/* Objetivo grande (colores fijos, como en Android) */
+.w-hero { border-radius: 32px; overflow: hidden; background: linear-gradient(180deg, #2E6B3F, #24573A 50%, #1F4D2C); color: #fff; }
+.w-hero-top { display: block; width: 100%; padding: 24px; text-align: center; color: #fff; }
+.w-hero-name { font-family: Georgia, "Times New Roman", serif; font-size: 32px; font-weight: 600; line-height: 1.1; overflow-wrap: anywhere; }
+.w-hero-sub { font-size: 16px; opacity: 0.8; margin-top: 4px; }
+.w-hero-progress { display: flex; align-items: center; gap: 16px; margin: 0 16px; padding: 16px; border-radius: 24px; background: rgba(255, 255, 255, 0.14); }
+.w-hero-actions { display: flex; gap: 8px; padding: 16px; }
+.w-goal-action { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 0; border-radius: 24px; background: #fff; color: #17150F; font-size: 14px; font-weight: 500; }
+.w-goal-action:disabled { opacity: 0.5; cursor: default; }
+.w-goal-action:not(:disabled):active { transform: scale(0.97); }
+.w-goal-action-ico { width: 32px; height: 32px; border-radius: 50%; background: #EDE6D6; display: grid; place-items: center; }
+.w-hero-detail { background: #fff; color: #17150F; border-radius: 32px; padding: 8px 24px 24px; }
+.w-grab { width: 40px; height: 4px; border-radius: 999px; background: #EDE6D6; margin: 0 auto 16px; }
+.w-hero-eta { display: flex; align-items: center; gap: 16px; width: 100%; color: #17150F; }
+.w-hero-flag { width: 40px; height: 40px; border-radius: 50%; background: #DCEBD3; color: #2E6B3F; display: grid; place-items: center; flex-shrink: 0; }
+.w-hero-line { height: 1px; background: #EDE6D6; margin: 16px 0; }
+.w-detail-row { display: flex; align-items: center; gap: 16px; padding: 8px 0; }
+.w-weekly { margin-top: 16px; padding: 16px; border-radius: 24px; background: #F6F1E6; }
+.w-weekly-bars { display: flex; align-items: flex-end; gap: 8px; height: 112px; margin-top: 16px; }
+.w-weekly-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.w-switch { width: 52px; height: 32px; border-radius: 999px; background: #D8D0C0; position: relative; flex-shrink: 0; transition: background 0.15s; }
+.w-switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform 0.18s cubic-bezier(.2, .8, .2, 1); box-shadow: 0 1px 3px rgba(0, 0, 0, .2); }
+.w-switch.on { background: #17150F; }
+.w-switch.on::after { transform: translateX(20px); }
+
+/* Mis ahorros */
+.w-ring-row { display: flex; align-items: center; gap: 16px; width: 100%; padding: 16px; border-radius: 24px; background: var(--card); border: 1px solid var(--card-border); text-align: left; }
+.w-ring-row:active { transform: scale(0.985); }
+.w-ring-ico { width: 48px; height: 48px; border-radius: 16px; background: var(--chip); display: grid; place-items: center; flex-shrink: 0; }
+
+/* Tu dinero hasta la nómina (paleta fija, igual en claro y oscuro) */
+.w-cash { border-radius: 32px; padding: 16px; background: linear-gradient(180deg, #DCEBD3 0%, #EAF2E4 35%, #F6F1E6 100%); color: #17150F; min-width: 0; }
+.w-cash-pick { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px 8px 16px; border-radius: 999px; background: rgba(255, 253, 248, 0.6); font-size: 14px; font-weight: 500; }
+.w-cash-pick select { position: absolute; inset: 0; opacity: 0; width: 100%; font-size: 16px; cursor: pointer; }
+.w-cash-white { background: #FFFDF8; border-radius: 24px; }
+.w-cash-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 999px; background: #DCEBD3; color: #2E6B3F; font-size: 12px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+.w-cash-tip { position: absolute; display: flex; justify-content: center; pointer-events: none; }
+.w-cash-tip span { background: #17150F; color: #FFFDF8; border-radius: 8px; padding: 4px 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.w-cash-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; font-size: 12px; color: #7C7566; }
+.w-cash-weeks { display: flex; gap: 8px; }
+.w-cash-week { flex: 1; min-width: 0; border-radius: 24px; padding: 16px 4px; text-align: center; }
+.w-cash-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+.w-cash-msg { font-family: Georgia, "Times New Roman", serif; font-size: 22px; line-height: 28px; font-weight: 800; margin-top: 16px; }
+.w-cash-btn { min-width: 0; padding: 16px 8px; border-radius: 999px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-cash-btn:active { transform: scale(0.98); }
+
+/* Empieza aquí */
+.w-setup-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border-radius: 16px; background: var(--card); }
+.w-setup-btn:active { opacity: 0.7; }
+
+/* Tarjeta del objetivo */
+.w-goal-bar { position: relative; height: 12px; border-radius: 999px; background: var(--chip); overflow: hidden; }
+.w-goal-bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+.w-goal-bar > i { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--card); }
+.w-goal-verdict { margin-top: 16px; padding: 12px; border-radius: 16px; font-weight: 500; }
+.w-status { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 24px; }
+.w-status-pill { padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; }
+.w-status-info { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; }
+
+/* Gastos fijos y lo que viene */
+.w-pay { background: var(--brand); color: var(--on-brand); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; margin-top: 2px; }
+.w-paid { display: inline-flex; align-items: center; gap: 2px; }
+
+/* Cuenta */
+.w-acc-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.w-acc-name { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 8px; overflow-wrap: anywhere; }
+.w-acc-actions { display: flex; justify-content: space-evenly; padding: 4px 0; }
+.w-acc-action { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px; border-radius: 16px; font-size: 13px; font-weight: 500; }
+.w-acc-action-ico { width: 56px; height: 56px; border-radius: 50%; background: var(--card); border: 1px solid var(--card-border); display: grid; place-items: center; box-shadow: var(--shadow); }
+.w-acc-action:active .w-acc-action-ico { transform: scale(0.95); }
+
+/* Por qué ha cambiado */
+.w-why-h { font-size: 16px; font-weight: 600; margin-top: 8px; }
+
+/* Edad financiera: siempre en oscuro */
+.overlay:has(.w-age) { background: #050505; color: #fff; }
+.overlay:has(.w-age) .overlay-head .icon-btn.filled { background: #16181A; color: #fff; box-shadow: none; }
+.w-age { display: flex; flex-direction: column; align-items: center; gap: 16px; color: #fff; }
+.w-age-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding-top: 40px; }
+.w-age-btn { margin-top: 16px; height: 56px; padding: 0 24px; border-radius: 999px; background: #8FC79A; color: #12110D; font-weight: 700; font-size: 17px; }
+.w-age-box { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 16px; background: #16181A; }
+.w-age-x { color: rgba(255, 255, 255, 0.7); width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
+.w-age-factor { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.w-age-change { color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px; border-radius: 999px; }

@@ -1,0 +1,122 @@
+/* Movimientos (BudgetScreen). Prefijo bd-. Regla de los 8 puntos. */
+.bd-screen { overflow-x: hidden; }
+.bd-screen > .segmented button { min-width: 0; padding: 0 4px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-card { background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid var(--card-border); box-shadow: var(--shadow); min-width: 0; }
+.bd-mint { border-radius: 32px; padding: 24px; border: 1px solid var(--card-border); box-shadow: var(--shadow); background: linear-gradient(180deg, var(--card), var(--card-2)); }
+.bd-center { display: flex; flex-direction: column; align-items: center; }
+.bd-h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+.bd-big { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; overflow-wrap: anywhere; }
+.bd-overline { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.bd-section { display: flex; align-items: center; gap: 8px; padding: 8px 4px 0; }
+.bd-section h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.bd-add { display: inline-flex; align-items: center; gap: 4px; color: var(--gain); font-weight: 600; font-size: 16px; padding: 8px; border-radius: 999px; flex-shrink: 0; }
+.bd-add:active { background: var(--chip); }
+.bd-month { background: var(--glass); border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: 16px; box-shadow: var(--shadow); white-space: nowrap; }
+.bd-legend-row { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.bd-legend { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.bd-legend .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.bd-legend .sq { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+.bd-cal-legend .bd-legend { font-size: 12px; gap: 4px; }
+
+/* Listas en tarjeta */
+.bd-list { background: var(--card); border-radius: 24px; border: 1px solid var(--card-border); box-shadow: var(--shadow); padding: 0 16px; display: flex; flex-direction: column; }
+.bd-row { display: flex; align-items: center; gap: 12px; padding: 16px 0; width: 100%; min-width: 0; }
+.bd-row + .bd-row { border-top: 1px solid var(--line); }
+.bd-row .t { font-weight: 600; font-size: 16px; }
+.bd-row .s { color: var(--muted); font-size: 14px; }
+.bd-row button.row:active { opacity: 0.7; }
+.bd-mini { background: var(--brand); color: var(--on-brand); font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 999px; min-height: 24px; }
+.bd-ok { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--gain); }
+.bd-link-sm { color: var(--gain); font-size: 12px; font-weight: 700; padding: 4px; border-radius: 999px; }
+.bd-lock { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--chip); color: var(--muted); flex-shrink: 0; }
+.bd-lock.on { background: var(--ink); color: var(--card); }
+.bd-preset { background: var(--chip); padding: 8px 12px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+.bd-preset:active { opacity: 0.7; }
+.bd-range { margin: 16px 0 8px; }
+.bd-softtag { align-self: flex-start; color: var(--loss); background: color-mix(in srgb, var(--loss) 14%, transparent); padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.bd-shortcut { display: flex; flex-direction: column; align-items: flex-start; text-align: left; padding: 16px; width: 100%; }
+.bd-shortcut:active { transform: scale(0.985); }
+
+/* Rueda y en qué se ha ido */
+.bd-wheel-row { display: block; width: 100%; text-align: left; padding: 8px 0; border-radius: 12px; }
+.bd-wheel-row + .bd-wheel-row { border-top: 1px solid var(--line); }
+.bd-wheel-row:active, .bd-tag-row:active { background: var(--chip); }
+.bd-tag-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px; border-radius: 16px; }
+
+/* Amigos */
+.bd-friends-num { font-size: 24px; font-weight: 600; }
+.bd-friend { background: var(--chip); border-radius: 16px; padding: 12px; margin: 8px 0; }
+.bd-chip-btn { background: var(--brand); color: var(--on-brand); font-size: 14px; font-weight: 700; padding: 8px 12px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+.bd-tricount { display: block; text-align: left; margin-top: 8px; font-size: 14px; color: var(--ubre-fuerte); padding: 2px 0; }
+:root[data-theme='dark'] .bd-tricount { color: var(--ubre); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .bd-tricount { color: var(--ubre); } }
+.bd-paid { color: var(--gain); font-size: 12px; padding: 8px; border-radius: 999px; flex-shrink: 0; }
+
+/* Periodos (Semana / Mes / Año) */
+.bd-periods { display: flex; gap: 8px; }
+.bd-periods button { flex: 1; min-width: 0; padding: 12px 4px; border-radius: 16px; background: var(--chip); font-size: 15px; font-weight: 500; white-space: nowrap; }
+.bd-periods button.on { background: var(--brand); color: var(--on-brand); }
+.bd-change { display: inline-block; padding: 4px 8px; border-radius: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+/* Barras */
+.bd-axis-chart { display: flex; gap: 8px; margin-top: 24px; }
+.bd-axis { display: flex; flex-direction: column; justify-content: space-between; height: 160px; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+.bd-bars { display: flex; align-items: flex-end; gap: 8px; flex: 1; min-width: 0; }
+.bd-bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.bd-bar { width: 100%; border-radius: 8px; }
+
+/* Buscador */
+.bd-search { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 999px; padding: 0 16px; min-height: 56px; border: 1px solid var(--card-border); color: var(--muted); }
+.bd-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink); font-size: 16px; padding: 16px 0; -webkit-appearance: none; appearance: none; }
+.bd-search input::placeholder { color: var(--muted); }
+.bd-search:focus-within { border-color: var(--brand); }
+
+/* Movimientos */
+.bd-daylabel { font-weight: 600; color: var(--muted); padding: 8px 8px 0; }
+.bd-daycard { background: var(--card); border-radius: 24px; border: 1px solid var(--card-border); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; }
+.bd-move { display: flex; align-items: center; gap: 16px; padding: 12px 16px; width: 100%; text-align: left; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: background 0.15s; }
+.bd-move + .bd-move::before { content: ''; position: absolute; top: 0; left: 72px; right: 0; height: 1px; background: var(--line); }
+.bd-move:active { background: var(--chip); }
+.bd-move.picked { background: color-mix(in srgb, var(--gain) 12%, transparent); }
+.bd-move-t { font-weight: 500; font-size: 16px; }
+.bd-move-a { font-weight: 600; font-size: 16px; white-space: nowrap; }
+.bd-logo { position: relative; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); display: grid; place-items: center; flex-shrink: 0; overflow: hidden; }
+.bd-logo > .ico { position: absolute; inset: 0; }
+.bd-logo img { border-radius: 50%; object-fit: contain; }
+
+/* Calendario */
+.bd-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bd-tile { background: var(--card); border-radius: 24px; padding: 16px 12px; border: 1px solid var(--card-border); box-shadow: var(--shadow); min-width: 0; }
+.bd-tile.dark { background: #151515; border-color: #151515; }
+.bd-tile-l { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-tile.dark .bd-tile-l { color: rgba(255, 255, 255, 0.7); }
+.bd-cal { background: var(--card); border-radius: 24px; padding: 8px; border: 1px solid var(--card-border); box-shadow: var(--shadow); }
+.bd-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 4px; row-gap: 8px; }
+.bd-cal-wd { text-align: center; font-size: 14px; color: var(--muted); padding-bottom: 0; }
+.bd-day { aspect-ratio: 0.8; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 0; border: 2px solid transparent; min-width: 0; color: var(--ink); }
+.bd-day .n { font-size: 16px; font-weight: 700; line-height: 1; }
+.bd-day .a { font-size: 11px; font-weight: 600; line-height: 1; max-width: 100%; overflow: hidden; white-space: nowrap; letter-spacing: -0.02em; }
+.bd-day .a.soft { color: var(--muted); }
+.bd-day .a.in { color: var(--gain); }
+.bd-day.empty .n { color: var(--muted); }
+.bd-day.tinted { color: #1C1C1E; }
+.bd-day.tinted .a.soft { color: #3A3A3C; }
+.bd-day.tinted .a.in { color: #2E6B3F; }
+.bd-day.today { color: #fff; }
+.bd-day.today .a, .bd-day.today .a.soft, .bd-day.today .a.in { color: #fff; }
+.bd-day.sel { border-color: var(--ink); }
+.bd-day.wait { border-color: var(--gain); }
+.bd-day:active { opacity: 0.7; }
+.bd-cal-legend { display: flex; flex-direction: column; gap: 8px; padding: 16px 8px 8px; }
+.bd-dayhead { display: flex; align-items: center; gap: 8px; padding: 4px 8px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.bd-waits { border: 2px solid var(--gain); border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Suma de seleccionados */
+.bd-selbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom) + 96px); width: calc(100% - 32px); max-width: 528px; z-index: 31; background: #151515; color: #fff; border-radius: 24px; padding: 16px; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); animation: fade 0.18s ease; }
+.bd-selbar-btn { background: #fff; color: #151515; border-radius: 999px; padding: 12px 16px; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+
+@media (max-width: 360px) {
+  .bd-card, .bd-mint { padding: 16px; }
+  .bd-big { font-size: 24px; }
+  .bd-periods button { font-size: 14px; }
+}

@@ -48,7 +48,8 @@ object WeeklyReader {
             limit?.takeIf { it > 0 }?.let { checks += "Límite sugerido: ${fmt(it)}/semana" }
             WeeklyInsight(
                 tag,
-                if (up) "${tag.label} sube un ${String.format(es, "%.0f", pct.coerceAtMost(999.0))} % esta semana"
+                if (up && pct > 300) "${tag.label} se dispara esta semana"
+                else if (up) "${tag.label} sube un ${String.format(es, "%.0f", pct)} % esta semana"
                 else "${tag.label} baja un ${String.format(es, "%.0f", abs(pct))} % esta semana",
                 "${now.size} ${if (now.size == 1) "pago" else "pagos"}" +
                     (top?.takeIf { it.value.size >= 2 }?.let { ", sobre todo en ${it.key}" } ?: "") +

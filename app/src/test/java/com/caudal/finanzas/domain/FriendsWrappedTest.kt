@@ -214,12 +214,16 @@ class FriendsWrappedTest {
             emptyList(), emptyList(), emptyList(), emptyList(),
         )
         val fmt: (Double) -> String = { "%.2f €".format(java.util.Locale.ROOT, it) }
-        val ctx = PepeBot.Ctx(d, null, null, "Pablo", fmt)
-        assertTrue(PepeBot.answer("hola", ctx).startsWith("¡Buenas, Pablo!"))
+        val ctx = PepeBot.Ctx(d, null, null, "Pablo", fmt, kotlin.random.Random(7))
+        assertTrue(PepeBot.answer("hola", ctx).contains("Pablo"))
+        // Varía: la misma pregunta no siempre se contesta con las mismas palabras, pero el dato es el mismo.
+        val answers = (1..12).map { PepeBot.answer("¿cuánto gasto en ocio?", ctx) }.toSet()
+        assertTrue(answers.size > 1)
+        assertTrue(answers.all { it.contains("25.00 €") })
         assertTrue(PepeBot.answer("¿Cuánto tengo en el banco?", ctx).contains("900.00 €"))
         assertTrue(PepeBot.answer("¿cuánto gasto en ocio?", ctx).contains("25.00 €"))
-        assertTrue(PepeBot.answer("¿Cómo va mi cartera?", ctx).startsWith("No tienes inversiones"))
-        assertTrue(PepeBot.answer("¿qué tiempo hace?", ctx).startsWith("Esa no me la sé"))
+        assertTrue(PepeBot.answer("¿Cómo va mi cartera?", ctx).contains("No tienes inversiones"))
+        assertTrue(PepeBot.answer("¿qué tiempo hace?", ctx).contains("Prueba con"))
     }
 
     @Test fun pepeBriefHasNumbersAndQuestion() {

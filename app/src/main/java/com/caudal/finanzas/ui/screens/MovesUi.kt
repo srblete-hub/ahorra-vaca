@@ -96,10 +96,10 @@ private fun dayTitle(d: LocalDate) = d.dayOfWeek.getDisplayName(JTextStyle.FULL,
 /** Color del día en el calendario según lo que gastaste (sin alquiler ni fijos) frente a lo que te toca. */
 private fun dayColor(spent: Double, allowance: Double): Color = when {
     spent <= 0 -> Color.Transparent
-    allowance <= 0 -> Color(0xFFE8F3EC)
-    spent <= allowance -> Color(0xFFDDF0E3)
-    spent <= allowance * 1.5 -> Color(0xFFFBE3E1)
-    else -> Color(0xFFF2C4BF)
+    allowance <= 0 -> Color(0xFFEAF2E4)
+    spent <= allowance -> Color(0xFFDCEBD3)
+    spent <= allowance * 1.5 -> Color(0xFFFBE3E8)
+    else -> Color(0xFFF5A3B4)
 }
 
 @Composable
@@ -247,7 +247,7 @@ fun LazyListScope.movesSection(
                                 val income = list.filter { it.kind == MoveKind.INCOME }.sumOf { it.amount }
                                 val isToday = day == today
                                 val waiting = expected[day]
-                                val bg = if (isToday) Color(0xFF1E6B43) else dayColor(spent, allowance)
+                                val bg = if (isToday) Color(0xFF2E6B3F) else dayColor(spent, allowance)
                                 // Sobre un color, texto siempre oscuro (también en modo oscuro); sin color, el de la app.
                                 val ink = when { isToday -> Color.White; bg != Color.Transparent -> Color(0xFF1C1C1E); else -> P.ink }
                                 val soft = when { isToday -> Color.White.copy(alpha = 0.85f); bg != Color.Transparent -> Color(0xFF3A3A3C); else -> P.muted }
@@ -277,7 +277,7 @@ fun LazyListScope.movesSection(
                 Column(Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Cada día pone lo que gastaste (sin alquiler ni fijos).", fontSize = 12.sp, color = P.muted)
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        listOf(Color(0xFFDDF0E3) to "Dentro de lo tuyo", Color(0xFFFBE3E1) to "Algo de más", Color(0xFFF2C4BF) to "Mucho de más").forEach { (c, t) ->
+                        listOf(Color(0xFFDCEBD3) to "Dentro de lo tuyo", Color(0xFFFBE3E8) to "Algo de más", Color(0xFFF5A3B4) to "Mucho de más").forEach { (c, t) ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(Modifier.size(16.dp).clip(RoundedCornerShape(4.dp)).background(c))
                                 Spacer(Modifier.width(4.dp))
@@ -331,9 +331,9 @@ fun LazyListScope.movesSection(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Semana", "Mes", "Año").forEachIndexed { i, t ->
                         Box(
-                            Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (i == period) Color(0xFF151515) else P.chip).clickable { onPeriod(i) }.padding(vertical = 12.dp),
+                            Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (i == period) P.brand else P.chip).clickable { onPeriod(i) }.padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center,
-                        ) { Text(t, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (i == period) Color.White else P.ink) }
+                        ) { Text(t, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (i == period) P.onBrand else P.ink) }
                     }
                 }
             }
@@ -376,9 +376,9 @@ fun LazyListScope.statsSection(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Este mes", "3 meses", "Este año").forEachIndexed { i, t ->
                 Box(
-                    Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (i == period) Color(0xFF151515) else P.chip).clickable { onPeriod(i) }.padding(vertical = 12.dp),
+                    Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (i == period) P.brand else P.chip).clickable { onPeriod(i) }.padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center,
-                ) { Text(t, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (i == period) Color.White else P.ink) }
+                ) { Text(t, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (i == period) P.onBrand else P.ink) }
             }
         }
     }
@@ -509,7 +509,7 @@ fun MoveSelectionBar(modifier: Modifier = Modifier) {
 @Composable
 private fun AnalyticsHeader(a: com.caudal.finanzas.domain.Analytics) {
     val money = LocalMoney.current
-    val lime = Color(0xFFC5EC6B)
+    val lime = Color(0xFF2E6B3F)
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.card).padding(24.dp)) {
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {

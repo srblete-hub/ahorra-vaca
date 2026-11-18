@@ -20,38 +20,162 @@ object PepeBot {
         val goal: GoalStatus?,
         val userName: String,
         val fmt: (Double) -> String,
+        /** Para variar las frases (en las pruebas se fija). */
+        val rnd: kotlin.random.Random = kotlin.random.Random.Default,
     )
 
-    fun greeting(name: String) =
-        "¡Buenas${if (name.isBlank()) "" else ", ${name.trim().substringBefore(' ')}"}! Soy Pepe. Pregúntame cómo vas este mes, si llegas a la nómina, " +
-            "en qué recortar, cuánto llevas en algo (\"¿cuánto gasto en comida?\") o si te puedes permitir un capricho (\"¿puedo gastarme 40 €?\")."
+    private fun first(name: String) = name.trim().substringBefore(' ')
+
+    fun greeting(name: String, rnd: kotlin.random.Random = kotlin.random.Random.Default): String {
+        val n = first(name)
+        val who = if (n.isBlank()) "" else ", $n"
+        val hi = listOf("¡Buenas$who!", "¡Hombre$who! ¿Qué tal?", "¡Muy buenas$who!", "¡Aquí estoy$who!").random(rnd)
+        val ask = listOf(
+            "Pregúntame cómo vas este mes, si llegas a la nómina o en qué recortar.",
+            "¿Miramos cuánto te queda hoy, tus recibos o tu objetivo?",
+            "Puedes preguntarme cuánto llevas en algo (\"¿cuánto gasto en comida?\") o si te puedes permitir un capricho (\"¿puedo gastarme 40 €?\").",
+        ).random(rnd)
+        return "$hi Soy Pepe. $ask"
+    }
+
+    // Refranes de pastor para cerrar algunas respuestas (no siempre).
+    private val SAYINGS = listOf(
+        "De grano en grano llena la gallina el buche.", "Quien guarda, halla.", "Poco a poco se va lejos.",
+        "Oveja que bala, bocado que pierde.", "A buen pastor, buen rebaño.", "Más vale prevenir que curar.",
+        "No por mucho madrugar amanece más temprano.", "Cuentas claras, vaca contenta.",
+    )
+    private val OPENERS = mapOf(
+        "month" to listOf("", "Vamos a ver… ", "Te cuento: ", "Echando la cuenta, "),
+        "payday" to listOf("", "He mirado el calendario. ", "A ver, hasta la nómina… "),
+        "cut" to listOf("", "Ahí va lo que veo. ", "Con la libreta en la mano: "),
+        "today" to listOf("", "Para hoy: ", "Mirando el día: "),
+        "save" to listOf("", "Mi consejo: ", "Lo que yo haría: "),
+        "tag" to listOf("", "Mirando tus pagos: ", "Lo tengo apuntado: "),
+        "bank" to listOf("", "Mirando el banco: "),
+        "goal" to listOf("", "Tu hucha va así: ", "Sobre tu objetivo: "),
+    )
+
+    /** Pone una entrada y, a veces, un refrán, para que no conteste siempre igual. */
+    private fun vary(c: Ctx, kind: String, body: String): String {
+        val open = OPENERS[kind]?.random(c.rnd).orEmpty()
+        val lower = open.endsWith(": ") || open.endsWith(", ")
+        val text = if (open.isEmpty()) body else open + if (lower) body.replaceFirstChar { it.lowercaseChar() } else body
+        return if (c.rnd.nextInt(100) < 35) "$text ${SAYINGS.random(c.rnd)}" else text
+    }
+
+    private val UNKNOWN = listOf(
+        "Esa no me la sé, que soy pastor y no adivino.", "Uy, eso se me escapa del rebaño.", "Eso no lo llevo apuntado en la libreta.",
+    )
 
     fun answer(question: String, c: Ctx): String {
         val q = " ${Classifier.normalize(question)} "
         fun has(vararg w: String) = w.any { " $it" in q || q.contains(it) }
         val amount = Regex("(\\d+(?:[.,]\\d{1,2})?)").find(question)?.groupValues?.get(1)?.replace(',', '.')?.toDoubleOrNull()
         return when {
-            q.isBlank() -> greeting(c.userName)
-            has("hola", "buenas", "buenos dias", "que tal") && q.trim().split(' ').size <= 4 -> greeting(c.userName)
-            has("gracias") -> "A mandar. Aquí estoy, con el cayado y la libreta."
+            q.isBlank() -> greeting(c.userName, c.rnd)
+            has("hola", "buenas", "buenos dias", "que tal", "hey") && q.trim().split(' ').size <= 4 -> greeting(c.userName, c.rnd)
+            has("gracias") -> listOf("A mandar. Aquí estoy, con el cayado y la libreta.", "¡De nada! Para eso está el pastor.", "No hay de qué. Cuida el rebaño.").random(c.rnd)
+            has("quien eres", "que eres", "eres una ia", "eres un robot", "como funcionas") ->
+                "Soy Pepe, pastor de toda la vida. No soy una IA: echo las cuentas con tus datos de la app, con reglas fijas, y nada sale de tu móvil."
+            has("chiste", "broma", "algo gracioso") -> listOf(
+                "¿Sabes por qué las vacas no usan tarjeta? Porque prefieren pagar a pezuña.",
+                "Una oveja le dice a otra: \"¿ahorras?\". Y la otra: \"Beeee… lo intento\".",
+                "Mi perro también ahorra: entierra los huesos para el invierno.",
+            ).random(c.rnd)
+            has("consejo", "recomienda", "recomiendas", "que me dices", "alguna idea", "sorprendeme") -> tips(c).randomOrNull(c.rnd) ?: vary(c, "save", howMuchToSave(c))
             amount != null && has("puedo", "permitir", "compro", "comprar", "gastarme", "me gasto", "capricho") -> canAfford(amount, question, c)
-            has("queda hoy", "quedan hoy", "gastar hoy", "hoy puedo", "para hoy", "llevo hoy", "gastado hoy") -> today(c)
+            has("queda hoy", "quedan hoy", "gastar hoy", "hoy puedo", "para hoy", "llevo hoy", "gastado hoy") -> vary(c, "today", today(c))
+            has("ayer") -> vary(c, "today", yesterday(c))
+            has("esta semana", "la semana", "semanal") -> vary(c, "month", week(c))
+            has("mas caro", "mayor gasto", "gasto mas grande", "mas grande") -> vary(c, "tag", biggest(c))
             has("cartera", "cripto", "bitcoin", "accion", "invers", "bolsa") -> portfolio(c)
             has("suscrip", "netflix", "spotify", "plataforma") -> subscriptions(c)
-            has("llego", "fin de mes", "nomina", "cobro", "cuando cobro", "hasta el") -> untilPayday(c)
-            has("recort", "ahorrar en", "gasto mucho", "gastando mucho", "donde se me va", "en que se me va", "en que gasto") -> cutBack(c)
-            has("cuanto deberia ahorrar", "cuanto ahorro", "cuanto ahorrar", "ahorrar al mes", "ahorrar") -> howMuchToSave(c)
-            has("objetivo", "meta", "hucha") -> goal(c)
+            has("interes", "robinhood", "rentabilidad", "mis ahorros", "tengo ahorrado") -> vary(c, "save", savings(c))
+            has("ingreso", "me ha entrado", "cuanto he cobrado", "youtube") -> vary(c, "month", incomes(c))
+            has("llego", "fin de mes", "nomina", "cobro", "cuando cobro", "hasta el") -> vary(c, "payday", untilPayday(c))
+            has("recort", "ahorrar en", "gasto mucho", "gastando mucho", "donde se me va", "en que se me va", "en que gasto") -> vary(c, "cut", cutBack(c))
+            has("cuanto deberia ahorrar", "cuanto ahorro", "cuanto ahorrar", "ahorrar al mes", "ahorrar") -> vary(c, "save", howMuchToSave(c))
+            has("objetivo", "meta", "hucha") -> vary(c, "goal", goal(c))
             has("alquiler", "fijo", "recibo", "factura") -> fixed(c)
-            tagIn(q) != null -> tagSpend(tagIn(q)!!, c)
-            has("como voy", "resumen", "este mes", "que tal voy", "como va") -> month(c)
-            has("banco", "saldo", "cuanto tengo", "dinero tengo") -> bank(c)
-            else -> "Esa no me la sé, que soy pastor y no adivino. Prueba con: \"¿cómo voy este mes?\", \"¿llego a la nómina?\", " +
-                "\"¿en qué puedo recortar?\", \"¿cuánto gasto en ocio?\", \"¿puedo gastarme 30 €?\" o \"¿cómo va mi cartera?\"."
+            tagIn(q) != null -> vary(c, "tag", tagSpend(tagIn(q)!!, c))
+            has("como voy", "resumen", "este mes", "que tal voy", "como va") -> vary(c, "month", month(c))
+            has("banco", "saldo", "cuanto tengo", "dinero tengo") -> vary(c, "bank", bank(c))
+            else -> UNKNOWN.random(c.rnd) + " Prueba con: \"¿cómo voy este mes?\", \"¿llego a la nómina?\", " +
+                "\"¿en qué puedo recortar?\", \"¿cuánto gasto en ocio?\", \"¿puedo gastarme 30 €?\" o \"dame un consejo\"."
         }
     }
 
+    // ---------- Pepe por su cuenta: cosas que le interesa contarte ----------
+
+    /** Recomendaciones que Pepe puede mandar sin que le preguntes, de más a menos urgente. */
+    fun tips(c: Ctx): List<String> {
+        val d = c.d; val f = c.fmt
+        val out = mutableListOf<String>()
+        UpcomingBills.of(d, 2).firstOrNull()?.let { b ->
+            out += "Te aviso: ${b.whenText(d.today)} pasa ${b.name} (${f(b.amount)}). Deja ese dinero quieto en el banco."
+        }
+        TodayLeft.of(d, c.cash)?.let { (perDay, left) ->
+            if (left < 0) out += "Hoy ya te has pasado ${f(-left)} de los ${f(perDay)} del día. Mañana, un poco más tranquilo y se compensa."
+        }
+        WeeklyReader.of(d, f)?.insights?.firstOrNull { it.up }?.let {
+            out += "Esta semana me ha llamado la atención: ${it.title.replaceFirstChar { ch -> ch.lowercaseChar() }}. ${it.detail}"
+        }
+        SubscriptionChecker.of(d)?.takeIf { it.maxSaving >= 3 }?.let { out += "Revisando tus suscripciones podrías ahorrar hasta ${f(it.maxSaving)} al mes. ¿Les echas un ojo?" }
+        TypicalSpend.of(d)?.takeIf { it.diff < -20 }?.let { out += "Vas ${f(-it.diff)} por debajo de tu mes típico. Buen momento para pasar algo a la hucha." }
+        c.goal?.let { g ->
+            val pct = if (g.goal.target > 0) (g.current / g.goal.target * 100).roundToInt() else 0
+            if (pct in 1..99) out += "Tu objetivo «${g.goal.name.ifBlank { "de ahorro" }}» va por el $pct %. Te faltan ${f((g.goal.target - g.current).coerceAtLeast(0.0))}."
+        }
+        d.accounts.filter { it.isSaving() && it.interestRate > 0 }.maxByOrNull { it.balance }?.let { a ->
+            val m = InterestMath.monthlyInterest(a.balance, a.interestRate)
+            if (m >= 1) out += "Tu ${a.name} te da unos ${f(m)} al mes en intereses. El dinero quieto también trabaja."
+        }
+        return out
+    }
+
     // ---------- Respuestas ----------
+
+    private fun yesterday(c: Ctx): String {
+        val d = c.d; val f = c.fmt
+        val y = d.today.minusDays(1).toEpochDay()
+        val list = d.spending.filter { it.epochDay == y && !Budgeting.isFixed(it, d.bills) }
+        if (list.isEmpty()) return "Ayer no gastaste nada. ¡Así da gusto!"
+        val top = list.maxByOrNull { it.amount }!!
+        return "Ayer gastaste ${f(list.sumOf { it.amount })} en ${list.size} ${if (list.size == 1) "pago" else "pagos"}. El más grande: ${Merchants.clean(top.note).ifBlank { "sin nombre" }}, ${f(top.amount)}."
+    }
+
+    private fun week(c: Ctx): String {
+        val d = c.d; val f = c.fmt
+        val monday = d.today.minusDays((d.today.dayOfWeek.value - 1).toLong())
+        val spent = d.spending.filter { it.epochDay >= monday.toEpochDay() && it.epochDay <= d.today.toEpochDay() && !Budgeting.isFixed(it, d.bills) }.sumOf { it.amount }
+        val ins = WeeklyReader.of(d, f)?.insights?.firstOrNull()
+        return "Esta semana llevas ${f(spent)} en el día a día." + (ins?.let { " Lo que más destaca: ${it.title.replaceFirstChar { ch -> ch.lowercaseChar() }}." } ?: " Nada fuera de lo normal.")
+    }
+
+    private fun biggest(c: Ctx): String {
+        val d = c.d; val f = c.fmt
+        val e = d.spendingIn(YearMonth.from(d.today)).filter { !Budgeting.isFixed(it, d.bills) }.maxByOrNull { it.amount }
+            ?: return "Este mes aún no tienes gastos del día a día."
+        return "Tu gasto más grande del mes (sin fijos) es ${Merchants.clean(e.note).ifBlank { "sin nombre" }}: ${f(e.amount)}."
+    }
+
+    private fun savings(c: Ctx): String {
+        val f = c.fmt
+        val acc = c.d.accounts.filter { it.isSaving() && it.balance > 0 }
+        if (acc.isEmpty()) return "No tienes cuentas de ahorro apuntadas. Añade la tuya en Patrimonio y te cuento lo que te da."
+        return "Tienes ${f(acc.sumOf { it.balance })} ahorrados" + acc.filter { it.interestRate > 0 }.joinToString("") { a ->
+            ". ${a.name} al ${String.format(ES, "%.1f", a.interestRate)} % te da unos ${f(InterestMath.monthlyInterest(a.balance, a.interestRate))} al mes"
+        } + ". Ese no se toca."
+    }
+
+    private fun incomes(c: Ctx): String {
+        val d = c.d; val f = c.fmt
+        val m = YearMonth.from(d.today)
+        val list = d.incomes.filter { YearMonth.from(java.time.LocalDate.ofEpochDay(it.epochDay)) == m }
+        if (list.isEmpty()) return "Este mes aún no te ha entrado nada apuntado."
+        return "Este mes te han entrado ${f(list.sumOf { it.amount })}: " +
+            list.sortedByDescending { it.amount }.take(3).joinToString(", ") { "${it.note.ifBlank { "ingreso" }} ${f(it.amount)}" } + "."
+    }
 
     private fun month(c: Ctx): String {
         val d = c.d; val f = c.fmt

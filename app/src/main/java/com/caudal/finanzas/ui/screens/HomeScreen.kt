@@ -287,6 +287,14 @@ fun HomeScreen(
                 }
             }
 
+            // ---------- Últimos movimientos, de todas las cuentas ----------
+            item {
+                RecentMovesCard(
+                    expenses = allExpensesList, incomes = allIncomes, transfers = transfers,
+                    accounts = accounts, onEdit = args.onEdit, onOpenAccount = args.onOpenAccount,
+                )
+            }
+
             // ---------- Panel: colchón, margen y gasto de la semana ----------
             if (p != null) {
                 val pulse = com.caudal.finanzas.domain.PulseCalculator.of(p.data, p.budget, p.bankPlan, money::format)
@@ -315,7 +323,12 @@ fun HomeScreen(
 
             // ---------- Pregúntale a Pepe (contesta Claude con tu suscripción) ----------
             if (p != null) item {
-                PepeCard { q -> pepeAsk = q }
+                val pepeTip = remember(p, settings.bankBuffer) {
+                    com.caudal.finanzas.domain.PepeBot.tips(
+                        com.caudal.finanzas.domain.PepeBot.Ctx(p.data, com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer), p.goals.firstOrNull(), settings.userName, money::format),
+                    ).firstOrNull()
+                }
+                PepeCard(pepeTip) { q -> pepeAsk = q }
             }
 
             // ---------- Recibos que pasan en los próximos días ----------
@@ -377,13 +390,6 @@ fun HomeScreen(
                 item { BuyCheckCard { n, pr -> buyCheck = com.caudal.finanzas.domain.BuyChecker.of(n, pr, p.data, p.bankPlan, p.budget, p.goals.firstOrNull(), money::format) } }
             }
 
-            // ---------- Últimos movimientos, de todas las cuentas ----------
-            item {
-                RecentMovesCard(
-                    expenses = allExpensesList, incomes = allIncomes, transfers = transfers,
-                    accounts = accounts, onEdit = args.onEdit, onOpenAccount = args.onOpenAccount,
-                )
-            }
 
             // ---------- Ingresos variables: ¿ya sabes cuánto te pagan este mes? ----------
             if (p != null && LocalDate.now().dayOfMonth >= 3) {

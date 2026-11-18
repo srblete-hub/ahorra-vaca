@@ -144,12 +144,13 @@ fun Overline(text: String, modifier: Modifier = Modifier, color: Color = P.muted
 
 @Composable
 fun ScreenTitle(title: String, subtitle: String? = null, modifier: Modifier = Modifier, actions: @Composable RowScope.() -> Unit = {}) {
-    Row(modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineMedium, color = P.ink)
-            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = P.muted)
+    // Los botones van arriba a la derecha y el título debajo, a todo el ancho: así nunca se corta (como en Inicio).
+    Column(modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = actions)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = actions)
+        Text(title, style = MaterialTheme.typography.headlineMedium, color = P.ink, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 16.dp))
+        if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = P.muted)
     }
 }
 

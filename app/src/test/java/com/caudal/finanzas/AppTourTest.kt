@@ -147,11 +147,11 @@ class AppTourTest {
     /** Vuelve a ver Inicio arriba del todo (Inicio recuerda dónde te quedaste). */
     private fun homeTop() {
         compose.waitUntil(8_000) {
-            if (!exists("PRESIÓN")) runCatching {
+            if (!exists("En el banco")) runCatching {
                 compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange))
                     .onFirst().performScrollToIndex(0)
             }
-            exists("PRESIÓN")
+            exists("En el banco")
         }
     }
 
@@ -239,9 +239,10 @@ class AppTourTest {
             assertEquals(before.sumOf { it.balance }, after.sumOf { it.balance }, 0.001)
         }
 
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        compose.waitUntil(5_000) { exists("En el banco") }
         closeCelebration()
         shot("05_inicio")
+        scrollTo("LA SEMANA")
         compose.onNodeWithText("LA SEMANA", substring = true).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitUntil(5_000) { exists("Ideal: ~") }
         shot("28b_panel_ficha_semana")
@@ -281,6 +282,9 @@ class AppTourTest {
         shot("05g_pepe")
         compose.onNodeWithText("¿En qué puedo recortar?").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitUntil(5_000) { exists("Escribe a Pepe") }
+        // Pepe "escribe" un par de segundos antes de contestar.
+        compose.mainClock.advanceTimeBy(6_000)
+        compose.waitForIdle()
         shot("05h_pepe_chat")
         compose.onNodeWithContentDescription("Cerrar").performClick()
         compose.waitUntil(5_000) { !exists("Escribe a Pepe") }
@@ -512,7 +516,7 @@ class AppTourTest {
         shot("13_acciones")
         scrollTo("Las más populares")
         shot("13b_acciones_mercado")
-        compose.onNodeWithText("Netflix").performClick()
+        compose.onNodeWithText("Netflix").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitUntil(5_000) { exists("No la tienes") }
         shot("13c_accion_sin_tener")
         back()

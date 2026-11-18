@@ -37,6 +37,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -63,7 +67,7 @@ import com.caudal.finanzas.ui.TextInput
 
 /** Tarjeta de Inicio: Pepe, el pastor, te contesta aquí mismo con tus números (sin IA y sin salir de la app). */
 @Composable
-fun PepeCard(onAsk: (String) -> Unit) {
+fun PepeCard(tip: String? = null, onAsk: (String) -> Unit) {
     var own by remember { mutableStateOf("") }
     MCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -71,8 +75,16 @@ fun PepeCard(onAsk: (String) -> Unit) {
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text("Pregúntale a Pepe", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                Column(Modifier.padding(top = 4.dp).clip(RoundedCornerShape(16.dp)).background(P.chip).padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text("¿Te echo una mano con tus cuentas? Como con el rebaño: ni una oveja suelta.", fontSize = 14.sp, color = P.ink)
+                Column(
+                    Modifier.padding(top = 4.dp).clip(RoundedCornerShape(16.dp)).background(if (tip != null) com.caudal.finanzas.ui.Vaca.Pasto else P.chip)
+                        .clickable(enabled = tip != null) { onAsk("") }.padding(horizontal = 12.dp, vertical = 8.dp),
+                ) {
+                    if (tip != null) Text("Pepe tiene algo que contarte", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = com.caudal.finanzas.ui.Vaca.PradoOscuro)
+                    Text(
+                        tip ?: "¿Te echo una mano con tus cuentas? Como con el rebaño: ni una oveja suelta.", fontSize = 14.sp,
+                        color = if (tip != null) com.caudal.finanzas.ui.Vaca.Tinta else P.ink, maxLines = 3,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
                 }
             }
         }
@@ -97,24 +109,47 @@ fun PepeCard(onAsk: (String) -> Unit) {
 data class PepeMsg(val fromPepe: Boolean, val text: String)
 
 /** La conversación se guarda mientras la app esté abierta. */
-object PepeChatState { val messages = mutableStateListOf<PepeMsg>() }
+object PepeChatState {
+    val messages = mutableStateListOf<PepeMsg>()
+    var typing by mutableStateOf(false)
+    /** Consejos ya contados en esta sesión, para no repetirlos. */
+    val toldTips = mutableSetOf<String>()
+}
 
 /** Chat con Pepe a pantalla completa. Las respuestas salen de reglas fijas con tus datos ([PepeBot]). */
 @Composable
 fun PepeChat(ctx: PepeBot.Ctx, first: String?, onDismiss: () -> Unit) {
     val msgs = PepeChatState.messages
-    fun ask(q: String) {
-        if (q.isBlank()) return
-        msgs += PepeMsg(false, q.trim())
-        msgs += PepeMsg(true, PepeBot.answer(q, ctx))
+    val scope = rememberCoroutineScope()
+    // Pepe "escribe" antes de contestar: más tiempo cuanto más larga es la respuesta (entre 1,2 y 2,8 s).
+    suspend fun say(text: String) {
+        PepeChatState.typing = true
+        delay((900L + text.length * 12L).coerceIn(1200L, 2800L))
+        PepeChatState.typing = false
+        msgs += PepeMsg(true, text)
     }
+    fun ask(q: String) {
+        if (q.isBlank() || PepeChatState.typing) return
+        msgs += PepeMsg(false, q.trim())
+        scope.launch { say(PepeBot.answer(q, ctx)) }
+    }
+    // Un consejo que Pepe manda por su cuenta, si tiene algo nuevo que contar.
+    fun nextTip() = PepeBot.tips(ctx).firstOrNull { it !in PepeChatState.toldTips }?.also { PepeChatState.toldTips += it }
     LaunchedEffect(Unit) {
-        if (msgs.isEmpty()) msgs += PepeMsg(true, PepeBot.greeting(ctx.userName))
-        first?.let { ask(it) }
+        if (msgs.isEmpty()) say(PepeBot.greeting(ctx.userName))
+        if (first != null) {
+            msgs += PepeMsg(false, first.trim())
+            say(PepeBot.answer(first, ctx))
+        } else nextTip()?.let { delay(600); say(it) }
+    }
+    // Si dejas el chat abierto un rato sin escribir, Pepe a veces te cuenta algo más.
+    LaunchedEffect(msgs.size) {
+        delay(20_000)
+        if (!PepeChatState.typing && msgs.lastOrNull()?.fromPepe == true) nextTip()?.let { say(it) }
     }
     var input by remember { mutableStateOf("") }
     val list = rememberLazyListState()
-    LaunchedEffect(msgs.size) { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1) }
+    LaunchedEffect(msgs.size, PepeChatState.typing) { if (msgs.isNotEmpty()) list.animateScrollToItem(msgs.size - 1 + if (PepeChatState.typing) 1 else 0) }
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -148,6 +183,13 @@ fun PepeChat(ctx: PepeBot.Ctx, first: String?, onDismiss: () -> Unit) {
                         )
                     }
                 }
+                // Pepe está escribiendo…
+                if (PepeChatState.typing) item(key = "typing") {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Image(painterResource(R.drawable.ic_pepe), null, Modifier.size(32.dp)); Spacer(Modifier.width(8.dp))
+                        TypingDots()
+                    }
+                }
             }
             // Preguntas rápidas.
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -173,6 +215,28 @@ fun PepeChat(ctx: PepeBot.Ctx, first: String?, onDismiss: () -> Unit) {
                     contentAlignment = Alignment.Center,
                 ) { Icon(Icons.AutoMirrored.Filled.Send, "Enviar", Modifier.size(24.dp), tint = if (input.isBlank()) P.muted else P.onBrand) }
             }
+        }
+    }
+}
+
+/** Tres puntos que laten: Pepe está escribiendo. */
+@Composable
+private fun TypingDots() {
+    val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "typing")
+    Row(
+        Modifier.clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 8.dp, bottomEnd = 24.dp)).background(P.card)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        repeat(3) { i ->
+            val a by t.animateFloat(
+                0.25f, 1f,
+                androidx.compose.animation.core.infiniteRepeatable(
+                    androidx.compose.animation.core.tween(500, delayMillis = i * 160), androidx.compose.animation.core.RepeatMode.Reverse,
+                ),
+                label = "dot$i",
+            )
+            Box(Modifier.size(8.dp).clip(CircleShape).background(P.muted.copy(alpha = a)))
         }
     }
 }

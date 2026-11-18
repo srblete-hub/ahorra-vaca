@@ -66,12 +66,12 @@ private fun LightLayout(title: String, subtitle: String, top: @Composable () -> 
         Modifier.fillMaxSize().background(P.bg).safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(36.dp))
+        Spacer(Modifier.height(40.dp))
         top()
         Text(title, style = MaterialTheme.typography.headlineMedium, color = P.ink, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = P.muted, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(32.dp))
         content()
     }
 }
@@ -92,26 +92,26 @@ fun PinPad(
         if (pin.length == PIN_LENGTH) { onComplete(pin); pin = "" }
     }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
             repeat(PIN_LENGTH) { i ->
                 val filled = i < pin.length
                 val size by animateDpAsState(if (filled) 16.dp else 12.dp, label = "dot")
                 Box(Modifier.size(size).clip(CircleShape).background(if (filled) p.gain else p.ink.copy(alpha = 0.15f)))
             }
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Text(error ?: " ", color = p.loss, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(16.dp))
         listOf("123", "456", "789").forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(22.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 row.forEach { d -> PinKey(onClick = { press(d.toString()) }) { Text(d.toString(), fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = p.ink) } }
             }
             Spacer(Modifier.height(16.dp))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(22.dp)) {
-            Box(Modifier.size(74.dp), contentAlignment = Alignment.Center) { leftKey?.invoke() }
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) { leftKey?.invoke() }
             PinKey(onClick = { press("0") }) { Text("0", fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = p.ink) }
-            Box(Modifier.size(74.dp).clip(CircleShape).clickable { pin = pin.dropLast(1) }, contentAlignment = Alignment.Center) {
+            Box(Modifier.size(72.dp).clip(CircleShape).clickable { pin = pin.dropLast(1) }, contentAlignment = Alignment.Center) {
                 Icon(Icons.AutoMirrored.Filled.Backspace, "Borrar", tint = p.ink)
             }
         }
@@ -122,7 +122,7 @@ fun PinPad(
 private fun PinKey(onClick: () -> Unit, content: @Composable () -> Unit) {
     val p = P
     Box(
-        Modifier.size(74.dp)
+        Modifier.size(72.dp)
             .then(if (!p.isDark) Modifier.shadow(4.dp, CircleShape, spotColor = Color(0x22000000)) else Modifier)
             .clip(CircleShape).background(p.card).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -177,7 +177,7 @@ fun SetupScreen(vm: AppViewModel, activity: FragmentActivity) {
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = P.brand, contentColor = P.onBrand),
                 shape = CircleShape,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Text("Activar huella", fontWeight = FontWeight.Bold) }
             TextButton(onClick = { vm.createAccount(name, firstPin) }) { Text("Ahora no", color = P.ink) }
         }
@@ -188,19 +188,19 @@ fun SetupScreen(vm: AppViewModel, activity: FragmentActivity) {
 @Composable
 private fun Welcome(name: String, onName: (String) -> Unit, onContinue: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().background(Forest).safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 20.dp),
+        Modifier.fillMaxSize().background(Forest).safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 24.dp),
     ) {
         Spacer(Modifier.height(40.dp))
-        Box(Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Neon), contentAlignment = Alignment.Center) {
-            Text("C", color = Forest, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(16.dp)).background(Neon), contentAlignment = Alignment.Center) {
+            Text("C", color = Forest, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
         }
-        Spacer(Modifier.height(36.dp))
+        Spacer(Modifier.height(40.dp))
         Text(
             buildAnnotatedString {
                 append("¿Sabes cuánto tienes\n")
                 withStyle(SpanStyle(color = Neon)) { append("ahora mismo?") }
             },
-            color = Color.White, fontSize = 40.sp, lineHeight = 44.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.2).sp,
+            color = Color.White, fontSize = 40.sp, lineHeight = 48.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.2).sp,
         )
         Spacer(Modifier.height(16.dp))
         Text(
@@ -212,7 +212,7 @@ private fun Welcome(name: String, onName: (String) -> Unit, onContinue: () -> Un
             name, onName,
             placeholder = { Text("¿Cómo te llamas?") },
             singleLine = true,
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White.copy(alpha = 0.1f), unfocusedContainerColor = Color.White.copy(alpha = 0.1f),
                 focusedTextColor = Color.White, unfocusedTextColor = Color.White,
@@ -231,8 +231,8 @@ private fun Welcome(name: String, onName: (String) -> Unit, onContinue: () -> Un
             ),
             shape = CircleShape,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text("Empezar", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp) }
-        Spacer(Modifier.height(14.dp))
+        ) { Text("Empezar", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp) }
+        Spacer(Modifier.height(16.dp))
         Text(
             "Tus datos se guardan solo en este móvil.",
             color = Color.White.copy(alpha = 0.5f), style = MaterialTheme.typography.bodySmall,
@@ -261,7 +261,7 @@ fun LockScreen(vm: AppViewModel, activity: FragmentActivity, userName: String, b
         if (canUseBiometric) "Pon el dedo en el lector o escribe tu PIN" else "Escribe tu PIN",
         top = {
             Initials(userName.ifBlank { "?" }.take(1), P.gain, 64.dp)
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
         },
     ) {
         PinPad(
@@ -275,8 +275,8 @@ fun LockScreen(vm: AppViewModel, activity: FragmentActivity, userName: String, b
             },
             leftKey = if (canUseBiometric) {
                 {
-                    Box(Modifier.size(74.dp).clip(CircleShape).background(P.mint).clickable { askFingerprint() }, contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.Fingerprint, "Usar huella", Modifier.size(34.dp), tint = P.gain)
+                    Box(Modifier.size(72.dp).clip(CircleShape).background(P.mint).clickable { askFingerprint() }, contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Fingerprint, "Usar huella", Modifier.size(32.dp), tint = P.gain)
                     }
                 }
             } else null,

@@ -144,13 +144,13 @@ fun SettingsScreen(appVm: AppViewModel, vm: FinanceViewModel, activity: Fragment
 
     LazyColumn(
         Modifier.fillMaxSize().background(P.bg),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Text("Ajustes", style = MaterialTheme.typography.headlineMedium, color = P.ink)
             }
         }
@@ -224,7 +224,7 @@ fun SettingsScreen(appVm: AppViewModel, vm: FinanceViewModel, activity: Fragment
                         "Android tiene que dejar que Ahorra, vaca lea tus notificaciones. Pulsa el botón y activa \"Ahorra, vaca · pagos con tarjeta\".",
                         style = MaterialTheme.typography.bodyMedium, color = P.ink,
                     )
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         "Si sale gris o dice \"ajuste restringido\": abre Información de la app → menú ⋮ → \"Permitir ajustes restringidos\" y vuelve a intentarlo.",
                         style = MaterialTheme.typography.bodySmall, color = P.muted,
@@ -284,7 +284,7 @@ fun SettingsScreen(appVm: AppViewModel, vm: FinanceViewModel, activity: Fragment
                     leading = { IconTile(Icons.Filled.Euro, SeriesColors[2]) },
                     below = {
                         FlowRow(
-                            Modifier.clip(CircleShape).background(P.chip).padding(3.dp),
+                            Modifier.clip(CircleShape).background(P.chip).padding(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
                             currencies.forEach { c ->

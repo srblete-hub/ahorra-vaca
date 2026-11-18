@@ -62,7 +62,7 @@ private fun dayText(epochDay: Long) = LocalDate.ofEpochDay(epochDay).format(dayF
 @Composable
 private fun Pill(text: String, selected: Boolean, onClick: () -> Unit) {
     Box(
-        Modifier.clip(CircleShape).background(if (selected) P.brand else P.chip).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 8.dp),
+        Modifier.clip(CircleShape).background(if (selected) P.brand else P.chip).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
     ) { Text(text, fontSize = 14.sp, color = if (selected) P.onBrand else P.ink, fontWeight = FontWeight.Medium) }
 }
 
@@ -81,7 +81,7 @@ fun FriendsCard(
     MCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Cuentas con amigos", Modifier.weight(1f), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-            Text("+ Añadir", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.gain, modifier = Modifier.clip(CircleShape).clickable(onClick = onAdd).padding(8.dp))
+            Text("+ Añadir", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.gain, modifier = Modifier.clip(CircleShape).clickable(onClick = onAdd).padding(8.dp))
         }
         if (friends.isEmpty()) {
             Text(
@@ -94,19 +94,19 @@ fun FriendsCard(
         val owe = -friends.filter { it.net < 0 }.sumOf { it.net }
         Row(Modifier.padding(vertical = 8.dp)) {
             Column(Modifier.weight(1f)) {
-                Text("Te deben", fontSize = 13.sp, color = P.muted)
+                Text("Te deben", fontSize = 14.sp, color = P.muted)
                 Text(money.format(owed), fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = P.gain)
             }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                Text("Debes", fontSize = 13.sp, color = P.muted)
+                Text("Debes", fontSize = 14.sp, color = P.muted)
                 Text(money.format(owe), fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = if (owe > 0) P.loss else P.ink)
             }
         }
         friends.forEach { f ->
             val expanded = open == f.person
-            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(16.dp)).background(P.chip).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(16.dp)).background(P.chip).padding(12.dp)) {
                 Row(Modifier.fillMaxWidth().clickable { open = if (expanded) null else f.person }, verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(38.dp).clip(CircleShape).background(SeriesColors[abs(f.person.hashCode()) % SeriesColors.size].copy(alpha = 0.25f)), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(40.dp).clip(CircleShape).background(SeriesColors[abs(f.person.hashCode()) % SeriesColors.size].copy(alpha = 0.25f)), contentAlignment = Alignment.Center) {
                         Text(f.person.take(1).uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = P.ink)
                     }
                     Spacer(Modifier.width(12.dp))
@@ -122,15 +122,15 @@ fun FriendsCard(
                         )
                     }
                     Box(
-                        Modifier.clip(CircleShape).background(P.brand).clickable { onSettle(f.person) }.padding(horizontal = 12.dp, vertical = 7.dp),
-                    ) { Text("Se ha pagado", fontSize = 13.sp, color = P.onBrand, fontWeight = FontWeight.Bold) }
+                        Modifier.clip(CircleShape).background(P.brand).clickable { onSettle(f.person) }.padding(horizontal = 12.dp, vertical = 8.dp),
+                    ) { Text("Se ha pagado", fontSize = 14.sp, color = P.onBrand, fontWeight = FontWeight.Bold) }
                 }
                 Text(
                     f.tricount?.let { t ->
                         "Tricount: " + (if (t.amount >= 0) "te debe ${money.format(t.amount)}" else "le debes ${money.format(-t.amount)}") + " (al ${dayText(t.epochDay)}) · cambiar"
                     } ?: "¿Lo lleváis en Tricount? Pon su saldo",
-                    fontSize = 13.sp, color = SeriesColors[1],
-                    modifier = Modifier.padding(top = 6.dp).clip(RoundedCornerShape(8.dp)).clickable { onTricount(f.person) }.padding(vertical = 2.dp),
+                    fontSize = 14.sp, color = SeriesColors[1],
+                    modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(8.dp)).clickable { onTricount(f.person) }.padding(vertical = 2.dp),
                 )
                 if (expanded) f.open.forEach { d ->
                     val inside = d.inTricount && f.tricount != null && d.epochDay <= f.tricount.epochDay
@@ -141,7 +141,7 @@ fun FriendsCard(
                         }
                         Text(money.signed(d.amount), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (inside) P.muted else if (d.amount >= 0) P.gain else P.loss)
                         Spacer(Modifier.width(8.dp))
-                        Text("Pagado", fontSize = 12.sp, color = P.gain, modifier = Modifier.clip(CircleShape).clickable { onSettleOne(d.id) }.padding(6.dp))
+                        Text("Pagado", fontSize = 12.sp, color = P.gain, modifier = Modifier.clip(CircleShape).clickable { onSettleOne(d.id) }.padding(8.dp))
                     }
                 }
             }
@@ -166,7 +166,7 @@ fun DebtSheet(initial: Debt, total: Double?, people: List<String>, currency: Str
         primaryEnabled = v != null && v > 0 && person.isNotBlank(),
         onDelete = onDelete,
     ) {
-        if (total != null) Text("${initial.note.ifBlank { "Gasto" }} · pagaste ${money.format(total)}", fontSize = 15.sp, color = P.muted)
+        if (total != null) Text("${initial.note.ifBlank { "Gasto" }} · pagaste ${money.format(total)}", fontSize = 16.sp, color = P.muted)
         Segmented(listOf(true, false), owesMe, { if (it) "Me debe" else "Le debo" }, { owesMe = it })
         TextInput(person, { person = it }, "¿Quién? (Juanpa…)")
         if (people.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -184,9 +184,9 @@ fun DebtSheet(initial: Debt, total: Double?, people: List<String>, currency: Str
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(if (tricount) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank, null, tint = if (tricount) P.gain else P.muted)
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(8.dp))
             Column {
-                Text("También está en Tricount", fontSize = 15.sp, color = P.ink)
+                Text("También está en Tricount", fontSize = 16.sp, color = P.ink)
                 Text("Cuando pongas el saldo de Tricount no se contará dos veces.", fontSize = 12.sp, color = P.muted)
             }
         }
@@ -231,10 +231,10 @@ fun ExpectedIncomeSheet(source: IncomeSource, month: YearMonth, current: Double?
         }
         Text(
             if (current == null) "Ahora se estima con el 70 % de tu media${average?.let { " (${money.format(it * 0.7)})" } ?: ""}, por prudencia." else "Confirmado: ${money.format(current)}.",
-            fontSize = 13.sp, color = P.muted,
+            fontSize = 14.sp, color = P.muted,
         )
         if (current != null) Text(
-            "Volver a la estimación", fontSize = 15.sp, color = P.gain,
+            "Volver a la estimación", fontSize = 16.sp, color = P.gain,
             modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { onSave(null) }.padding(8.dp),
         )
     }
@@ -249,10 +249,10 @@ fun ExpectedIncomeNudge(source: IncomeSource, onSet: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text("¿Ya sabes cuánto te paga ${source.name} este mes?", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                Text("Cobras el día ${source.dayFrom}. Ponlo y el consejo dejará de estimar.", fontSize = 13.sp, color = P.muted)
+                Text("Cobras el día ${source.dayFrom}. Ponlo y el consejo dejará de estimar.", fontSize = 14.sp, color = P.muted)
             }
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         BrandButton("Poner importe", onSet, Modifier.fillMaxWidth())
     }
 }

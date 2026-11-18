@@ -55,8 +55,8 @@ object Notifier {
         try { NotificationManagerCompat.from(context).notify(alert.key.hashCode(), n) } catch (_: SecurityException) {}
     }
 
-    /** Tras un pago con tarjeta: comprueba los límites y avisa una vez al día por cada uno. */
-    suspend fun checkAfterPayment(context: Context) {
+    /** Tras un pago con tarjeta: comprueba los límites y avisa una vez al día por cada uno. Si no hay aviso, confirma el pago con lo que te queda hoy. */
+    suspend fun checkAfterPayment(context: Context, lastNote: String? = null, lastAmount: Double = 0.0, lastTag: com.caudal.finanzas.domain.SpendTag? = null) {
         val prefs = Prefs.get(context)
         val snap = LimitSnapshot.decode(prefs.settings.value.limitSnapshot) ?: return
         val dao = FinanceDatabase.get(context).dao()
@@ -65,8 +65,9 @@ object Notifier {
             currency = Currency.getInstance(prefs.settings.value.currency)
         }
         val today = LocalDate.now()
-        LimitAlerts.check(today, dao.allExpenses().first(), dao.bills().first(), savingIds, snap) { fmt.format(it) }
-            .filter { !prefs.wasAlerted(it.key, today) }
-            .forEach { show(context, it); prefs.markAlerted(it.key, today) }
+        val expenses = dao.allExpenses().first()
+        val bills = dao.bills().first()
+        val alerts = LimitAlerts.check(today, expenses, bills, savingIds, snap) { fmt.format(it) }.filter { !prefs.wasAlerted(it.key, today) }
+        alerts.forEach { show(context, it); prefs.markAlerted(it.key, today) }
     }
 }

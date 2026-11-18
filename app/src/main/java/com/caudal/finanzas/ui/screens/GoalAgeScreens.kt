@@ -95,12 +95,12 @@ private fun years(v: Double) = String.format(es, "%.1f", abs(v))
 fun GoalCard(g: GoalStatus?, onEdit: () -> Unit, onApplyPct: ((Double) -> Unit)?) {
     val money = LocalMoney.current
     if (g == null) {
-        MCard(onClick = onEdit, padding = 18.dp) {
+        MCard(onClick = onEdit, padding = 16.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconTile(Icons.Filled.Flag, SeriesColors[0], 44.dp)
-                Spacer(Modifier.width(14.dp))
+                IconTile(Icons.Filled.Flag, SeriesColors[0], 40.dp)
+                Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Ponte un objetivo", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    Text("Ponte un objetivo", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                     Text("Ej.: 10.000 € ahorrados en 5 años. Te digo cuánto apartar y cómo llegar.", fontSize = 14.sp, color = P.muted)
                 }
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = P.muted)
@@ -114,17 +114,17 @@ fun GoalCard(g: GoalStatus?, onEdit: () -> Unit, onApplyPct: ((Double) -> Unit)?
             IconTile(Icons.Filled.Flag, color, 40.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(g.goal.name, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                Text("${money.format(g.goal.target)} · para ${g.goal.deadline.format(DateTimeFormatter.ofPattern("MMMM 'de' yyyy", es))}", fontSize = 13.sp, color = P.muted)
+                Text(g.goal.name, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("${money.format(g.goal.target)} · para ${g.goal.deadline.format(DateTimeFormatter.ofPattern("MMMM 'de' yyyy", es))}", fontSize = 14.sp, color = P.muted)
             }
             Text("Editar", fontSize = 14.sp, color = P.gain, modifier = Modifier.clip(CircleShape).clickable(onClick = onEdit).padding(8.dp))
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(money.format(g.current), fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-            Text("  de ${money.format(g.goal.target)}", fontSize = 15.sp, color = P.muted, modifier = Modifier.padding(bottom = 4.dp))
+            Text("  de ${money.format(g.goal.target)}", fontSize = 16.sp, color = P.muted, modifier = Modifier.padding(bottom = 4.dp))
             Spacer(Modifier.weight(1f))
-            Text("${(g.progress * 100).toInt()} %", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = color)
+            Text("${(g.progress * 100).toInt()} %", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = color)
         }
         Spacer(Modifier.height(8.dp))
         // Hitos del 25, 50 y 75 %.
@@ -138,7 +138,7 @@ fun GoalCard(g: GoalStatus?, onEdit: () -> Unit, onApplyPct: ((Double) -> Unit)?
                 }
             }
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Row {
             GoalStat("Necesitas", money.format(g.requiredMonthly) + "/mes", Modifier.weight(1f))
             GoalStat("Tu ritmo", money.format(g.pace) + "/mes", Modifier.weight(1f))
@@ -149,20 +149,20 @@ fun GoalCard(g: GoalStatus?, onEdit: () -> Unit, onApplyPct: ((Double) -> Unit)?
             )
         }
         Spacer(Modifier.height(12.dp))
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(color.copy(alpha = 0.12f)).padding(12.dp)) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(color.copy(alpha = 0.12f)).padding(12.dp)) {
             Text(
                 when {
                     g.done -> "¡Objetivo cumplido!"
                     g.onTrack -> "Vas a tiempo" + (g.monthsAhead?.takeIf { it > 0 }?.let { ": $it meses de adelanto." } ?: ".")
                     else -> "Vas con retraso: a este ritmo tendrías ${money.format(g.projected)} en la fecha."
                 },
-                fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink,
+                fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink,
             )
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         Text("Consejos para llegar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
         g.tips.forEach { t ->
-            Row(Modifier.padding(top = 6.dp)) {
+            Row(Modifier.padding(top = 8.dp)) {
                 Icon(Icons.Filled.Lightbulb, null, Modifier.size(16.dp).padding(top = 2.dp), tint = Amber)
                 Spacer(Modifier.width(8.dp))
                 Text(t, fontSize = 14.sp, color = P.ink)
@@ -178,8 +178,8 @@ fun GoalCard(g: GoalStatus?, onEdit: () -> Unit, onApplyPct: ((Double) -> Unit)?
 @Composable
 private fun GoalStat(label: String, value: String, modifier: Modifier, color: Color = P.ink) {
     Column(modifier) {
-        Text(label, fontSize = 13.sp, color = P.muted)
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = color, maxLines = 1)
+        Text(label, fontSize = 14.sp, color = P.muted)
+        Text(value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = color, maxLines = 1)
     }
 }
 
@@ -198,7 +198,7 @@ fun GoalSheet(name: String, target: Double, deadline: LocalDate?, currency: Stri
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(1, 2, 3, 5, 10, 15).forEach { y ->
                 Box(
-                    Modifier.clip(CircleShape).background(if (y == years) P.brand else P.chip).clickable { years = y }.padding(horizontal = 14.dp, vertical = 9.dp),
+                    Modifier.clip(CircleShape).background(if (y == years) P.brand else P.chip).clickable { years = y }.padding(horizontal = 16.dp, vertical = 8.dp),
                 ) { Text("$y ${if (y == 1) "año" else "años"}", color = if (y == years) P.onBrand else P.ink, style = MaterialTheme.typography.labelLarge) }
             }
         }
@@ -253,7 +253,7 @@ fun AgeOrb(age: FinancialAge, size: androidx.compose.ui.unit.Dp = 260.dp) {
             Spacer(Modifier.height(4.dp))
             Text(
                 if (abs(age.difference) < 0.05) "igual que tu edad" else if (age.difference > 0) "${years(age.difference)} años más madura" else "${years(age.difference)} años por detrás",
-                fontSize = 15.sp, fontWeight = FontWeight.Medium, color = base,
+                fontSize = 16.sp, fontWeight = FontWeight.Medium, color = base,
             )
         }
     }
@@ -265,12 +265,12 @@ fun PaceOfAging(pace: Double) {
     Column(Modifier.fillMaxWidth()) {
         Text("RITMO DE MADURACIÓN", fontSize = 12.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
         Spacer(Modifier.height(4.dp))
-        Text(String.format(es, "%.1fx", pace), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = P.ink, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(String.format(es, "%.1fx", pace), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = P.ink, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         Row(Modifier.fillMaxWidth()) {
-            Text("Lento", fontSize = 13.sp, color = P.muted); Spacer(Modifier.weight(1f)); Text("Rápido", fontSize = 13.sp, color = P.muted)
+            Text("Lento", fontSize = 14.sp, color = P.muted); Spacer(Modifier.weight(1f)); Text("Rápido", fontSize = 14.sp, color = P.muted)
         }
         val ink = P.ink; val muted = P.muted
-        Canvas(Modifier.fillMaxWidth().height(34.dp)) {
+        Canvas(Modifier.fillMaxWidth().height(32.dp)) {
             val n = 60
             for (i in 0..n) {
                 val x = size.width * i / n
@@ -291,22 +291,42 @@ fun PaceOfAging(pace: Double) {
 /** Tarjeta pequeña para Inicio. */
 @Composable
 fun FinancialAgeMini(age: FinancialAge?, onClick: () -> Unit) {
-    MCard(onClick = onClick, padding = 18.dp, color = Color(0xFF0B0B0C)) {
+    MCard(onClick = onClick, padding = 16.dp, color = com.caudal.finanzas.ui.Vaca.Tinta) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("EDAD FINANCIERA", fontSize = 12.sp, letterSpacing = 1.5.sp, color = Color.White.copy(alpha = 0.7f))
                 if (age == null) {
-                    Text("¿Cuántos años tiene tu dinero?", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Text("¿Cuántos años tiene tu dinero?", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     Text("Descúbrelo según tus hábitos y tu ahorro", fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f))
                 } else {
-                    Text(String.format(es, "%.1f", age.age), fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(String.format(es, "%.1f", age.age), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text(
                         if (age.difference >= 0) "${years(age.difference)} años por delante de tu edad" else "${years(age.difference)} años por detrás de tu edad",
                         fontSize = 14.sp, color = if (age.difference >= 0) Color(0xFF34E08A) else Amber,
                     )
                 }
             }
-            if (age != null) AgeOrb(age, 92.dp) else Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color.White)
+            if (age != null) AgeOrb(age, 96.dp) else Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color.White)
+        }
+        if (age != null) {
+            var info by remember { mutableStateOf(false) }
+            val (status, good) = when {
+                age.difference >= 1 -> "Buena" to true
+                age.difference > -1 -> "Normal" to true
+                else -> "Mejorable" to false
+            }
+            Spacer(Modifier.height(16.dp))
+            StatusRow("Estado", status, good, onInfo = { info = true }, dark = true)
+            if (info) com.caudal.finanzas.ui.FormSheet("Tu edad financiera", { info = false }, primary = "Entendido", onPrimary = { info = false }) {
+                Text("Mide lo maduras que están tus finanzas frente a tu edad real. Más edad es mejor: significa que ahorras, tienes colchón y no dependes de deudas.", fontSize = 16.sp, color = P.ink)
+                Text("Buena: más de 1 año por delante. Normal: en torno a tu edad. Mejorable: más de 1 año por detrás.", fontSize = 14.sp, color = P.muted)
+                age.factors.forEach { f ->
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(f.name, Modifier.weight(1f), fontSize = 14.sp, color = P.ink)
+                        Text((if (f.years >= 0) "+" else "") + String.format(es, "%.1f", f.years) + " años", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = if (f.years >= 0) P.gain else P.loss)
+                    }
+                }
+            }
         }
     }
 }
@@ -325,7 +345,7 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
     // Siempre en oscuro, como la pantalla de WHOOP.
     LazyColumn(
         Modifier.fillMaxSize().background(Color(0xFF050505)),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -333,19 +353,19 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("SALUD FINANCIERA", fontSize = 13.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("SALUD FINANCIERA", fontSize = 14.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text("PRÓXIMA ACTUALIZACIÓN EN $nextUpdate ${if (nextUpdate == 1) "DÍA" else "DÍAS"}", fontSize = 11.sp, letterSpacing = 1.sp, color = Color.White.copy(alpha = 0.6f))
                 }
-                Spacer(Modifier.width(42.dp))
+                Spacer(Modifier.width(40.dp))
             }
         }
         if (age == null) {
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 40.dp)) {
-                    Text("Tu edad financiera", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Tu edad financiera", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Spacer(Modifier.height(8.dp))
-                    Text("Comparamos tus hábitos, tu ahorro y tu patrimonio con lo esperable para tu edad. Dinos en qué año naciste.", fontSize = 15.sp, color = Color.White.copy(alpha = 0.7f), textAlign = TextAlign.Center)
-                    Spacer(Modifier.height(20.dp))
+                    Text("Comparamos tus hábitos, tu ahorro y tu patrimonio con lo esperable para tu edad. Dinos en qué año naciste.", fontSize = 16.sp, color = Color.White.copy(alpha = 0.7f), textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(24.dp))
                     BrandButton("Poner mi año de nacimiento", { onEdit(Editing.AgeForm) })
                 }
             }
@@ -356,13 +376,13 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
             Text("Tu edad real: ${age.realAge} años", fontSize = 14.sp, color = Color.White.copy(alpha = 0.6f))
         }
         if (age.calibrating && !hideCalibrating) item {
-            Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color(0xFF0E2A3A)).padding(14.dp)) {
+            Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF0E2A3A)).padding(16.dp)) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Lightbulb, null, tint = Color(0xFF5AC8FA), modifier = Modifier.size(18.dp))
+                        Icon(Icons.Filled.Lightbulb, null, tint = Color(0xFF5AC8FA), modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Tu edad financiera se está calibrando", Modifier.weight(1f), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5AC8FA))
-                        Text("✕", color = Color.White.copy(alpha = 0.7f), modifier = Modifier.clip(CircleShape).clickable { hideCalibrating = true }.padding(6.dp))
+                        Text("Tu edad financiera se está calibrando", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF5AC8FA))
+                        Text("✕", color = Color.White.copy(alpha = 0.7f), modifier = Modifier.clip(CircleShape).clickable { hideCalibrating = true }.padding(8.dp))
                     }
                     Text("Con pocos meses de datos la cifra puede moverse mucho. Según Ahorra, vaca vaya conociendo tus meses, se estabilizará.", fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f))
                 }
@@ -379,15 +399,15 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
                 age.pace >= 0.8 -> "A ritmo normal" to "Tus finanzas maduran al mismo ritmo que tú. Ahorrar un poco más te haría ganar años."
                 else -> "Te estás quedando atrás" to "Gastas casi todo lo que entra: tus finanzas no ganan experiencia. Mira qué te resta años abajo."
             }
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0xFF16181A)).padding(16.dp)) {
-                Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF16181A)).padding(16.dp)) {
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(Modifier.height(4.dp))
                 Text(body, fontSize = 14.sp, color = Color.White.copy(alpha = 0.75f))
             }
         }
         item {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0xFF16181A)).padding(vertical = 6.dp)) {
-                Text("QUÉ TE SUMA Y QUÉ TE RESTA", fontSize = 12.sp, letterSpacing = 1.5.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.padding(16.dp, 10.dp))
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF16181A)).padding(vertical = 8.dp)) {
+                Text("QUÉ TE SUMA Y QUÉ TE RESTA", fontSize = 12.sp, letterSpacing = 1.5.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.padding(16.dp, 8.dp))
                 age.factors.forEachIndexed { i, f ->
                     if (i > 0) HorizontalDivider(color = Color.White.copy(alpha = 0.08f), modifier = Modifier.padding(horizontal = 16.dp))
                     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -399,14 +419,14 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
                         val c = when { f.years > 0.05 -> Color(0xFF34E08A); f.years < -0.05 -> Color(0xFFFF6B5A); else -> Color.White.copy(alpha = 0.6f) }
                         Text(
                             if (abs(f.years) < 0.05) "±0" else (if (f.years < 0) "−" else "+") + years(f.years) + " años",
-                            fontSize = 15.sp, fontWeight = FontWeight.Bold, color = c,
+                            fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c,
                         )
                     }
                 }
             }
         }
         item {
-            Text("Cambiar año de nacimiento", fontSize = 14.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.clip(CircleShape).clickable { onEdit(Editing.AgeForm) }.padding(10.dp))
+            Text("Cambiar año de nacimiento", fontSize = 14.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.clip(CircleShape).clickable { onEdit(Editing.AgeForm) }.padding(8.dp))
         }
     }
 }

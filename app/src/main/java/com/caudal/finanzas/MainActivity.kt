@@ -26,6 +26,8 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Vigilar el precio de tus cripto cada hora y avisar si se mueven mucho.
+        com.caudal.finanzas.payments.CryptoWatch.schedule(this)
         enableEdgeToEdge()
         hideStatusBar()
         setContent {

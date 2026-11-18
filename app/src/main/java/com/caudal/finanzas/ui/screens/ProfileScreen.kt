@@ -23,6 +23,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -98,7 +103,7 @@ fun AchievementBadge(a: Achievement, size: Dp = 64.dp) {
         if (!a.unlocked) {
             CircularProgressIndicator(
                 progress = { a.progress.toFloat() }, modifier = Modifier.size(size),
-                color = color, trackColor = P.chip, strokeWidth = 3.dp,
+                color = color, trackColor = P.chip, strokeWidth = 4.dp,
             )
         }
         Box(
@@ -131,10 +136,10 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
         .sortedByDescending { settings.achievements[it.id] ?: 0L }
     val locked = p.achievements.filter { !it.unlocked }.sortedByDescending { it.progress }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Perfil", Modifier.weight(1f), fontSize = 34.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp, color = P.ink)
+                Text("Perfil", Modifier.weight(1f), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, fontFamily = com.caudal.finanzas.ui.SerifDisplay, letterSpacing = (-1).sp, color = P.ink)
                 args.headerActions()
             }
         }
@@ -146,28 +151,53 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
                     Avatar(settings.userName, settings.avatarVersion, 112.dp, ring = SeriesColors[3],
                         modifier = Modifier.clickable { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) })
                     Box(
-                        Modifier.align(Alignment.BottomEnd).size(36.dp).clip(CircleShape).background(P.ink).border(3.dp, P.bg, CircleShape)
+                        Modifier.align(Alignment.BottomEnd).size(40.dp).clip(CircleShape).background(P.ink).border(4.dp, P.bg, CircleShape)
                             .clickable { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                         contentAlignment = Alignment.Center,
-                    ) { Icon(Icons.Filled.CameraAlt, "Cambiar foto", Modifier.size(18.dp), tint = P.bg) }
+                    ) { Icon(Icons.Filled.CameraAlt, "Cambiar foto", Modifier.size(16.dp), tint = P.bg) }
                 }
                 Spacer(Modifier.height(12.dp))
-                // Tu propio perfil lleva el tick azul de verificado.
-                com.caudal.finanzas.social.NameWithBadge(settings.userName.ifBlank { "Tu nombre" }, true, fontSize = 26)
+                // Tu propio perfil lleva el tick azul de verificado; el lápiz edita nombre y @.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    com.caudal.finanzas.social.NameWithBadge(settings.userName.ifBlank { "Tu nombre" }, true, fontSize = 30)
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        Modifier.size(40.dp).clip(CircleShape).background(P.gain.copy(alpha = 0.14f)).clickable { editing = true },
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(Icons.Filled.Edit, "Editar perfil", Modifier.size(16.dp), tint = P.gain) }
+                }
                 Text(
                     if (settings.handle.isNotBlank()) "@${settings.handle}" else "Elige tu @",
-                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp,
                     color = if (settings.handle.isNotBlank()) P.muted else SeriesColors[1],
                     modifier = Modifier.clickable { editing = true },
                 )
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.clip(CircleShape).background(SeriesColors[3].copy(alpha = 0.16f)).padding(horizontal = 14.dp, vertical = 7.dp)) {
-                        Text("Nivel ${level.number} · ${level.name}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = SeriesColors[3])
-                    }
-                    Box(
-                        Modifier.clip(CircleShape).background(P.chip).clickable { editing = true }.padding(horizontal = 14.dp, vertical = 7.dp),
-                    ) { Text("Editar perfil", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = P.ink) }
+            }
+        }
+
+        // ---------- Tarjeta de miembro ----------
+        item { MemberCard(level.number, level.name, level.to?.let { it - p.points }, p.data.firstMonth) }
+
+        // ---------- Racha ----------
+        item {
+            val len = java.time.YearMonth.now().lengthOfMonth()
+            val allowance = p.budget?.base?.takeIf { it > 0 }?.let { it / len } ?: p.safe.perDay
+            val streak = remember(p.data, allowance) { com.caudal.finanzas.domain.Streaks.of(p.data, allowance) }
+            StreakCard(streak)
+        }
+
+        // ---------- Tu actividad ----------
+        item {
+            val friends = remember(settings.debtsRaw, settings.tricountRaw) {
+                com.caudal.finanzas.domain.Debts.people(com.caudal.finanzas.domain.Debts.parse(settings.debtsRaw), com.caudal.finanzas.domain.Debts.parseTricount(settings.tricountRaw)).size
+            }
+            val months = remember(p.data) { p.data.expenses.map { java.time.YearMonth.from(java.time.LocalDate.ofEpochDay(it.epochDay)) }.distinct().size }
+            Column {
+                Text("TU ACTIVIDAD", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, color = P.muted, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ActivityTile(Icons.Filled.Groups, "$friends", "Amigos", Modifier.weight(1f))
+                    ActivityTile(Icons.Filled.EmojiEvents, "${unlocked.size}", "Logros", Modifier.weight(1f))
+                    ActivityTile(Icons.Filled.AutoAwesome, "$months", "Wrappeds", Modifier.weight(1f)) { args.onOpen(com.caudal.finanzas.ui.Overlay.WRAPPED) }
                 }
             }
         }
@@ -176,19 +206,19 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
         item {
             val mName = java.time.YearMonth.now().month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.forLanguageTag("es-ES"))
             Column(
-                Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(28.dp))
+                Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp))
                     .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF60A5FA), Color(0xFF2563EB), Color(0xFF0B1E4F))))
-                    .clickable { args.onOpen(com.caudal.finanzas.ui.Overlay.WRAPPED) }.padding(22.dp),
+                    .clickable { args.onOpen(com.caudal.finanzas.ui.Overlay.WRAPPED) }.padding(24.dp),
             ) {
-                Text("TU WRAPPED", fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.8f))
-                Text("Tu $mName, en tarjetas", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text("TU WRAPPED", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.8f))
+                Text("Tu $mName, en tarjetas", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 Text("Tus números del mes, al día, y una ficha para compartir →", fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
             }
         }
 
         // ---------- Estadísticas ----------
         item {
-            MCard(padding = 18.dp) {
+            MCard(padding = 16.dp) {
                 Row(Modifier.fillMaxWidth()) {
                     Stat("Patrimonio", money.format(p.wealth.total), Modifier.weight(1f))
                     Stat("Ahorrado", money.format(p.wealth.savings + p.wealth.invested), Modifier.weight(1f))
@@ -197,31 +227,13 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
             }
         }
 
-        item {
-            MintCard {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Column(Modifier.weight(1f)) {
-                        Overline("Tu nivel")
-                        Text("${level.number} · ${level.name}", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = P.ink)
-                    }
-                    Text("${p.points} pts", style = MaterialTheme.typography.titleMedium, color = SeriesColors[3])
-                }
-                Spacer(Modifier.height(12.dp))
-                ProgressLine(level.progress(p.points), SeriesColors[3], height = 10.dp)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    level.to?.let { "Te faltan ${it - p.points} pts para el siguiente nivel" } ?: "Has llegado al nivel máximo",
-                    style = MaterialTheme.typography.bodySmall, color = P.muted,
-                )
-            }
-        }
 
         // ---------- Logros ----------
         item { SectionTitle("Logros") }
         item {
             MCard(padding = 16.dp) {
                 (unlocked + locked).chunked(3).forEachIndexed { i, row ->
-                    if (i > 0) Spacer(Modifier.height(14.dp))
+                    if (i > 0) Spacer(Modifier.height(16.dp))
                     Row(Modifier.fillMaxWidth()) {
                         row.forEach { a ->
                             Column(
@@ -229,7 +241,7 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 AchievementBadge(a)
-                                Spacer(Modifier.height(6.dp))
+                                Spacer(Modifier.height(8.dp))
                                 Text(a.title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = if (a.unlocked) P.ink else P.muted, textAlign = TextAlign.Center, maxLines = 2)
                                 if (!a.unlocked) Text("${(a.progress * 100).toInt()} %", style = MaterialTheme.typography.labelSmall, color = P.muted)
                             }
@@ -297,5 +309,145 @@ private fun EditProfileSheet(settings: Settings, appVm: AppViewModel, onDone: ()
             style = MaterialTheme.typography.bodySmall, color = if (valid) P.muted else P.loss,
         )
         if (settings.avatarVersion != 0L) Text("\"Borrar\" quita tu foto de perfil.", style = MaterialTheme.typography.bodySmall, color = P.muted)
+    }
+}
+
+/** Tarjeta de miembro: tu nivel en Ahorra, vaca, desde cuándo ahorras y cuánto falta para el siguiente. */
+@Composable
+private fun MemberCard(level: Int, name: String, missing: Int?, since: java.time.YearMonth?) {
+    Box(
+        Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp))
+            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF1E4D33), Color(0xFF3F8A5F)))),
+    ) {
+        Box(Modifier.align(Alignment.CenterEnd).padding(end = 0.dp).size(260.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.06f)))
+        androidx.compose.foundation.Image(
+            androidx.compose.ui.res.painterResource(com.caudal.finanzas.R.drawable.ic_launcher_foreground), null,
+            Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 8.dp).size(128.dp),
+        )
+        Column(Modifier.padding(24.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).background(Color(0xFF0B2E1D)), contentAlignment = Alignment.Center) {
+                    androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(com.caudal.finanzas.R.drawable.ic_launcher_foreground), null, Modifier.size(48.dp))
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Ahorra, vaca", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("MIEMBRO", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 3.sp, color = Color.White.copy(alpha = 0.75f))
+                }
+                Row(
+                    Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF4ADE80)))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Activo", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.WorkspacePremium, null, Modifier.size(32.dp), tint = Color(0xFFB7E4C7))
+                Spacer(Modifier.width(8.dp))
+                // A la derecha va la vaca: el texto deja su hueco.
+                Column(Modifier.padding(end = 112.dp)) {
+                    Text("NIVEL $level", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                    Text(name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.9f))
+                    since?.let { Text("Ahorrando desde " + String.format("%02d/%d", it.monthValue, it.year), fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f)) }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("SIGUIENTE NIVEL", fontSize = 12.sp, letterSpacing = 3.sp, color = Color.White.copy(alpha = 0.7f))
+            Text(missing?.let { "Faltan $it pts" } ?: "Nivel máximo", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        }
+    }
+}
+
+/** Racha: días seguidos gastando lo que te toca o menos (sin contar alquiler ni fijos). */
+@Composable
+private fun StreakCard(s: com.caudal.finanzas.domain.SpendStreak) {
+    val money = LocalMoney.current
+    Box(
+        Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp))
+            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFEFA25C), Color(0xFFE0703A)))),
+    ) {
+        Box(Modifier.align(Alignment.TopEnd).size(220.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.08f)))
+        Column(Modifier.padding(24.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f)) {
+                    Text("RACHA ACTUAL", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.85f))
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Icon(Icons.Filled.LocalFireDepartment, null, Modifier.size(48.dp).padding(bottom = 8.dp), tint = Color.White)
+                        Text("${s.current}", fontSize = 72.sp, lineHeight = 72.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                        Text(if (s.current == 1) " día" else " días", fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = Color.White, modifier = Modifier.padding(bottom = 12.dp))
+                    }
+                }
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                        Text("Récord ${s.record}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    }
+                    Row(
+                        Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.Eco, null, Modifier.size(16.dp), tint = Color.White)
+                        Text(" ×${s.noSpendThisMonth}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                val names = listOf("L", "M", "X", "J", "V", "S", "D")
+                s.week.forEachIndexed { i, (_, m) ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            Modifier.size(40.dp).clip(CircleShape)
+                                .background(when (m) { com.caudal.finanzas.domain.DayMark.FUTURE -> Color.Transparent; com.caudal.finanzas.domain.DayMark.OVER -> Color.White.copy(alpha = 0.25f); else -> Color.White })
+                                .border(2.dp, Color.White.copy(alpha = if (m == com.caudal.finanzas.domain.DayMark.FUTURE) 0.45f else 0f), CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            when (m) {
+                                com.caudal.finanzas.domain.DayMark.OK -> Icon(Icons.Filled.Check, null, Modifier.size(24.dp), tint = Color(0xFFE0703A))
+                                com.caudal.finanzas.domain.DayMark.NO_SPEND -> Icon(Icons.Filled.Eco, null, Modifier.size(24.dp), tint = Color(0xFFE0703A))
+                                com.caudal.finanzas.domain.DayMark.OVER -> Icon(Icons.Filled.Close, null, Modifier.size(16.dp), tint = Color.White)
+                                else -> {}
+                            }
+                        }
+                        Text(names[i], fontSize = 14.sp, color = Color.White, modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                when (s.today) {
+                    com.caudal.finanzas.domain.DayMark.NO_SPEND -> "Hoy: día sin gastos (por ahora)"
+                    com.caudal.finanzas.domain.DayMark.OK -> "Hoy: ${money.format(s.spentToday)} de ${money.format(s.allowance)}, dentro de lo tuyo"
+                    else -> "Hoy te has pasado: la racha vuelve a empezar mañana"
+                },
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White,
+            )
+            s.nextGoal?.let { g ->
+                Text(
+                    "${g - s.current} ${if (g - s.current == 1) "día" else "días"} para tu racha de ${if (g == 30) "1 mes" else "$g días"}.",
+                    fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            Text("Cuenta los días que gastas lo que te toca o menos; el alquiler y los fijos no cuentan.", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f), modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+}
+
+@Composable
+private fun ActivityTile(icon: ImageVector, value: String, label: String, modifier: Modifier, onClick: (() -> Unit)? = null) {
+    Column(
+        modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp)).background(P.card)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(40.dp).clip(CircleShape).background(P.gain.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
+                Icon(icon, null, Modifier.size(24.dp), tint = P.gain)
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(value, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = P.ink)
+        }
+        Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink, modifier = Modifier.padding(top = 8.dp))
     }
 }

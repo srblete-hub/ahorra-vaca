@@ -453,6 +453,16 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     init {
+        // Mismo importe apuntado dos veces en menos de un minuto: se deja solo uno.
+        viewModelScope.launch {
+            allExpenses.collect { list ->
+                val extra = com.caudal.finanzas.domain.Duplicates.extras(list)
+                if (extra.isNotEmpty()) {
+                    extra.forEach { dao.removeExpense(it) }
+                    _messages.emit(if (extra.size == 1) "He quitado un gasto repetido" else "He quitado ${extra.size} gastos repetidos")
+                }
+            }
+        }
         viewModelScope.launch { applyMonthlyInterest() }
         viewModelScope.launch { markPaidSalary() }
     }
@@ -497,6 +507,17 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
         if (cur != null) loadHistory(symbol, isCrypto, id, 1, cur)
         if (candles) loadOhlc(symbol, isCrypto, id, days, cur) else loadHistory(symbol, isCrypto, id, days, cur)
         if (isCrypto) { loadStats(id, cur); refreshCrypto(quiet = true) } else refreshStocks()
+    }
+
+    // ---------- Pepe te recomienda y ahorro ----------
+    fun hidePepeTip() = prefs.hidePepeTip(com.caudal.finanzas.domain.PepeSuggest.weekKey(java.time.LocalDate.now()))
+    fun setSavingsLocked(v: Boolean) = prefs.setSavingsLocked(v)
+    fun setWeeklyTip(v: Boolean) = prefs.setWeeklyTip(v)
+    fun toggleReviewedSub(key: String) = prefs.toggleReviewedSub(key)
+    /** Apunta un traspaso entre tus cuentas (lo que propone Pepe). */
+    fun moveMoney(fromId: Long, toId: Long, amount: Double, note: String) = viewModelScope.launch {
+        dao.saveTransfer(com.caudal.finanzas.data.Transfer(fromAccountId = fromId, toAccountId = toId, amount = amount, note = note, epochDay = java.time.LocalDate.now().toEpochDay()))
+        _messages.emit("Apuntado: ${"%.0f".format(amount)} € al ahorro")
     }
 
     // ---------- Noticias de hoy (RSS gratis) ----------

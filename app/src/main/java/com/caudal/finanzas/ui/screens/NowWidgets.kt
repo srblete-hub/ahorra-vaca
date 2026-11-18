@@ -90,12 +90,12 @@ fun NowCard(w: Wealth, change: Double?) {
                 )
             }
         }
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(16.dp))
         StackedBar(
             listOf(Slice("Disponible", w.available, AvailableColor), Slice("Ahorro", w.savings, SavingsColor), Slice("Invertido", w.invested, InvestedColor)),
-            height = 10.dp,
+            height = 8.dp,
         )
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Row(Modifier.fillMaxWidth()) {
             listOf(
                 Triple("Disponible", w.available, AvailableColor),
@@ -104,7 +104,7 @@ fun NowCard(w: Wealth, change: Double?) {
             ).forEach { (label, value, color) ->
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Dot(color); Spacer(Modifier.width(6.dp))
+                        Dot(color); Spacer(Modifier.width(8.dp))
                         Text(label, style = MaterialTheme.typography.labelMedium, color = P.muted)
                     }
                     Text(money.format(value), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.ExtraBold, color = P.ink, maxLines = 1)
@@ -124,13 +124,13 @@ fun NowCard(w: Wealth, change: Double?) {
 fun SetupCard(onEdit: (Editing) -> Unit, onStepByStep: () -> Unit) {
     MintCard {
         Overline("Empieza aquí")
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text("¿Cuánto tienes ahora mismo?", style = MaterialTheme.typography.headlineSmall, color = P.ink)
         Text(
             "Pon el saldo que tiene hoy cada sitio donde guardas dinero. Lo que arrastras de meses anteriores ya va incluido ahí.",
             style = MaterialTheme.typography.bodyMedium, color = P.muted,
         )
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         SetupButton("Cuenta del banco", "Nómina, cuenta corriente…", Icons.Filled.AccountBalance, AvailableColor) {
             onEdit(Editing.AccountForm(Account(name = "", type = AccountType.BANK, balance = 0.0)))
         }
@@ -147,7 +147,7 @@ fun SetupCard(onEdit: (Editing) -> Unit, onStepByStep: () -> Unit) {
 @Composable
 private fun SetupButton(title: String, sub: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(P.card).clickable(onClick = onClick).padding(12.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.card).clickable(onClick = onClick).padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconTile(icon, color)
@@ -174,7 +174,7 @@ fun MoneyWorkingSection(accounts: List<Account>, available: Double, suggestedMon
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         earning.forEach { a ->
             val year = a.balance * a.interestRate / 100
-            MCard(onClick = { onEdit(Editing.AccountForm(a)) }, padding = 18.dp) {
+            MCard(onClick = { onEdit(Editing.AccountForm(a)) }, padding = 16.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconTile(Icons.Filled.Savings, SavingsColor)
                     Spacer(Modifier.width(12.dp))
@@ -225,7 +225,7 @@ fun MoneyWorkingSection(accounts: List<Account>, available: Double, suggestedMon
             }
 
             if (available > 300) {
-                MCard(padding = 18.dp) {
+                MCard(padding = 16.dp) {
                     Text("Dinero sin dar intereses", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -239,7 +239,7 @@ fun MoneyWorkingSection(accounts: List<Account>, available: Double, suggestedMon
 
         if (earning.isEmpty()) {
             val a = savingNoRate.first()
-            MCard(onClick = { onEdit(Editing.AccountForm(a)) }, padding = 18.dp) {
+            MCard(onClick = { onEdit(Editing.AccountForm(a)) }, padding = 16.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconTile(Icons.Filled.Lightbulb, P.debt)
                     Spacer(Modifier.width(12.dp))
@@ -270,9 +270,9 @@ fun MonthFlowCard(received: Double, spent: Double, spendLimit: Double, estimated
                 Text("Límite de gasto", Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, color = P.ink)
                 Text("${money.format(spent)} de ${money.format(spendLimit)}", style = MaterialTheme.typography.labelLarge, color = if (spent > spendLimit) P.loss else P.muted)
             }
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             ProgressLine(spent / spendLimit, AvailableColor, height = 8.dp)
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 "Sale de tu reparto en Presupuesto" + if (estimated) ", con lo variable estimado por tu media." else ".",
                 style = MaterialTheme.typography.labelSmall, color = P.muted,

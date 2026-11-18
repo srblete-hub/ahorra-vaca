@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -68,6 +69,7 @@ fun SpendTag.color(): Color = when (this) {
     SpendTag.SHOPPING -> Color(0xFFBF5AF2)
     SpendTag.HEALTH -> Color(0xFF30B0C7)
     SpendTag.LEISURE -> Color(0xFFFFD60A)
+    SpendTag.SPORT -> Color(0xFF30B0C7)
     SpendTag.TRAVEL -> Color(0xFF64D2FF)
     SpendTag.GIFTS -> Color(0xFFFF6B3D)
     SpendTag.EDUCATION -> Color(0xFFAC8E68)
@@ -84,6 +86,7 @@ fun SpendTag.icon(): ImageVector = when (this) {
     SpendTag.SHOPPING -> Icons.Filled.ShoppingBag
     SpendTag.HEALTH -> Icons.Filled.FavoriteBorder
     SpendTag.LEISURE -> Icons.Filled.SportsEsports
+    SpendTag.SPORT -> Icons.Filled.SportsSoccer
     SpendTag.TRAVEL -> Icons.Filled.FlightTakeoff
     SpendTag.GIFTS -> Icons.Filled.Redeem
     SpendTag.EDUCATION -> Icons.Filled.School
@@ -93,7 +96,7 @@ fun SpendTag.icon(): ImageVector = when (this) {
 
 /** Anillo con un trozo por tipo de gasto y el total en el centro. */
 @Composable
-fun Donut(slices: List<Slice>, size: Dp = 170.dp, stroke: Dp = 22.dp, center: @Composable () -> Unit = {}) {
+fun Donut(slices: List<Slice>, size: Dp = 170.dp, stroke: Dp = 24.dp, center: @Composable () -> Unit = {}) {
     val track = P.chip
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {
@@ -126,7 +129,7 @@ fun TagChip(tag: SpendTag, selected: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(tag.icon(), null, Modifier.size(16.dp), tint = if (selected) Color.White else tag.color())
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(8.dp))
         Text(tag.label, style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else p.ink)
     }
 }
@@ -162,14 +165,14 @@ fun BankPlanCard(
             }
             RoundIconButton(Icons.Filled.Tune, "Cambiar reparto", onClick = onSettings)
         }
-        Spacer(Modifier.height(14.dp))
-        PlanLine({ AccountLogo(plan.main.name, 30.dp) }, "En ${plan.main.name}", money.format(plan.main.balance), p.ink, bold = true)
+        Spacer(Modifier.height(16.dp))
+        PlanLine({ AccountLogo(plan.main.name, 32.dp) }, "En ${plan.main.name}", money.format(plan.main.balance), p.ink, bold = true)
         plan.pending.forEach { (name, amount) ->
-            PlanLine({ Box(Modifier.size(30.dp), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Home, null, Modifier.size(18.dp), tint = p.loss) } }, name, "−" + money.format(amount), p.loss)
+            PlanLine({ Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Home, null, Modifier.size(16.dp), tint = p.loss) } }, name, "−" + money.format(amount), p.loss)
         }
         plan.incoming.forEach { (name, amount, day) ->
             PlanLine(
-                { Box(Modifier.size(30.dp), contentAlignment = Alignment.Center) { Icon(Icons.Filled.SwapHoriz, null, Modifier.size(18.dp), tint = p.gain) } },
+                { Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) { Icon(Icons.Filled.SwapHoriz, null, Modifier.size(16.dp), tint = p.gain) } },
                 "$name · llega el ${day.format(dayFmt)}", "+" + money.format(amount), p.gain,
             )
         }
@@ -184,7 +187,7 @@ fun BankPlanCard(
         PlanLine(null, "Dinero del mes", money.format(plan.monthMoney), p.ink, bold = true)
         Text(
             "Sueles gastar ${money.format(plan.dailyHabit)} al día: unos ${money.format(plan.expectedSpend)} hasta fin de mes.",
-            fontSize = 13.sp, color = p.muted,
+            fontSize = 14.sp, color = p.muted,
         )
         Spacer(Modifier.height(12.dp))
 
@@ -194,59 +197,59 @@ fun BankPlanCard(
                 fontSize = 14.sp, color = p.muted,
             )
         } else {
-            Box(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(18.dp)).background(SeriesColors[1].copy(alpha = 0.10f)).padding(14.dp)) {
+            Box(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).background(SeriesColors[1].copy(alpha = 0.10f)).padding(16.dp)) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AccountLogo(target.name, 30.dp)
-                        Spacer(Modifier.width(10.dp))
+                        AccountLogo(target.name, 32.dp)
+                        Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
                             Text("A ${target.name} este mes", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = p.ink)
-                            if (target.interestRate > 0) Text("${pct(target.interestRate)} TAE", fontSize = 13.sp, color = p.gain)
+                            if (target.interestRate > 0) Text("${pct(target.interestRate)} TAE", fontSize = 14.sp, color = p.gain)
                         }
                         Text(money.format(plan.saveGoal), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = SeriesColors[1])
                     }
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         if (plan.saveGoal > 0) "Lo que sobra después de tu gasto habitual y de dejar ${money.format(plan.buffer)} para llegar sobrado a fin de mes."
                         else "Este mes no sobra: con tu gasto habitual y ${money.format(plan.buffer)} de margen no queda nada para ahorrar.",
-                        fontSize = 13.sp, color = p.muted,
+                        fontSize = 14.sp, color = p.muted,
                     )
-                    if (plan.movedThisMonth > 0) Text("Ya has movido ${money.format(plan.movedThisMonth)} este mes.", fontSize = 13.sp, color = p.gain, fontWeight = FontWeight.Medium)
+                    if (plan.movedThisMonth > 0) Text("Ya has movido ${money.format(plan.movedThisMonth)} este mes.", fontSize = 14.sp, color = p.gain, fontWeight = FontWeight.Medium)
                     if (plan.moveNow > 0.5) {
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(8.dp))
                         BrandButton("Mover ahora ${money.format(plan.moveNow)}", onMove, Modifier.fillMaxWidth(), icon = Icons.Filled.SwapHoriz)
                     }
                     if (plan.moveLater > 0.5) {
                         Text(
                             "Y ${money.format(plan.moveLater)} cuando te llegue ${plan.incoming.firstOrNull()?.first?.lowercase() ?: "el cobro"}: no lo muevas antes.",
-                            fontSize = 13.sp, color = p.ink, modifier = Modifier.padding(top = 8.dp),
+                            fontSize = 14.sp, color = p.ink, modifier = Modifier.padding(top = 8.dp),
                         )
                     }
                     if (target.interestRate > 0 && plan.saveGoal > 0) {
                         val year = InterestMath.project(target.balance, target.interestRate, plan.saveGoal, 12)
                         Text(
                             "Si lo repites cada mes, en un año tendrás ${money.format(year.finalBalance)} en ${target.name} (${money.format(year.interest)} de intereses).",
-                            fontSize = 13.sp, color = p.muted, modifier = Modifier.padding(top = 8.dp),
+                            fontSize = 14.sp, color = p.muted, modifier = Modifier.padding(top = 8.dp),
                         )
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Text("Llegar a fin de mes con", fontSize = 14.sp, color = p.muted)
-        Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(50.0, 100.0, 150.0, 200.0).forEach { b ->
                 val sel = kotlin.math.abs(plan.buffer - b) < 0.5
                 Box(
-                    Modifier.clip(CircleShape).background(if (sel) p.brand else p.chip).clickable { onBuffer(b) }.padding(horizontal = 14.dp, vertical = 8.dp),
+                    Modifier.clip(CircleShape).background(if (sel) p.brand else p.chip).clickable { onBuffer(b) }.padding(horizontal = 16.dp, vertical = 8.dp),
                 ) { Text("+${b.toInt()} €", color = if (sel) p.onBrand else p.ink, fontSize = 14.sp, fontWeight = FontWeight.Medium) }
             }
         }
 
         Spacer(Modifier.height(16.dp))
         Text("Puedes gastar", fontSize = 16.sp, color = p.muted)
-        AnimatedAmount(plan.spendable.coerceAtLeast(0.0), 38.sp, if (plan.spendable > 0) p.gain else p.loss)
+        AnimatedAmount(plan.spendable.coerceAtLeast(0.0), 40.sp, if (plan.spendable > 0) p.gain else p.loss)
         Text(
             if (plan.spendable <= 0) "No llegas: lo que tienes no cubre los fijos y el margen de fin de mes."
             else "≈ ${money.format(plan.perDay)} al día · llegas a fin de mes con +${money.format(plan.buffer)}",
@@ -258,7 +261,7 @@ fun BankPlanCard(
 @Composable
 private fun PlanLine(leading: (@Composable () -> Unit)?, label: String, value: String, color: Color, bold: Boolean = false) {
     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (leading != null) { leading(); Spacer(Modifier.width(10.dp)) }
+        if (leading != null) { leading(); Spacer(Modifier.width(8.dp)) }
         Text(label, Modifier.weight(1f), fontSize = 16.sp, color = P.ink, fontWeight = if (bold) FontWeight.Medium else FontWeight.Normal)
         Text(value, fontSize = 16.sp, color = color, fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Medium)
     }

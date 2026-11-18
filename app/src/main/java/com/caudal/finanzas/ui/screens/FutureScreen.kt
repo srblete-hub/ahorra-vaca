@@ -113,7 +113,7 @@ fun BillsList(bills: List<RecurringBill>, expenses: List<Expense>, categories: L
                             Text(" Pagado", style = MaterialTheme.typography.labelSmall, color = P.gain)
                         }
                         else -> Box(
-                            Modifier.padding(top = 2.dp).clip(CircleShape).background(P.brand).clickable { onPay(b) }.padding(horizontal = 10.dp, vertical = 4.dp),
+                            Modifier.padding(top = 2.dp).clip(CircleShape).background(P.brand).clickable { onPay(b) }.padding(horizontal = 8.dp, vertical = 4.dp),
                         ) { Text("Pagar", style = MaterialTheme.typography.labelSmall, color = P.onBrand, fontWeight = FontWeight.Bold) }
                     }
                 }
@@ -156,13 +156,13 @@ fun FutureScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: () -> 
 
     LazyColumn(
         Modifier.fillMaxSize().background(P.bg),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text("Tu futuro", style = MaterialTheme.typography.headlineMedium, color = P.ink)
                     Text("Cuánto tendrás disponible cada día", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -200,7 +200,7 @@ fun FutureScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: () -> 
                 )
                 Spacer(Modifier.height(12.dp))
                 LineChart(points.map { it.second }, if (negative != null) P.loss else P.gain, Modifier.fillMaxWidth().height(130.dp))
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
                     "Cuenta tus cobros, tus gastos fijos y tu gasto habitual de ${money.format(p.forecast.dailySpend)} al día (media de los últimos 60 días). Solo el dinero disponible: el ahorro no se toca.",
                     style = MaterialTheme.typography.bodySmall, color = P.muted,
@@ -228,7 +228,7 @@ fun FutureScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: () -> 
                     BillsList(bills, expenses, categories, accounts, onEdit, vm::payBill)
                     Text(
                         "Total: ${money.format(bills.sumOf { Bills.monthly(it) })} al mes (los anuales, repartidos)",
-                        style = MaterialTheme.typography.bodySmall, color = P.muted, modifier = Modifier.padding(start = 6.dp),
+                        style = MaterialTheme.typography.bodySmall, color = P.muted, modifier = Modifier.padding(start = 8.dp),
                     )
                 }
             }

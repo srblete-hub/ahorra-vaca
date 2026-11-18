@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pepe, el pastor, con los colores de la marca: sombrero tinta, chaqueta prado, bufanda ubre. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Fondo -->
+    <path android:fillColor="#DCEBD3" android:pathData="M48,48m-46,0a46,46 0,1 1,92 0a46,46 0,1 1,-92 0" />
+    <!-- Cayado -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#17150F"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M78,90 L78,30 C78,20 66,20 66,30" />
+    <!-- Cuerpo / chaqueta -->
+    <path android:fillColor="#2E6B3F" android:pathData="M18,96 C18,74 30,66 48,66 C66,66 78,74 78,96 Z" />
+    <!-- Bufanda -->
+    <path android:fillColor="#F2A9B6" android:pathData="M34,66 C40,72 56,72 62,66 L62,72 C56,77 40,77 34,72 Z" />
+    <!-- Cara -->
+    <path android:fillColor="#F2C9A0" android:pathData="M48,46m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0" />
+    <!-- Barba -->
+    <path android:fillColor="#FFFDF8" android:pathData="M32,48 C32,64 40,70 48,70 C56,70 64,64 64,48 C60,54 56,52 48,52 C40,52 36,54 32,48 Z" />
+    <!-- Bigote -->
+    <path android:fillColor="#EDE6D6" android:pathData="M40,52 C44,48 52,48 56,52 C52,54 44,54 40,52 Z" />
+    <!-- Ojos -->
+    <path android:fillColor="#2B2B2B" android:pathData="M42,43m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+    <path android:fillColor="#2B2B2B" android:pathData="M54,43m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+    <!-- Mejillas -->
+    <path android:fillColor="#E8A38A" android:pathData="M38,48m-3,0a3,2 0,1 1,6 0a3,2 0,1 1,-6 0" />
+    <path android:fillColor="#E8A38A" android:pathData="M58,48m-3,0a3,2 0,1 1,6 0a3,2 0,1 1,-6 0" />
+    <!-- Sombrero: ala y copa -->
+    <path android:fillColor="#17150F" android:pathData="M22,34 C22,30 74,30 74,34 C74,38 22,38 22,34 Z" />
+    <path android:fillColor="#17150F" android:pathData="M34,33 C34,20 62,20 62,33 Z" />
+    <path android:fillColor="#F2A9B6" android:pathData="M34,31 L62,31 L62,33 L34,33 Z" />
+</vector>

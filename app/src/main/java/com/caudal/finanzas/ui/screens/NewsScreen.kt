@@ -99,7 +99,7 @@ fun NewsScreen(vm: FinanceViewModel, onBack: () -> Unit) {
         when {
             items == null && loading -> Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = Color.White)
-                Text("Buscando las noticias de hoy…", color = Color.White.copy(alpha = 0.8f), modifier = Modifier.padding(top = 14.dp))
+                Text("Buscando las noticias de hoy…", color = Color.White.copy(alpha = 0.8f), modifier = Modifier.padding(top = 16.dp))
             }
             items == null -> EndPage("No he podido cargar noticias", "Comprueba la conexión y vuelve a intentarlo.")
             items.isEmpty() -> EndPage("Te has quedado sin noticias", if (all.isNotEmpty()) "Ya has visto todas las de hoy. Vuelve más tarde." else "Hoy aún no hay noticias.")
@@ -128,9 +128,9 @@ fun NewsScreen(vm: FinanceViewModel, onBack: () -> Unit) {
                 }
             }
         }
-        Row(Modifier.fillMaxWidth().padding(top = top + 10.dp, start = 18.dp, end = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Noticias de hoy", Modifier.weight(1f), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Box(Modifier.size(38.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.16f)).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
+        Row(Modifier.fillMaxWidth().padding(top = top + 8.dp, start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Noticias de hoy", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Box(Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.16f)).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
                 Icon(Icons.Filled.Close, "Cerrar", tint = Color.White)
             }
         }
@@ -156,27 +156,27 @@ private fun NewsPage(
             }
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent, colors[0]), startY = 0f)))
         }
-        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(start = 22.dp, end = 96.dp, bottom = bottom + 40.dp)) {
+        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(start = 24.dp, end = 96.dp, bottom = bottom + 40.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.16f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Box(Modifier.clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.16f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
                     Text(n.topic.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color.White)
                 }
                 if (impact?.relevant == true) {
                     Spacer(Modifier.width(8.dp))
-                    Box(Modifier.clip(RoundedCornerShape(50)).background(Color(0xFFFFD60A)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    Box(Modifier.clip(RoundedCornerShape(50)).background(Color(0xFFFFD60A)).padding(horizontal = 8.dp, vertical = 4.dp)) {
                         Text("TE AFECTA", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color.Black)
                     }
                 }
             }
-            Text(n.title, fontSize = 27.sp, lineHeight = 33.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(top = 14.dp))
-            if (n.summary.isNotBlank()) Text(n.summary, fontSize = 16.sp, lineHeight = 22.sp, color = Color.White.copy(alpha = 0.8f), maxLines = 5, modifier = Modifier.padding(top = 10.dp))
-            Text("${n.source} · ${ago(n.epochMs)}", fontSize = 14.sp, color = Color.White.copy(alpha = 0.65f), modifier = Modifier.padding(top = 14.dp))
-            Text("Desliza hacia arriba para la siguiente", fontSize = 12.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.padding(top = 18.dp))
+            Text(n.title, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(top = 16.dp))
+            if (n.summary.isNotBlank()) Text(n.summary, fontSize = 16.sp, lineHeight = 24.sp, color = Color.White.copy(alpha = 0.8f), maxLines = 5, modifier = Modifier.padding(top = 8.dp))
+            Text("${n.source} · ${ago(n.epochMs)}", fontSize = 14.sp, color = Color.White.copy(alpha = 0.65f), modifier = Modifier.padding(top = 16.dp))
+            Text("Desliza hacia arriba para la siguiente", fontSize = 12.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.padding(top = 16.dp))
         }
         // Botones a la derecha, donde TikTok pone el "me gusta".
         Column(
-            Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = bottom + 60.dp),
-            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp),
+            Modifier.align(Alignment.BottomEnd).padding(end = 12.dp, bottom = bottom + 56.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             SideButton(Icons.Filled.Person, "¿Cómo me\nafecta?", highlight = impact?.relevant == true, onClick = onImpact)
             SideButton(Icons.AutoMirrored.Filled.OpenInNew, "Leer", onClick = onOpen)
@@ -190,9 +190,9 @@ private fun NewsPage(
 private fun CoinGraphic(c: com.caudal.finanzas.data.MarketCoin, top: androidx.compose.ui.unit.Dp) {
     val up = (c.change24h ?: 0.0) >= 0
     val line = if (up) Color(0xFF4ADE80) else Color(0xFFFF6B6B)
-    Column(Modifier.fillMaxSize().padding(top = top + 70.dp, start = 22.dp, end = 22.dp, bottom = 20.dp)) {
+    Column(Modifier.fillMaxSize().padding(top = top + 72.dp, start = 24.dp, end = 24.dp, bottom = 24.dp)) {
         Text("${c.name} · ${c.symbol}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.85f))
-        Text(usd(c.price) + (c.change24h?.let { "  " + (if (it >= 0) "▲ " else "▼ ") + String.format(java.util.Locale.forLanguageTag("es-ES"), "%.1f %%", kotlin.math.abs(it)) } ?: ""), fontSize = 30.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(usd(c.price) + (c.change24h?.let { "  " + (if (it >= 0) "▲ " else "▼ ") + String.format(java.util.Locale.forLanguageTag("es-ES"), "%.1f %%", kotlin.math.abs(it)) } ?: ""), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
         androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().weight(1f).padding(top = 12.dp)) {
             val v = c.spark; val min = v.min(); val max = v.max(); val r = (max - min).takeIf { it > 0 } ?: 1.0
             fun y(x: Double) = (size.height * (1 - (x - min) / r)).toFloat()
@@ -250,9 +250,9 @@ private fun netImage(url: String?): androidx.compose.ui.graphics.ImageBitmap? {
 private fun SideButton(icon: ImageVector, label: String, highlight: Boolean = false, onClick: () -> Unit) {
     Column(Modifier.clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            Modifier.size(54.dp).clip(CircleShape).background(if (highlight) Color(0xFFFFD60A) else Color.White.copy(alpha = 0.18f)),
+            Modifier.size(56.dp).clip(CircleShape).background(if (highlight) Color(0xFFFFD60A) else Color.White.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
-        ) { Icon(icon, null, Modifier.size(28.dp), tint = if (highlight) Color.Black else Color.White) }
+        ) { Icon(icon, null, Modifier.size(32.dp), tint = if (highlight) Color.Black else Color.White) }
         Text(label, fontSize = 12.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp))
     }
 }
@@ -261,7 +261,7 @@ private fun SideButton(icon: ImageVector, label: String, highlight: Boolean = fa
 private fun EndPage(title: String, sub: String) {
     Column(Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Text("🐄", fontSize = 56.sp)
-        Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 14.dp))
+        Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 16.dp))
         Text(sub, fontSize = 16.sp, color = Color.White.copy(alpha = 0.7f), textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp))
     }
 }
@@ -271,14 +271,14 @@ private fun EndPage(title: String, sub: String) {
 private fun ImpactSheet(n: NewsItem, i: NewsImpact, onDismiss: () -> Unit) {
     FormSheet("¿Cómo puede afectarte?", onDismiss, primary = "Entendido", onPrimary = onDismiss) {
         Text(n.title, fontSize = 14.sp, color = P.muted, maxLines = 3)
-        Text(i.headline, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = if (i.relevant) P.ink else P.muted)
+        Text(i.headline, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = if (i.relevant) P.ink else P.muted)
         if (i.tags.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            i.tags.forEach { t -> Box(Modifier.clip(RoundedCornerShape(50)).background(P.chip).padding(horizontal = 10.dp, vertical = 5.dp)) { Text(t, fontSize = 13.sp, color = P.ink) } }
+            i.tags.forEach { t -> Box(Modifier.clip(RoundedCornerShape(50)).background(P.chip).padding(horizontal = 8.dp, vertical = 4.dp)) { Text(t, fontSize = 14.sp, color = P.ink) } }
         }
         i.lines.forEach { l ->
             Row {
                 Text("•", fontSize = 16.sp, color = P.gain, modifier = Modifier.width(16.dp))
-                Text(l, fontSize = 16.sp, lineHeight = 22.sp, color = P.ink)
+                Text(l, fontSize = 16.sp, lineHeight = 24.sp, color = P.ink)
             }
         }
         Spacer(Modifier.height(2.dp))

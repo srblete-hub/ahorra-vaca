@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
@@ -180,10 +181,10 @@ private fun Spark(values: List<Double>, color: Color, modifier: Modifier, fill: 
 private fun ChangeChip(pct: Double, dark: Boolean = false) {
     val up = pct >= 0
     Row(
-        Modifier.clip(RoundedCornerShape(50)).background(if (dark) OnPastel.copy(alpha = 0.10f) else gainColor(pct).copy(alpha = 0.12f)).padding(horizontal = 8.dp, vertical = 3.dp),
+        Modifier.clip(RoundedCornerShape(50)).background(if (dark) OnPastel.copy(alpha = 0.10f) else gainColor(pct).copy(alpha = 0.12f)).padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(if (up) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown, null, Modifier.size(14.dp), tint = if (dark) OnPastel else gainColor(pct))
+        Icon(if (up) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown, null, Modifier.size(16.dp), tint = if (dark) OnPastel else gainColor(pct))
         Spacer(Modifier.width(4.dp))
         Text(signedPct(pct), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = if (dark) OnPastel else gainColor(pct))
     }
@@ -243,7 +244,7 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
             Column(Modifier.padding(horizontal = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Valor actual", Modifier.weight(1f), fontSize = 20.sp, color = P.muted)
-                    if (refreshing) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = P.gain)
+                    if (refreshing) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = P.gain)
                     else RoundIconButton(Icons.Filled.Refresh, "Actualizar precios", onClick = { if (kind == InvestKind.CRYPTO) vm.refreshCrypto() else vm.refreshStocks() })
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -251,12 +252,12 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
                     val cut = text.lastIndexOf(',')
                     Text(if (cut > 0) text.substring(0, cut) else text, fontSize = 40.sp, fontWeight = FontWeight.Bold, color = P.ink, letterSpacing = (-1).sp)
                     if (cut > 0) Text(text.substring(cut), fontSize = 40.sp, fontWeight = FontWeight.Bold, color = P.muted, letterSpacing = (-1).sp)
-                    Spacer(Modifier.width(10.dp))
-                    if (portfolio.size >= 2) Spark(portfolio, if (portfolio.last() >= portfolio.first()) P.gain else P.loss, Modifier.width(56.dp).height(28.dp))
+                    Spacer(Modifier.width(8.dp))
+                    if (portfolio.size >= 2) Spark(portfolio, if (portfolio.last() >= portfolio.first()) P.gain else P.loss, Modifier.width(56.dp).height(32.dp))
                 }
                 if (cost > 0) Text(
                     "${money.signed(value - cost)} (${signedPct((value - cost) / cost * 100)}) desde que compraste",
-                    fontSize = 15.sp, fontWeight = FontWeight.Medium, color = gainColor(value - cost),
+                    fontSize = 16.sp, fontWeight = FontWeight.Medium, color = gainColor(value - cost),
                 )
             }
         }
@@ -274,16 +275,16 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
         // ---------- ¿De qué se está hablando? (solo cripto) ----------
         if (kind == InvestKind.CRYPTO) item {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(OnPastel).clickable { buzzOpen = true; vm.loadBuzz() }.padding(16.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(OnPastel).clickable { buzzOpen = true; vm.loadBuzz() }.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("📰", fontSize = 26.sp)
+                Icon(Icons.Filled.Newspaper, null, Modifier.size(32.dp), tint = Color.White)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("¿De qué se está hablando?", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-                    Text("Tendencias de CoinGecko y lo más votado en Reddit", fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
+                    Text("¿De qué se está hablando?", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Text("Tendencias de CoinGecko y lo más votado en Reddit", fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f))
                 }
-                Text("Ver", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Pastels[1])
+                Text("Ver", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Pastels[1])
             }
         }
 
@@ -293,12 +294,12 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 positions.take(5).forEachIndexed { i, p ->
                     val bg = Pastels[i % Pastels.size]
-                    Column(Modifier.width(160.dp).clip(RoundedCornerShape(24.dp)).background(bg).clickable { onOpenHolding(p.key) }.padding(14.dp)) {
+                    Column(Modifier.width(160.dp).clip(RoundedCornerShape(24.dp)).background(bg).clickable { onOpenHolding(p.key) }.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Initials(p.symbol, symbolColor(p.symbol), 34.dp)
+                            Initials(p.symbol, symbolColor(p.symbol), 32.dp)
                             Spacer(Modifier.width(8.dp))
                             Column {
-                                Text(p.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = OnPastel, maxLines = 1)
+                                Text(p.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = OnPastel, maxLines = 1)
                                 Text(p.symbol, fontSize = 12.sp, color = OnPastel.copy(alpha = 0.6f))
                             }
                         }
@@ -306,7 +307,7 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
                         Spark(history["${p.symbol}:1"].orEmpty(), Color.White, Modifier.fillMaxWidth().height(56.dp))
                         Spacer(Modifier.height(8.dp))
                         if (p.isCrypto) Text("Lo tuyo", fontSize = 11.sp, color = OnPastel.copy(alpha = 0.6f))
-                        Text(money.format(p.value), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = OnPastel)
+                        Text(money.format(p.value), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnPastel)
                         coinUsd(p)?.let { Text("1 ${p.symbol} = ${usd(it)}", fontSize = 12.sp, color = OnPastel.copy(alpha = 0.7f), maxLines = 1) }
                         Spacer(Modifier.height(4.dp))
                         (dayChanges[p.symbol] ?: monthChange(p))?.let { ChangeChip(it, dark = true) }
@@ -320,23 +321,23 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
         positions.forEach { p ->
             item(key = p.key) {
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(20.dp))
-                        .clickable { onOpenHolding(p.key) }.padding(14.dp),
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(24.dp))
+                        .clickable { onOpenHolding(p.key) }.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Initials(p.symbol, symbolColor(p.symbol), 42.dp)
+                    Initials(p.symbol, symbolColor(p.symbol), 40.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(p.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
-                        Text(p.symbol + (coinUsd(p)?.let { " · precio ${usd(it)}" } ?: ""), fontSize = 13.sp, color = P.muted, maxLines = 1)
+                        Text(p.symbol + (coinUsd(p)?.let { " · precio ${usd(it)}" } ?: ""), fontSize = 14.sp, color = P.muted, maxLines = 1)
                     }
                     val h = history["${p.symbol}:1"].orEmpty()
-                    if (h.size >= 2) Spark(h, if (h.last() >= h.first()) P.gain else P.loss, Modifier.width(64.dp).height(26.dp))
+                    if (h.size >= 2) Spark(h, if (h.last() >= h.first()) P.gain else P.loss, Modifier.width(64.dp).height(24.dp))
                     Spacer(Modifier.width(12.dp))
                     Column(horizontalAlignment = Alignment.End) {
                         if (p.isCrypto) Text("lo tuyo", fontSize = 11.sp, color = P.muted)
                         Text(money.format(p.value), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                        if (p.cost > 0) Text(signedPct(p.pnl / p.cost * 100), fontSize = 13.sp, color = gainColor(p.pnl))
+                        if (p.cost > 0) Text(signedPct(p.pnl / p.cost * 100), fontSize = 14.sp, color = gainColor(p.pnl))
                     }
                 }
             }
@@ -407,40 +408,40 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
     ) {
     LazyColumn(
         Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
                 Spacer(Modifier.width(12.dp))
                 Initials(p.symbol, symbolColor(p.symbol), 40.dp)
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text(p.name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = P.ink)
-                    Text(p.symbol, fontSize = 13.sp, color = P.muted)
+                    Text(p.symbol, fontSize = 14.sp, color = P.muted)
                 }
                 RoundIconButton(Icons.Filled.Edit, "Editar ${p.name}", onClick = { onEdit(p.editing) })
             }
         }
         // ---------- Precio y gráfico, sobre su color ----------
         item {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(tint).padding(18.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(tint).padding(16.dp)) {
                 val scrubPrice = scrub?.let { line?.getOrNull(it) }
                 val scrubTime = scrub?.let { times["${p.symbol}:${range.days}$sfx"]?.getOrNull(it) }
                 Text(
                     if (scrubPrice != null && scrubTime != null && scrubTime > 0) "Precio el " + java.time.Instant.ofEpochMilli(scrubTime).atZone(java.time.ZoneId.systemDefault())
                         .format(java.time.format.DateTimeFormatter.ofPattern(if (range.days <= 7) "d MMM, HH:mm" else "d MMM yyyy", es))
                     else "Precio de ${p.name}",
-                    fontSize = 15.sp, color = OnPastel.copy(alpha = 0.7f),
+                    fontSize = 16.sp, color = OnPastel.copy(alpha = 0.7f),
                 )
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(fmtPrice(scrubPrice ?: priceNow), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = OnPastel)
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(8.dp))
                     if (change != null && base != null && base > 0) {
                         Text(
                             "${if (change >= 0) "↗" else "↘"} ${fmtSigned(change)} (${signedPct(change / base * 100)})",
-                            fontSize = 14.sp, fontWeight = FontWeight.Medium, color = OnPastel, modifier = Modifier.padding(bottom = 6.dp),
+                            fontSize = 14.sp, fontWeight = FontWeight.Medium, color = OnPastel, modifier = Modifier.padding(bottom = 8.dp),
                         )
                     }
                 }
@@ -449,16 +450,16 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
                     Toggle("Línea", !candles) { candles = false }
                     Toggle("Velas", candles) { candles = true }
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 when {
-                    values == null -> Box(Modifier.fillMaxWidth().height(230.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = OnPastel) }
+                    values == null -> Box(Modifier.fillMaxWidth().height(230.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = OnPastel) }
                     values.size < 2 -> Box(Modifier.fillMaxWidth().height(230.dp), contentAlignment = Alignment.Center) { Text("Sin datos ahora mismo (¿sin conexión?)", color = OnPastel.copy(alpha = 0.7f)) }
                     candles && bars != null -> PriceChart(values, priceNow, Modifier.fillMaxWidth().height(230.dp)) { area -> drawCandles(area, bars) }
                     else -> PriceChart(
                         values, priceNow,
                         Modifier.fillMaxWidth().height(230.dp).pointerInput(values) {
                             // Mantén pulsado y desliza: el precio de arriba pasa a ser el de ese momento.
-                            fun index(x: Float) = ((x - 54.dp.toPx()) / (size.width - 54.dp.toPx()) * (values.size - 1)).toInt().coerceIn(0, values.size - 1)
+                            fun index(x: Float) = ((x - 56.dp.toPx()) / (size.width - 56.dp.toPx()) * (values.size - 1)).toInt().coerceIn(0, values.size - 1)
                             detectDragGesturesAfterLongPress(
                                 onDragStart = { scrub = index(it.x) },
                                 onDrag = { change, _ -> scrub = index(change.position.x) },
@@ -470,18 +471,18 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
                         scrub?.let { i ->
                             val x = area.left + (area.right - area.left) * i / (values.size - 1)
                             drawLine(OnPastel.copy(alpha = 0.6f), Offset(x, area.top), Offset(x, area.bottom), 1.5.dp.toPx())
-                            drawCircle(Color.White, 6.dp.toPx(), Offset(x, area.y(values[i])))
-                            drawCircle(OnPastel, 3.dp.toPx(), Offset(x, area.y(values[i])))
+                            drawCircle(Color.White, 8.dp.toPx(), Offset(x, area.y(values[i])))
+                            drawCircle(OnPastel, 4.dp.toPx(), Offset(x, area.y(values[i])))
                         }
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.5f)).padding(3.dp)) {
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.5f)).padding(4.dp)) {
                     Range.entries.forEach { r ->
                         Box(
                             Modifier.weight(1f).clip(RoundedCornerShape(50)).background(if (r == range) OnPastel else Color.Transparent).clickable { range = r }.padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center,
-                        ) { Text(r.label, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (r == range) Color.White else OnPastel) }
+                        ) { Text(r.label, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (r == range) Color.White else OnPastel) }
                     }
                 }
             }
@@ -499,7 +500,7 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
         if (p.isCrypto) item {
             val st = stats[p.apiId + sfx]
             MCard {
-                Text("Estadísticas", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("Estadísticas", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("Datos de CoinGecko, en dólares", fontSize = 12.sp, color = P.muted)
                 Spacer(Modifier.height(8.dp))
                 if (st == null) Text("Cargando… (necesita conexión)", fontSize = 14.sp, color = P.muted)
@@ -526,21 +527,21 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
             val buzzState by vm.buzz.collectAsStateWithLifecycle()
             val b = buzzState.second?.items?.firstOrNull { it.coinId == p.apiId || it.symbol.equals(p.symbol, true) }
             if (b != null) MCard {
-                Text("Por qué se habla de ella", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Por qué se habla de ella", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val c = when (b.tone) { "positivo" -> P.gain; "negativo" -> P.loss; else -> P.muted }
-                    Box(Modifier.clip(RoundedCornerShape(50)).background(c.copy(alpha = 0.14f)).padding(horizontal = 10.dp, vertical = 4.dp)) { Text("Tono ${b.tone}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = c) }
-                    if (b.trending) Box(Modifier.clip(RoundedCornerShape(50)).background(com.caudal.finanzas.ui.SeriesColors[1].copy(alpha = 0.14f)).padding(horizontal = 10.dp, vertical = 4.dp)) { Text("En tendencia", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.SeriesColors[1]) }
+                    Box(Modifier.clip(RoundedCornerShape(50)).background(c.copy(alpha = 0.14f)).padding(horizontal = 8.dp, vertical = 4.dp)) { Text("Tono ${b.tone}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = c) }
+                    if (b.trending) Box(Modifier.clip(RoundedCornerShape(50)).background(com.caudal.finanzas.ui.SeriesColors[1].copy(alpha = 0.14f)).padding(horizontal = 8.dp, vertical = 4.dp)) { Text("En tendencia", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.SeriesColors[1]) }
                 }
                 Text(reason(b), fontSize = 14.sp, color = P.ink, modifier = Modifier.padding(top = 8.dp))
                 val uri = androidx.compose.ui.platform.LocalUriHandler.current
                 b.posts.take(4).forEach { h ->
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { runCatching { uri.openUri(h.url) } }.padding(vertical = 6.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { runCatching { uri.openUri(h.url) } }.padding(vertical = 8.dp)) {
                         Text("“${h.title}”", fontSize = 14.sp, color = P.ink, maxLines = 3)
                         Text("▲ ${h.score} · ${h.comments} comentarios · Reddit", fontSize = 12.sp, color = P.muted)
                     }
                 }
-                Text("Resume la conversación; no es una recomendación de inversión.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp))
+                Text("Resume la conversación; no es una recomendación de inversión.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
             }
         }
         if (p.isCrypto) item {
@@ -549,9 +550,9 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
             val list = ex[p.apiId]
             val uri = androidx.compose.ui.platform.LocalUriHandler.current
             MCard {
-                Text("Dónde se puede comprar", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("Dónde se puede comprar", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("Exchanges con más volumen, según CoinGecko", fontSize = 12.sp, color = P.muted)
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
                 when {
                     list == null -> Text("Cargando… (necesita conexión)", fontSize = 14.sp, color = P.muted)
                     list.isEmpty() -> Text("No he encontrado dónde se negocia ahora mismo.", fontSize = 14.sp, color = P.muted)
@@ -560,19 +561,19 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
                             Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable(enabled = m.url != null) { m.url?.let { runCatching { uri.openUri(it) } } }.padding(vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Initials(m.exchange.take(2), symbolColor(m.exchange), 34.dp)
-                            Spacer(Modifier.width(10.dp))
+                            Initials(m.exchange.take(2), symbolColor(m.exchange), 32.dp)
+                            Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(m.exchange, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                                Text(m.exchange, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                                 Text(m.pair + if (m.trusted) " · confianza alta" else "", fontSize = 12.sp, color = if (m.trusted) P.gain else P.muted)
                             }
-                            if (m.url != null) Text("Abrir ›", fontSize = 13.sp, color = P.gain)
+                            if (m.url != null) Text("Abrir ›", fontSize = 14.sp, color = P.gain)
                         }
                     }
                 }
                 Text(
                     "Antes de abrir cuenta, comprueba que el exchange puede operar en España (registro de la CNMV / MiCA). Esta app no compra ni vende nada.",
-                    fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp),
+                    fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp),
                 )
             }
         }
@@ -581,27 +582,27 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
         if (p.qty <= 0.0) item {
             MCard {
                 Text("No la tienes", fontSize = 14.sp, color = P.muted)
-                Text("Solo estás mirando el precio. Si la compras en tu bróker, añádela para seguirla aquí.", fontSize = 15.sp, color = P.ink, modifier = Modifier.padding(top = 4.dp))
-                Spacer(Modifier.height(10.dp))
+                Text("Solo estás mirando el precio. Si la compras en tu bróker, añádela para seguirla aquí.", fontSize = 16.sp, color = P.ink, modifier = Modifier.padding(top = 4.dp))
+                Spacer(Modifier.height(8.dp))
                 com.caudal.finanzas.ui.BrandButton(if (p.isCrypto) "Añadir a mis criptos" else "Añadir a mis acciones", { onEdit(p.editing) }, Modifier.fillMaxWidth())
-                Text("Desde aquí no se compra ni se vende.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 10.dp))
+                Text("Desde aquí no se compra ni se vende.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
             }
         }
         if (p.qty > 0) item {
             MCard {
                 Text(if (p.isCrypto) "Lo tuyo (en euros)" else "Tu posición", fontSize = 14.sp, color = P.muted)
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(money.format(p.value), Modifier.weight(1f), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = P.ink)
+                    Text(money.format(p.value), Modifier.weight(1f), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = P.ink)
                     if (p.cost > 0) ChangeChip(p.pnl / p.cost * 100)
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 PosLine("Cantidad", "${quantity(p.qty)} ${p.symbol}")
                 if (p.cost > 0) {
                     PosLine("Invertido", money.format(p.cost))
                     PosLine("Precio medio de compra", money.format(p.avg))
                     PosLine(if (p.pnl >= 0) "Ganas" else "Pierdes", money.format(kotlin.math.abs(p.pnl)), gainColor(p.pnl))
-                } else Text("Pon lo que metiste (Editar) para ver cuánto ganas o pierdes.", fontSize = 13.sp, color = P.muted, modifier = Modifier.padding(top = 4.dp))
-                Text("Solo para seguir tu inversión: desde aquí no se compra ni se vende.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 10.dp))
+                } else Text("Pon lo que metiste (Editar) para ver cuánto ganas o pierdes.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(top = 4.dp))
+                Text("Solo para seguir tu inversión: desde aquí no se compra ni se vende.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
@@ -611,13 +612,13 @@ fun HoldingDetailScreen(vm: FinanceViewModel, key: String, dayChanges: Map<Strin
 @Composable
 private fun Toggle(text: String, selected: Boolean, onClick: () -> Unit) {
     Box(
-        Modifier.clip(RoundedCornerShape(10.dp)).background(if (selected) OnPastel else Color.White.copy(alpha = 0.5f)).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp),
-    ) { Text(text, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (selected) Color.White else OnPastel) }
+        Modifier.clip(RoundedCornerShape(8.dp)).background(if (selected) OnPastel else Color.White.copy(alpha = 0.5f)).clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
+    ) { Text(text, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (selected) Color.White else OnPastel) }
 }
 
 @Composable
 private fun Stat(label: String, value: String, modifier: Modifier, color: Color? = null) {
-    Column(modifier.clip(RoundedCornerShape(18.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(18.dp)).padding(12.dp)) {
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(16.dp)).padding(12.dp)) {
         Text(label, fontSize = 12.sp, color = P.muted)
         Text(value, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = color ?: P.ink, maxLines = 1)
     }
@@ -625,7 +626,7 @@ private fun Stat(label: String, value: String, modifier: Modifier, color: Color?
 
 @Composable
 private fun PosLine(label: String, value: String, color: Color? = null) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(label, Modifier.weight(1f), fontSize = 14.sp, color = P.muted)
         Text(value, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = color ?: P.ink)
     }
@@ -644,11 +645,11 @@ private fun PriceChart(values: List<Double>, current: Double, modifier: Modifier
     val min = min0 - pad; val max = max0 + pad
     val labels = (0..4).map { min + (max - min) * it / 4 }
     Row(modifier) {
-        Column(Modifier.width(54.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-            labels.reversed().forEach { Text(compact(it), fontSize = 10.sp, color = OnPastel.copy(alpha = 0.7f)) }
+        Column(Modifier.width(56.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+            labels.reversed().forEach { Text(compact(it), fontSize = 11.sp, color = OnPastel.copy(alpha = 0.7f)) }
         }
         Canvas(Modifier.weight(1f).fillMaxSize()) {
-            val area = ChartArea(min, max, 0f, size.width, 6.dp.toPx(), size.height - 6.dp.toPx())
+            val area = ChartArea(min, max, 0f, size.width, 8.dp.toPx(), size.height - 8.dp.toPx())
             labels.forEach { v -> drawLine(OnPastel.copy(alpha = 0.08f), Offset(0f, area.y(v)), Offset(size.width, area.y(v)), 1.dp.toPx()) }
             content(area)
             val yc = area.y(current)
@@ -693,41 +694,41 @@ private fun BuzzSheet(vm: FinanceViewModel, onOpenCoin: (com.caudal.finanzas.dom
         Text("Lo más buscado en CoinGecko y los hilos más votados de r/CryptoCurrency y r/CryptoMarkets, ahora mismo.", fontSize = 14.sp, color = P.muted)
         when {
             loading && buzz == null -> Row(verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = P.gain); Spacer(Modifier.width(10.dp))
+                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = P.gain); Spacer(Modifier.width(8.dp))
                 Text("Leyendo CoinGecko y Reddit…", fontSize = 14.sp, color = P.ink)
             }
             buzz == null -> Text("No he podido conectar. Inténtalo de nuevo con internet.", fontSize = 14.sp, color = P.muted)
             else -> {
                 buzz.featured?.let { f ->
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Pastels[1]).clickable { onOpenCoin(f) }.padding(16.dp)) {
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Pastels[1]).clickable { onOpenCoin(f) }.padding(16.dp)) {
                         Text("MÁS RUIDO POSITIVO", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = OnPastel.copy(alpha = 0.7f))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Initials(f.symbol, symbolColor(f.symbol), 36.dp); Spacer(Modifier.width(10.dp))
+                            Initials(f.symbol, symbolColor(f.symbol), 40.dp); Spacer(Modifier.width(8.dp))
                             Text("${f.name} (${f.symbol})", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnPastel)
                         }
-                        Text(reason(f), fontSize = 14.sp, color = OnPastel, modifier = Modifier.padding(top = 6.dp))
-                        Text("Ver gráfico, por qué se habla y dónde comprarla ›", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = OnPastel, modifier = Modifier.padding(top = 8.dp))
+                        Text(reason(f), fontSize = 14.sp, color = OnPastel, modifier = Modifier.padding(top = 8.dp))
+                        Text("Ver gráfico, por qué se habla y dónde comprarla ›", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = OnPastel, modifier = Modifier.padding(top = 8.dp))
                     }
                 }
                 Text("Monedas de las que se habla", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 buzz.items.take(8).forEach { b ->
                     Row(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable { onOpenCoin(b) }.padding(vertical = 8.dp),
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onOpenCoin(b) }.padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Initials(b.symbol, symbolColor(b.symbol), 36.dp); Spacer(Modifier.width(10.dp))
+                        Initials(b.symbol, symbolColor(b.symbol), 40.dp); Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("${b.name} · ${b.symbol}", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink, maxLines = 1)
+                            Text("${b.name} · ${b.symbol}", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink, maxLines = 1)
                             Text(reason(b), fontSize = 12.sp, color = P.muted, maxLines = 2)
                         }
                         val c = when (b.tone) { "positivo" -> P.gain; "negativo" -> P.loss; else -> P.muted }
-                        Text(b.tone, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = c)
+                        Text(b.tone, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = c)
                     }
                 }
                 if (buzz.headlines.isNotEmpty()) {
                     Text("Titulares más votados", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                     buzz.headlines.forEach { h ->
-                        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable { runCatching { uri.openUri(h.url) } }.padding(vertical = 6.dp)) {
+                        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { runCatching { uri.openUri(h.url) } }.padding(vertical = 8.dp)) {
                             Text(h.title, fontSize = 14.sp, color = P.ink, maxLines = 3)
                             Text("▲ ${h.score} · ${h.comments} comentarios · Reddit", fontSize = 12.sp, color = P.muted)
                         }
@@ -766,39 +767,39 @@ private fun androidx.compose.foundation.lazy.LazyListScope.marketItems(
             cards.forEach { r ->
                 Column(
                     Modifier.width(158.dp).clip(RoundedCornerShape(24.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(24.dp))
-                        .clickable { onOpen(r.id) }.padding(14.dp),
+                        .clickable { onOpen(r.id) }.padding(16.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Initials(r.label, symbolColor(r.label), 38.dp)
+                        Initials(r.label, symbolColor(r.label), 40.dp)
                         Spacer(Modifier.width(8.dp))
-                        if (r.spark.size >= 2) Spark(r.spark, if (r.change != null && r.change < 0) P.loss else up, Modifier.weight(1f).height(30.dp))
+                        if (r.spark.size >= 2) Spark(r.spark, if (r.change != null && r.change < 0) P.loss else up, Modifier.weight(1f).height(32.dp))
                     }
                     Spacer(Modifier.height(12.dp))
-                    Text(r.label, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = P.ink)
-                    Text(r.name, fontSize = 13.sp, color = P.muted, maxLines = 1)
+                    Text(r.label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = P.ink)
+                    Text(r.name, fontSize = 14.sp, color = P.muted, maxLines = 1)
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(r.price?.let(fmt) ?: "…", Modifier.weight(1f), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
+                        Text(r.price?.let(fmt) ?: "…", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
                         r.change?.let { Text((if (it >= 0) "▲ " else "▼ ") + signedPct(kotlin.math.abs(it)).removePrefix("+"), fontSize = 12.sp, color = if (it >= 0) up else P.loss) }
                     }
                 }
             }
         }
     }
-    item { Text("Las más populares", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink, modifier = Modifier.padding(start = 4.dp, top = 6.dp)) }
+    item { Text("Las más populares", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink, modifier = Modifier.padding(start = 4.dp, top = 8.dp)) }
     item {
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(24.dp)).padding(vertical = 6.dp)) {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(24.dp)).padding(vertical = 8.dp)) {
             rows.forEach { r ->
-                Row(Modifier.fillMaxWidth().clickable { onOpen(r.id) }.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().clickable { onOpen(r.id) }.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Initials(r.label, symbolColor(r.label), 40.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(r.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
-                        Text(r.label, fontSize = 13.sp, color = P.muted)
+                        Text(r.label, fontSize = 14.sp, color = P.muted)
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(r.price?.let(fmt) ?: "…", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                        r.change?.let { Text((if (it >= 0) "▲ " else "▼ ") + signedPct(kotlin.math.abs(it)).removePrefix("+"), fontSize = 13.sp, color = if (it >= 0) up else P.loss) }
+                        r.change?.let { Text((if (it >= 0) "▲ " else "▼ ") + signedPct(kotlin.math.abs(it)).removePrefix("+"), fontSize = 14.sp, color = if (it >= 0) up else P.loss) }
                     }
                 }
             }

@@ -12,6 +12,10 @@ Paquete: `com.caudal.finanzas` (el proyecto se llamó antes "Caudal").
 - Supabase (amigos/chat) está sin configurar: la clave anon vale, **nunca** pedir ni aceptar la service_role.
 - No editar los `.kt` (UTF-8) con `Get-Content/Set-Content` de PowerShell: rompe tildes. Usar el editor o Python con `encoding='utf-8'`.
 
+## Diseño (UI/UX)
+- **Regla de los 8 puntos**: márgenes, espacios, radios y tamaños en múltiplos de 8 (8, 16, 24, 32, 40, 48…); medio paso de 4 solo para detalles pequeños. Iconos de 16/24/32/40/48. Tarjetas con radio 24 y relleno 16–24.
+- Estilo de referencia: tarjetas blancas redondeadas, números grandes, colores suaves por categoría, iconos/logos en círculo.
+
 ## Situación de Pablo (datos de ejemplo para entender el diseño)
 - Cuenta principal Santander; ahorro en Robinhood al 5 % (a veces pasa por Revolut).
 - Nómina fija días 1–5 (unos 250 € llegan hacia el 20); YouTube variable hacia el día 22, el importe se confirma hacia el día 3 (se pone en "¿Cuánto este mes?").

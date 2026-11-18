@@ -12,7 +12,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import com.caudal.finanzas.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -46,45 +51,45 @@ data class Palette(
 
 // Estilo neutro tipo iOS: grises limpios, tarjetas con borde fino y color solo en los datos.
 val LightPalette = Palette(
-    bg = Color(0xFFF2F2F7),
-    card = Color(0xFFFFFFFF),
-    ink = Color(0xFF0B0B0C),
-    muted = Color(0xFF6E6E73),
-    line = Color(0xFFE5E5EA),
-    chip = Color(0xFFEDEDF0),
-    brand = Color(0xFF0B0B0C),
-    onBrand = Color(0xFFFFFFFF),
-    accent = Color(0xFF34C759),
-    mint = Color(0xFFFFFFFF),
-    mintDeep = Color(0xFFF7F7FA),
-    gain = Color(0xFF1FA34A),
-    loss = Color(0xFFE5392F),
-    debt = Color(0xFFF08A24),
+    bg = Color(0xFFF6F1E6),        // Leche
+    card = Color(0xFFFFFDF8),
+    ink = Color(0xFF17150F),       // Tinta
+    muted = Color(0xFF7C7566),
+    line = Color(0xFFE7DFCF),
+    chip = Color(0xFFEDE6D6),
+    brand = Color(0xFF2E6B3F),     // Prado
+    onBrand = Color(0xFFFFFDF8),
+    accent = Color(0xFF2E6B3F),
+    mint = Color(0xFFFFFDF8),
+    mintDeep = Color(0xFFF1EADC),
+    gain = Color(0xFF2E6B3F),
+    loss = Color(0xFFC2415C),      // Ubre fuerte
+    debt = Color(0xFFB7791F),      // Heno oscuro
     isDark = false,
-    cardBorder = Color(0x0F000000),
-    glass = Color(0xE6FFFFFF),
-    glow = Color(0xFFFFFFFF),
+    cardBorder = Color(0x0F17150F),
+    glass = Color(0xEBFFFDF8),
+    glow = Color(0xFFDCEBD3),      // Pasto
 )
 
 val DarkPalette = Palette(
-    bg = Color(0xFF000000),
-    card = Color(0xFF232325),
-    ink = Color(0xFFFFFFFF),
-    muted = Color(0xFF98989F),
-    line = Color(0xFF333336),
-    chip = Color(0xFF3A3A3D),
-    brand = Color(0xFFFFFFFF),
-    onBrand = Color(0xFF000000),
-    accent = Color(0xFF30D158),
-    mint = Color(0xFF2C2C2F),
-    mintDeep = Color(0xFF222224),
-    gain = Color(0xFF30D158),
-    loss = Color(0xFFFF453A),
-    debt = Color(0xFFFF9F0A),
+    bg = Color(0xFF12110D),
+    card = Color(0xFF1E1C17),
+    ink = Color(0xFFF6F1E6),
+    muted = Color(0xFFA39C8C),
+    line = Color(0xFF34302A),
+    chip = Color(0xFF2B2822),
+    brand = Color(0xFF8FC79A),
+    onBrand = Color(0xFF12110D),
+    accent = Color(0xFF8FC79A),
+    mint = Color(0xFF1E1C17),
+    mintDeep = Color(0xFF191712),
+    gain = Color(0xFF8FC79A),
+    loss = Color(0xFFF08AA0),
+    debt = Color(0xFFE9B949),
     isDark = true,
-    cardBorder = Color(0x24FFFFFF),
-    glass = Color(0xE02A2A2D),
-    glow = Color(0xFF555558),
+    cardBorder = Color(0x24F6F1E6),
+    glass = Color(0xE01E1C17),
+    glow = Color(0xFF2A3A2C),
 )
 
 val LocalPalette = staticCompositionLocalOf { LightPalette }
@@ -95,31 +100,49 @@ val P: Palette
 
 /** Colores fijos por tipo de patrimonio y por categoría. */
 val SeriesColors = listOf(
-    Color(0xFF34C759), Color(0xFF0A84FF), Color(0xFFFF9F0A), Color(0xFFBF5AF2),
-    Color(0xFFFF6B3D), Color(0xFF64D2FF), Color(0xFFFF375F), Color(0xFFFFD60A),
+    Color(0xFF2E6B3F), Color(0xFFE0607A), Color(0xFFE9B949), Color(0xFF6E9C7A),
+    Color(0xFFA07A52), Color(0xFFF2A9B6), Color(0xFFB7791F), Color(0xFF9FC9A8),
 )
 
 // Compatibilidad con código que usa estos nombres.
 val Gain: Color @Composable get() = P.gain
 val Loss: Color @Composable get() = P.loss
 
+/** La letra de la marca: Bricolage Grotesque (variable), la única de toda la app. */
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+private fun bricolage(w: Int) = Font(R.font.bricolage_variable, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))
+val BrandFamily = FontFamily(bricolage(400), bricolage(500), bricolage(600), bricolage(700), bricolage(800))
+/** Nombre antiguo, por compatibilidad: ya es la letra de la marca. */
+val InterFamily = BrandFamily
+
+/** Una sola letra en toda la app: los titulares también van en Inter. */
+val SerifDisplay = BrandFamily
+
 private val AppTypography = Typography().run {
+    // Inter sin el espaciado extra de Material (las referencias llevan la letra más junta).
+    fun TextStyle.sans() = copy(fontFamily = InterFamily, letterSpacing = (-0.1).sp)
+    fun TextStyle.serif() = copy(fontFamily = BrandFamily, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
     copy(
-        displayLarge = displayLarge.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-2).sp),
-        displayMedium = displayMedium.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.5).sp),
-        displaySmall = displaySmall.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp),
-        headlineLarge = headlineLarge.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp),
-        headlineMedium = headlineMedium.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.8).sp),
-        headlineSmall = headlineSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
-        titleLarge = titleLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp),
-        titleMedium = titleMedium.copy(fontWeight = FontWeight.Bold),
-        titleSmall = titleSmall.copy(fontWeight = FontWeight.SemiBold),
-        labelLarge = labelLarge.copy(fontWeight = FontWeight.SemiBold),
+        displayLarge = displayLarge.serif(),
+        displayMedium = displayMedium.serif(),
+        displaySmall = displaySmall.serif(),
+        headlineLarge = headlineLarge.serif(),
+        headlineMedium = headlineMedium.serif().copy(fontSize = 40.sp, lineHeight = 44.sp),
+        headlineSmall = headlineSmall.sans().copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.3).sp),
+        titleLarge = titleLarge.sans().copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.3).sp),
+        titleMedium = titleMedium.sans().copy(fontWeight = FontWeight.SemiBold),
+        titleSmall = titleSmall.sans().copy(fontWeight = FontWeight.SemiBold),
+        bodyLarge = bodyLarge.sans(),
+        bodyMedium = bodyMedium.sans(),
+        bodySmall = bodySmall.sans(),
+        labelLarge = labelLarge.sans().copy(fontWeight = FontWeight.SemiBold),
+        labelMedium = labelMedium.sans(),
+        labelSmall = labelSmall.sans(),
     )
 }
 
 /** Etiqueta pequeña en mayúsculas y espaciada ("PATRIMONIO NETO"). */
-val OverlineStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.4.sp)
+val OverlineStyle = TextStyle(fontFamily = InterFamily, fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 2.sp)
 
 @Composable
 fun CaudalTheme(content: @Composable () -> Unit) {
@@ -156,7 +179,7 @@ fun CaudalTheme(content: @Composable () -> Unit) {
                 small = RoundedCornerShape(12.dp),
                 medium = RoundedCornerShape(16.dp),
                 large = RoundedCornerShape(24.dp),
-                extraLarge = RoundedCornerShape(28.dp),
+                extraLarge = RoundedCornerShape(32.dp),
             ),
             content = content,
         )

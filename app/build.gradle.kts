@@ -23,17 +23,31 @@ android {
         // Android 10+: BiometricPrompt nativo, sin el diálogo antiguo de huella.
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "SUPABASE_URL", "\"${supabase.getProperty("url", "").trim().trimEnd('/')}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabase.getProperty("anonKey", "").trim()}\"")
+    }
+
+    // Hasta tener clave propia, la release se firma con la clave de debug de este ordenador,
+    // con todos los esquemas de firma (v1+v2+v3) para que cualquier instalador la acepte.
+    signingConfigs {
+        create("compatible") {
+            val debug = signingConfigs.getByName("debug")
+            storeFile = debug.storeFile
+            storePassword = debug.storePassword
+            keyAlias = debug.keyAlias
+            keyPassword = debug.keyPassword
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Hasta tener clave propia, la release se firma con la de debug para poder instalarla.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("compatible")
         }
     }
 

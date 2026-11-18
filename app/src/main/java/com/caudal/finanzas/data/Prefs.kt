@@ -71,6 +71,14 @@ data class Settings(
     /** Cuentas con amigos (ver domain/Debts.kt) y saldos de Tricount. */
     val debtsRaw: String = "",
     val tricountRaw: String = "",
+    /** Semana ("2026-47") en la que dijiste "Ahora no" a la recomendación de Pepe. */
+    val pepeTipHiddenWeek: String = "",
+    /** Ahorro bloqueado: la app no propone sacar dinero de ahí. */
+    val savingsLocked: Boolean = false,
+    /** Mostrar cada semana la propuesta de Pepe para el ahorro. */
+    val weeklyTip: Boolean = true,
+    /** Acciones de la revisión de suscripciones que ya marcaste. */
+    val reviewedSubs: Set<String> = emptySet(),
 ) {
     companion object { const val NONE = -1L }
 }
@@ -130,6 +138,10 @@ class Prefs private constructor(context: Context) {
         }.toMap(),
         debtsRaw = sp.getString(DEBTS, "") ?: "",
         tricountRaw = sp.getString(TRICOUNT, "") ?: "",
+        pepeTipHiddenWeek = sp.getString(PEPE_HIDDEN, "") ?: "",
+        savingsLocked = sp.getBoolean(SAVINGS_LOCKED, false),
+        weeklyTip = sp.getBoolean(WEEKLY_TIP, true),
+        reviewedSubs = sp.getStringSet(REVIEWED_SUBS, emptySet()) ?: emptySet(),
         goalsRaw = sp.getString(GOALS, null) ?: legacyGoal(),
     )
 
@@ -199,6 +211,13 @@ class Prefs private constructor(context: Context) {
         val now = (sp.getStringSet(SEEN_NEWS, emptySet()) ?: emptySet()).filter { it.substringBefore('|') in keep }.toSet()
         if (now.none { it.endsWith("|$id") }) sp.edit().putStringSet(SEEN_NEWS, now + "${java.time.LocalDate.now()}|$id").apply()
     }
+    fun hidePepeTip(week: String) = edit { putString(PEPE_HIDDEN, week) }
+    fun setSavingsLocked(v: Boolean) = edit { putBoolean(SAVINGS_LOCKED, v) }
+    fun setWeeklyTip(v: Boolean) = edit { putBoolean(WEEKLY_TIP, v) }
+    fun toggleReviewedSub(key: String) {
+        val now = sp.getStringSet(REVIEWED_SUBS, emptySet()) ?: emptySet()
+        edit { putStringSet(REVIEWED_SUBS, if (key in now) now - key else now + key) }
+    }
     fun setDebts(raw: String) = edit { putString(DEBTS, raw) }
     fun setTricount(raw: String) = edit { putString(TRICOUNT, raw) }
     fun setCircleHistory(raw: String) { if (sp.getString(CIRCLES, "") != raw) edit { putString(CIRCLES, raw) } }
@@ -265,6 +284,10 @@ class Prefs private constructor(context: Context) {
         private const val IGNORED = "ignored_payments"
         private const val EXPECTED = "expected_income"
         private const val DEBTS = "debts"
+        private const val PEPE_HIDDEN = "pepe_hidden_week"
+        private const val SAVINGS_LOCKED = "savings_locked"
+        private const val WEEKLY_TIP = "weekly_tip"
+        private const val REVIEWED_SUBS = "reviewed_subs"
         private const val SEEN_NEWS = "seen_news"
         private const val RECENT_TICKERS = "recent_tickers"
         private const val TRICOUNT = "tricount"

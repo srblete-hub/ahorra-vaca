@@ -43,7 +43,7 @@ object InvisibleMoney {
             }
 
         // Compras pequeñas repetidas (café, snacks, apps…): 4 o más en un mes y menos de 15 € cada una.
-        recent.filter { it.amount < 15 && !Budgeting.isBillPayment(it, d.bills) }
+        recent.filter { it.amount < 15 && !Budgeting.isFixed(it, d.bills) }
             .groupBy { Classifier.normalize(it.note) }.filter { it.key.isNotEmpty() }.values.forEach { l ->
                 val months = l.map { YearMonth.from(LocalDate.ofEpochDay(it.epochDay)) }.distinct().size.coerceAtLeast(1)
                 if (l.size.toDouble() / months >= 4) {

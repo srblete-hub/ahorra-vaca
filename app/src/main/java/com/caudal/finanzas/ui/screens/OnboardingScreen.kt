@@ -97,18 +97,18 @@ fun OnboardingScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onFinish: 
 
     Column(Modifier.fillMaxSize().background(P.bg).statusBarsPadding().navigationBarsPadding()) {
         // Progreso + saltar todo
-        Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Step.entries.forEach { s ->
-                    Box(Modifier.weight(1f).height(5.dp).clip(CircleShape).background(if (s.ordinal <= step.ordinal) P.gain else P.line))
+                    Box(Modifier.weight(1f).height(4.dp).clip(CircleShape).background(if (s.ordinal <= step.ordinal) P.gain else P.line))
                 }
             }
             if (step != Step.DONE) TextButton(onClick = onFinish) { Text("Saltar todo", color = P.muted) }
         }
 
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(Modifier.height(8.dp))
             Overline("Paso ${step.ordinal + 1} de ${Step.entries.size}")
@@ -135,7 +135,7 @@ fun OnboardingScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onFinish: 
                     if (rows.isNotEmpty()) CardList(rows) { (sym, name, value) ->
                         ListRow(name, leading = { Initials(sym, SeriesColors[(sym.hashCode() and 7)]) }, trailing = { AmountTrailing(money.format(value)) })
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         AddButton("Cripto", Icons.Filled.CurrencyBitcoin, Modifier.weight(1f)) { onEdit(Editing.CoinSearch) }
                         AddButton("Acción o ETF", Icons.AutoMirrored.Filled.TrendingUp, Modifier.weight(1f)) {
                             onEdit(Editing.StockForm(StockHolding(ticker = "", name = "", shares = 0.0, avgBuyPrice = 0.0)))
@@ -197,7 +197,7 @@ fun OnboardingScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onFinish: 
             Spacer(Modifier.height(8.dp))
         }
 
-        Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
             if (step != Step.DONE) TextButton(onClick = next) { Text("Saltar paso", color = P.muted) }
             Spacer(Modifier.weight(1f))
             BrandButton(if (step == Step.DONE) "¡A ahorrar!" else "Siguiente", next, Modifier.width(180.dp))
@@ -224,8 +224,8 @@ private fun AccountList(list: List<Account>, onClick: (Account) -> Unit) {
 private fun AddButton(text: String, icon: ImageVector, modifier: Modifier = Modifier.fillMaxWidth(), onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier.height(54.dp),
-        shape = RoundedCornerShape(18.dp),
+        modifier = modifier.height(56.dp),
+        shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(1.5.dp, P.gain.copy(alpha = 0.5f)),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = P.gain),
     ) {

@@ -86,18 +86,18 @@ fun AccountScreen(vm: FinanceViewModel, accountId: Long, onEdit: (Editing) -> Un
 
     LazyColumn(
         Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item { RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack) }
         item {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 AccountLogo(account.name, 72.dp)
                 Spacer(Modifier.height(12.dp))
-                Text(account.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = P.ink)
+                Text(account.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = P.ink)
                 Text(account.type.label, style = MaterialTheme.typography.bodyMedium, color = P.muted)
                 Spacer(Modifier.height(12.dp))
-                AnimatedAmount(account.balance, 42.sp, P.ink)
+                AnimatedAmount(account.balance, 40.sp, P.ink)
                 if (account.interestRate > 0) {
                     Text(
                         run {
@@ -152,7 +152,7 @@ private fun ActionButton(icon: ImageVector, label: String, onClick: () -> Unit) 
             Modifier.size(56.dp).clip(CircleShape).background(P.card).border(1.dp, P.cardBorder, CircleShape),
             contentAlignment = Alignment.Center,
         ) { Icon(icon, null, Modifier.size(24.dp), tint = P.ink) }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text(label, style = MaterialTheme.typography.labelMedium, color = P.ink)
     }
 }

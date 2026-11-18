@@ -241,7 +241,7 @@ object BankPlanning {
     fun dailyHabit(d: FinanceData): Double {
         val closed = d.closedMonths(3)
         if (closed.isNotEmpty()) return closed.sumOf { m -> Budgeting.variable(d, m).sumOf { it.amount } } / closed.sumOf { it.lengthOfMonth() }
-        return Forecasting.dailyVariableSpend(d.expenses, d.today, d.savingIds)
+        return Forecasting.dailyVariableSpend(d.expenses.filter { !Budgeting.isFixed(it, d.bills) }, d.today, d.savingIds)
     }
 }
 

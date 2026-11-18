@@ -149,7 +149,7 @@ object FinancialCircles {
             "Si el saldo previsto baja mucho antes de cobrar, reserva antes los pagos grandes.", "100·(1 − e^(−(saldo mínimo/gastos esenciales)/0,25))",
         )
         val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-        val variable = d.spending.filter { !Budgeting.isBillPayment(it, d.bills) }
+        val variable = d.spending.filter { !Budgeting.isFixed(it, d.bills) }
         val weeks = (1..8).map { w ->
             val s = monday.minusWeeks(w.toLong()).toEpochDay()
             variable.filter { it.epochDay in s..(s + 6) }.sumOf { it.amount }

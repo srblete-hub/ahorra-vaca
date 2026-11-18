@@ -120,7 +120,7 @@ object PaymentParser {
 
     /** "MERCADONA S.A." → "Mercadona S.A."; corta comercios muy largos. */
     private fun cleanMerchant(raw: String): String? {
-        val m = raw.trim().trim('"', '\'', '*').take(40).trim()
+        val m = com.caudal.finanzas.domain.Merchants.clean(raw).trim('"', '\'', '*').take(40).trim()
         if (m.length < 2) return null
         return if (m == m.uppercase(Locale.ROOT) && m.any { it.isLetter() }) {
             m.lowercase(Locale.ROOT).split(" ").joinToString(" ") { w -> w.replaceFirstChar { it.titlecase(Locale.ROOT) } }

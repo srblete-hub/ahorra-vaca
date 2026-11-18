@@ -90,9 +90,9 @@ fun ChatScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: () -> Un
     LaunchedEffect(messages.size) { list.animateScrollToItem(messages.size) }
 
     Column(Modifier.fillMaxSize().background(P.bg).imePadding()) {
-        Row(Modifier.padding(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Column {
                 Text("Pregúntale a Ahorra, vaca", style = MaterialTheme.typography.headlineSmall, color = P.ink)
                 Text("Sin enviar tus datos a nadie", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -100,24 +100,24 @@ fun ChatScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: () -> Un
         }
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth(), state = list,
-            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(messages.size) { i -> Bubble(messages[i], onRecord = { exp -> vm.saveParsed(exp, planning?.bankPlan?.main?.id); messages += Message(false, "Hecho: ${if (exp.size == 1) "gasto apuntado" else "${exp.size} gastos apuntados"}.") }) }
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(Assistant.SUGGESTIONS) { s ->
-                        Box(Modifier.clip(CircleShape).background(P.chip).clickable { ask(s) }.padding(horizontal = 14.dp, vertical = 9.dp)) {
+                        Box(Modifier.clip(CircleShape).background(P.chip).clickable { ask(s) }.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             Text(s, fontSize = 14.sp, color = P.ink)
                         }
                     }
                 }
             }
         }
-        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             TextField(
                 input, { input = it }, Modifier.weight(1f),
                 placeholder = { Text("Escribe tu pregunta o tus gastos…") },
-                shape = RoundedCornerShape(26.dp),
+                shape = RoundedCornerShape(24.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { ask(input) }),
                 colors = TextFieldDefaults.colors(
@@ -140,18 +140,18 @@ private fun Bubble(m: Message, onRecord: (List<com.caudal.finanzas.domain.Parsed
     Box(Modifier.fillMaxWidth(), contentAlignment = if (m.fromUser) Alignment.CenterEnd else Alignment.CenterStart) {
         Column(
             Modifier.widthIn(max = 320.dp)
-                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = if (m.fromUser) 20.dp else 6.dp, bottomEnd = if (m.fromUser) 6.dp else 20.dp))
-                .background(if (m.fromUser) P.brand else P.card).padding(14.dp),
+                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = if (m.fromUser) 24.dp else 8.dp, bottomEnd = if (m.fromUser) 8.dp else 24.dp))
+                .background(if (m.fromUser) P.brand else P.card).padding(16.dp),
         ) {
-            Text(m.text, fontSize = 16.sp, lineHeight = 22.sp, color = if (m.fromUser) P.onBrand else P.ink)
+            Text(m.text, fontSize = 16.sp, lineHeight = 24.sp, color = if (m.fromUser) P.onBrand else P.ink)
             val a = m.answer
             if (a != null && a.sources.isNotEmpty()) {
                 Spacer(Modifier.size(8.dp))
                 Text("De dónde sale", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = SeriesColors[1])
-                a.sources.forEach { Text("· $it", fontSize = 13.sp, color = P.muted) }
+                a.sources.forEach { Text("· $it", fontSize = 14.sp, color = P.muted) }
             }
             if (a != null && a.expenses.isNotEmpty() && !recorded) {
-                Spacer(Modifier.size(10.dp))
+                Spacer(Modifier.size(8.dp))
                 BrandButton(if (a.expenses.size == 1) "Apuntar" else "Apuntar los ${a.expenses.size}", { recorded = true; onRecord(a.expenses) })
             }
         }

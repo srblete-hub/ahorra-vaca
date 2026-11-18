@@ -27,23 +27,27 @@ object NewsService {
         "Economía" to "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/economia/portada",
         "Bolsa" to "https://e00-expansion.uecdn.es/rss/mercados.xml",
         "Economía" to "https://e00-expansion.uecdn.es/rss/portada.xml",
+        "Empresas" to "https://e00-expansion.uecdn.es/rss/empresas.xml",
+        "Economía" to "https://e00-expansion.uecdn.es/rss/economia.xml",
+        "Bolsa" to "https://es.investing.com/rss/news.rss",
+        "Cripto" to "https://es.investing.com/rss/news_301.rss",
         "Cripto" to "https://es.beincrypto.com/feed/",
-        // Google Noticias para completar (sin foto: se busca la de la página o se pone un gráfico).
-        "Economía" to "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=es&gl=ES&ceid=ES:es",
-        "Bolsa" to "https://news.google.com/rss/search?q=bolsa%20OR%20Ibex%20OR%20%22Wall%20Street%22%20OR%20acciones%20when:1d&hl=es&gl=ES&ceid=ES:es",
-        "Cripto" to "https://news.google.com/rss/search?q=bitcoin%20OR%20ethereum%20OR%20criptomonedas%20when:1d&hl=es&gl=ES&ceid=ES:es",
-        "Empresas" to "https://news.google.com/rss/search?q=empresas%20resultados%20OR%20BCE%20OR%20inflaci%C3%B3n%20when:1d&hl=es&gl=ES&ceid=ES:es",
     )
 
+    /** Noticias de hoy, todas con foto real del propio medio (las que no la tienen se descartan). */
     suspend fun today(): List<NewsItem> = withContext(Dispatchers.IO) {
         override?.let { return@withContext it() }
         val all = coroutineScope { FEEDS.map { (topic, url) -> async { runCatching { parse(get(url), topic) }.getOrDefault(emptyList()) } }.awaitAll() }.flatten()
         val since = System.currentTimeMillis() - 26 * 3600_000L
-        all.filter { it.epochMs == 0L || it.epochMs >= since }
+        val fresh = all.filter { it.epochMs == 0L || it.epochMs >= since }
             .filter { !isAd(it) }
             .distinctBy { it.title.lowercase().filter(Char::isLetterOrDigit).take(60) }
             .sortedByDescending { it.epochMs }
-            .take(60)
+            .take(70)
+        // Las que no traen foto en el RSS: la de su página (og:image), en paralelo.
+        coroutineScope {
+            fresh.map { n -> async { if (n.imageUrl != null) n else pageImage(n.url)?.let { n.copy(imageUrl = it) } } }.awaitAll()
+        }.filterNotNull().take(60)
     }
 
     /** Fuera anuncios: contenido patrocinado, publirreportajes, ofertas y escaparates de compras. */
@@ -134,6 +138,8 @@ object NewsService {
         "elpais" in link -> "El País"
         "expansion" in link -> "Expansión"
         "beincrypto" in link -> "BeInCrypto"
+        "investing" in link -> "Investing.com"
+        "criptonoticias" in link -> "CriptoNoticias"
         else -> "Google Noticias"
     }
 }

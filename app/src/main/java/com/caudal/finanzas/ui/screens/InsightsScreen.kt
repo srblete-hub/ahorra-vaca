@@ -97,13 +97,13 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
 
     LazyColumn(
         Modifier.fillMaxSize().background(P.bg),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text("Análisis", style = MaterialTheme.typography.headlineMedium, color = P.ink)
                     Text("Tus números, explicados", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -133,28 +133,28 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
             MintCard {
                 Overline("Salud financiera")
                 Spacer(Modifier.height(4.dp))
-                Text("${health.good} de ${health.indicators.size} en buen estado", fontSize = 26.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("${health.good} de ${health.indicators.size} en buen estado", fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 health.trend?.let { Text(it, fontSize = 14.sp, color = P.muted) }
                 Spacer(Modifier.height(12.dp))
                 health.indicators.forEach { i ->
                     val c = when (i.status) { Insights.Status.GOOD -> P.gain; Insights.Status.OK -> Color(0xFFFF9F0A); Insights.Status.BAD -> P.loss }
-                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                        Box(Modifier.padding(top = 6.dp).size(10.dp).clip(CircleShape).background(c))
+                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                        Box(Modifier.padding(top = 8.dp).size(8.dp).clip(CircleShape).background(c))
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Row {
                                 Text(i.name, Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
-                                Text(i.value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = c)
+                                Text(i.value, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = c)
                             }
-                            Text(i.explanation, fontSize = 13.sp, color = P.muted)
+                            Text(i.explanation, fontSize = 14.sp, color = P.muted)
                         }
                     }
                 }
-                Spacer(Modifier.height(10.dp))
-                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(14.dp)) {
+                Spacer(Modifier.height(8.dp))
+                Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(16.dp)) {
                     Column {
-                        Text("El siguiente paso más útil", fontSize = 13.sp, color = P.muted)
-                        Text(health.nextStep, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                        Text("El siguiente paso más útil", fontSize = 14.sp, color = P.muted)
+                        Text(health.nextStep, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                     }
                 }
             }
@@ -174,13 +174,13 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
                 )
                 val today = d.spending.filter { it.epochDay == d.today.toEpochDay() }.sumOf { it.amount }
                 if (today > 0) {
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         "Hoy llevas ${fmt(today)}" + if (today > s.perDay && s.perDay > 0) ": te has pasado ${fmt(today - s.perDay)}, así que los próximos días tocan a menos." else ".",
                         fontSize = 14.sp, color = if (today > s.perDay) P.loss else P.ink,
                     )
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 if (s.plans > 0) Text("Apartado para ${settings.planName.ifBlank { "tu plan" }}: ${fmt(s.plans)} (no cuenta como gastable)", fontSize = 14.sp, color = SeriesColors[1])
                 TextButton(onClick = { onEdit(Editing.PlanForm) }) {
                     Text(if (s.plans > 0) "Cambiar lo apartado" else "Apartar dinero para un plan", color = P.gain)
@@ -192,8 +192,8 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
         if (story.spentNow > 0 || story.spentPrev > 0) item {
             MCard {
                 Overline("¿Dónde se ha ido tu dinero?")
-                Spacer(Modifier.height(6.dp))
-                Text(Insights.describe(story, fmt), fontSize = 16.sp, lineHeight = 22.sp, color = P.ink)
+                Spacer(Modifier.height(8.dp))
+                Text(Insights.describe(story, fmt), fontSize = 16.sp, lineHeight = 24.sp, color = P.ink)
             }
         }
 
@@ -203,10 +203,10 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
                 Overline("Tu coste de vida real")
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(fmt(cost.monthly), fontSize = 30.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                    Text(" al mes · ${fmt(cost.yearly)} al año", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(bottom = 5.dp))
+                    Text(fmt(cost.monthly), fontSize = 32.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    Text(" al mes · ${fmt(cost.yearly)} al año", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(bottom = 4.dp))
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 CostLine("Gastos fijos cada mes", cost.fixed)
                 CostLine("Gastos anuales repartidos (seguros…)", cost.yearlySpread)
                 CostLine("Tu gasto variable habitual", cost.variable)
@@ -227,17 +227,17 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
         item {
             MCard {
                 Overline("Radar de gastos olvidados")
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
                 if (radar.isEmpty()) Text("Nada a la vista en los próximos 4 meses. Apunta tus gastos anuales (seguros, ITV…) como gasto fijo y te avisaré.", fontSize = 14.sp, color = P.muted)
                 radar.forEach { r ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        IconTile(Icons.Filled.AutoAwesome, if (r.fromHistory) SeriesColors[3] else SeriesColors[4], 38.dp)
+                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconTile(Icons.Filled.AutoAwesome, if (r.fromHistory) SeriesColors[3] else SeriesColors[4], 40.dp)
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(r.name, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                             Text(
                                 prettyDate(r.due) + if (r.fromHistory) " · lo pagaste hace un año" else " · gasto anual",
-                                fontSize = 13.sp, color = P.muted,
+                                fontSize = 14.sp, color = P.muted,
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
@@ -254,9 +254,9 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
             item {
                 MCard {
                     Overline("Tus hábitos de gasto")
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                     val max = (h.byWeekday.maxOrNull() ?: 0.0).takeIf { it > 0 } ?: 1.0
-                    Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+                    Row(Modifier.fillMaxWidth().height(112.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
                         listOf("L", "M", "X", "J", "V", "S", "D").forEachIndexed { i, label ->
                             Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
                                 val f = (h.byWeekday[i] / max).toFloat().coerceIn(0.04f, 1f)
@@ -269,9 +269,9 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
                             }
                         }
                     }
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                     h.notes.forEach { Text("• $it", fontSize = 14.sp, color = P.ink, modifier = Modifier.padding(vertical = 2.dp)) }
-                    Text("Últimos ${h.days} días, sin contar gastos fijos.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp))
+                    Text("Últimos ${h.days} días, sin contar gastos fijos.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
                 }
             }
         }
@@ -286,7 +286,7 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
                     Overline("Gastos que puedes compartir", Modifier.weight(1f))
                     if (owed > 0) Text("Te deben ${fmt(owed)}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = SeriesColors[1])
                 }
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
                 d.splits.forEach { s ->
                     val e = d.expenses.firstOrNull { it.id == s.expenseId } ?: return@forEach
                     val pendingPeople = (s.people - 1 - s.settled).coerceAtLeast(0)
@@ -312,7 +312,7 @@ fun InsightsScreen(vm: FinanceViewModel, settings: Settings, onEdit: (Editing) -
 
 @Composable
 private fun CostLine(label: String, value: Double) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(label, Modifier.weight(1f), fontSize = 14.sp, color = P.muted)
         Text(LocalMoney.current.format(value), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = P.ink)
     }
@@ -321,16 +321,16 @@ private fun CostLine(label: String, value: Double) {
 @Composable
 private fun SplitRow(title: String, sub: String, value: String, color: Color, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable(onClick = onClick).padding(vertical = 8.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconTile(Icons.Filled.Groups, SeriesColors[5], 38.dp)
+        IconTile(Icons.Filled.Groups, SeriesColors[5], 40.dp)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink, maxLines = 1)
-            Text(sub, fontSize = 13.sp, color = P.muted, maxLines = 2)
+            Text(sub, fontSize = 14.sp, color = P.muted, maxLines = 2)
         }
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = color)
+        Text(value, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = color)
     }
 }
 
@@ -344,32 +344,32 @@ private fun TimeMachineCard(d: com.caudal.finanzas.domain.FinanceData, fmt: (Dou
     val series = remember(d) { Insights.netWorthByMonth(d) }
     MCard {
         Overline("Máquina del tiempo")
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         Segmented(options, back, { if (it == earliest && it !in listOf(1, 3, 6, 12)) "Inicio" else if (it == 12) "1 año" else "$it m" }, { back = it })
         Spacer(Modifier.height(12.dp))
-        Insights.describe(t, back, fmt).forEach { Text(it, fontSize = 15.sp, color = P.ink, lineHeight = 21.sp, modifier = Modifier.padding(vertical = 3.dp)) }
+        Insights.describe(t, back, fmt).forEach { Text(it, fontSize = 16.sp, color = P.ink, lineHeight = 20.sp, modifier = Modifier.padding(vertical = 4.dp)) }
         if (series.size >= 2) {
             Spacer(Modifier.height(12.dp))
-            Text("Tu patrimonio neto, mes a mes", fontSize = 13.sp, color = P.muted)
-            Spacer(Modifier.height(6.dp))
+            Text("Tu patrimonio neto, mes a mes", fontSize = 14.sp, color = P.muted)
+            Spacer(Modifier.height(8.dp))
             val max = series.maxOf { it.second }.takeIf { it > 0 } ?: 1.0
-            Row(Modifier.fillMaxWidth().height(100.dp), horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.Bottom) {
+            Row(Modifier.fillMaxWidth().height(96.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
                 series.forEachIndexed { i, (m, v) ->
                     Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
                         Box(
-                            Modifier.fillMaxWidth().fillMaxHeight((v / max).toFloat().coerceIn(0.05f, 1f) * 0.8f).clip(RoundedCornerShape(6.dp))
+                            Modifier.fillMaxWidth().fillMaxHeight((v / max).toFloat().coerceIn(0.05f, 1f) * 0.8f).clip(RoundedCornerShape(8.dp))
                                 .background(if (i == series.lastIndex) P.gain else P.gain.copy(alpha = 0.35f)),
                         )
-                        Spacer(Modifier.height(3.dp))
+                        Spacer(Modifier.height(4.dp))
                         Text(m.monthName().take(1).uppercase(), fontSize = 11.sp, color = P.muted)
                     }
                 }
             }
             val w = d.wealth
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 "Liquidez (lo del día a día): ${fmt(w.available)} · Riqueza construida (ahorro + inversión − deudas): ${fmt(w.built)}",
-                fontSize = 13.sp, color = P.muted,
+                fontSize = 14.sp, color = P.muted,
             )
         }
     }
@@ -382,7 +382,7 @@ private fun WhatIfCard(d: com.caudal.finanzas.domain.FinanceData, fmt: (Double) 
     if (list.isEmpty()) return
     MCard {
         Overline("¿Y si…?")
-        Text("Simulaciones: no es dinero que hayas perdido, es lo que podrías conseguir.", fontSize = 13.sp, color = P.muted)
+        Text("Simulaciones: no es dinero que hayas perdido, es lo que podrías conseguir.", fontSize = 14.sp, color = P.muted)
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Reservar al mes", Modifier.weight(1f), fontSize = 14.sp, color = P.ink)
@@ -394,7 +394,7 @@ private fun WhatIfCard(d: com.caudal.finanzas.domain.FinanceData, fmt: (Double) 
         )
         list.forEachIndexed { i, w ->
             if (i > 0) HorizontalDivider(color = P.line, modifier = Modifier.padding(vertical = 8.dp))
-            Text(w.title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink)
+            Text(w.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
             Text(w.detail, fontSize = 14.sp, color = P.gain)
         }
     }

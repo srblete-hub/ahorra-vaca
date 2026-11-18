@@ -24,6 +24,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
@@ -89,10 +91,11 @@ fun WrappedScreen(vm: FinanceViewModel, userName: String, onBack: () -> Unit) {
         add(Story(listOf(Color(0xFF5E5CE6), Color(0xFF1C1A5E)), "Entró y salió") {
             Small("Ha entrado")
             Big(money.format(w.income), NeonGreen)
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(16.dp))
             Small("Has gastado")
             Big(money.format(w.spent))
             Body("${w.payments} pagos · ${money.format(w.perDay)} al día de media")
+            if (w.fixed > 0) Body("Aparte, ${money.format(w.fixed)} de alquiler y fijos (no cuentan en la media).")
         })
         w.topTag?.let { (tag, amount, share) ->
             add(Story(listOf(Color(0xFFFF6B3D), Color(0xFF5A1A06)), "Tu categoría estrella") {
@@ -118,7 +121,7 @@ fun WrappedScreen(vm: FinanceViewModel, userName: String, onBack: () -> Unit) {
                 Small("El día que más gastas")
                 Big(day.getDisplayName(TextStyle.FULL, es).replaceFirstChar { it.uppercase() })
                 Body("${money.format(v)} en total los ${day.getDisplayName(TextStyle.FULL, es)}")
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(16.dp))
             }
             Small("Días sin gastar nada")
             Big("${w.noSpendDays}", NeonGreen)
@@ -157,11 +160,11 @@ fun WrappedScreen(vm: FinanceViewModel, userName: String, onBack: () -> Unit) {
                                 scope.launch { pager.animateScrollToPage(target.coerceIn(0, stories.size)) }
                             }
                         }
-                        .padding(top = top + 70.dp, start = 28.dp, end = 28.dp, bottom = 40.dp),
+                        .padding(top = top + 72.dp, start = 32.dp, end = 32.dp, bottom = 40.dp),
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Text(s.overline.uppercase(), fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.75f))
-                    Spacer(Modifier.height(20.dp))
+                    Text(s.overline.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.75f))
+                    Spacer(Modifier.height(24.dp))
                     s.content()
                 }
             } else {
@@ -169,21 +172,21 @@ fun WrappedScreen(vm: FinanceViewModel, userName: String, onBack: () -> Unit) {
             }
         }
         // Barras de historia y controles.
-        Column(Modifier.fillMaxWidth().padding(top = top + 10.dp, start = 14.dp, end = 14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(top = top + 8.dp, start = 16.dp, end = 16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 repeat(stories.size + 1) { i ->
-                    Box(Modifier.weight(1f).height(3.dp).clip(CircleShape).background(Color.White.copy(alpha = if (i <= pager.currentPage) 0.95f else 0.3f)))
+                    Box(Modifier.weight(1f).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = if (i <= pager.currentPage) 0.95f else 0.3f)))
                 }
             }
-            Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("‹", fontSize = 26.sp, color = Color.White, modifier = Modifier.clip(CircleShape).clickable { month = month.minusMonths(1); scope.launch { pager.scrollToPage(0) } }.padding(horizontal = 10.dp))
-                Text(mName.uppercase(), fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color.White)
-                Text(
-                    "›", fontSize = 26.sp, color = Color.White.copy(alpha = if (month < YearMonth.now()) 1f else 0.3f),
-                    modifier = Modifier.clip(CircleShape).clickable(enabled = month < YearMonth.now()) { month = month.plusMonths(1); scope.launch { pager.scrollToPage(0) } }.padding(horizontal = 10.dp),
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Mes anterior", tint = Color.White, modifier = Modifier.clip(CircleShape).clickable { month = month.minusMonths(1); scope.launch { pager.scrollToPage(0) } }.padding(horizontal = 8.dp))
+                Text(mName.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color.White)
+                Icon(
+                    androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight, "Mes siguiente", tint = Color.White.copy(alpha = if (month < YearMonth.now()) 1f else 0.3f),
+                    modifier = Modifier.clip(CircleShape).clickable(enabled = month < YearMonth.now()) { month = month.plusMonths(1); scope.launch { pager.scrollToPage(0) } }.padding(horizontal = 8.dp),
                 )
                 Spacer(Modifier.weight(1f))
-                Box(Modifier.size(38.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
                     Icon(Icons.Filled.Close, "Cerrar", tint = Color.White)
                 }
             }
@@ -192,12 +195,12 @@ fun WrappedScreen(vm: FinanceViewModel, userName: String, onBack: () -> Unit) {
 }
 
 @Composable private fun Big(text: String, color: Color = Color.White) =
-    Text(text, fontSize = 46.sp, lineHeight = 50.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp, color = color)
+    Text(text, fontSize = 48.sp, lineHeight = 50.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp, color = color)
 
-@Composable private fun Small(text: String) = Text(text, fontSize = 17.sp, color = Color.White.copy(alpha = 0.75f))
+@Composable private fun Small(text: String) = Text(text, fontSize = 16.sp, color = Color.White.copy(alpha = 0.75f))
 
 @Composable private fun Body(text: String) =
-    Text(text, fontSize = 19.sp, lineHeight = 26.sp, color = Color.White.copy(alpha = 0.92f), modifier = Modifier.padding(top = 10.dp))
+    Text(text, fontSize = 20.sp, lineHeight = 28.sp, color = Color.White.copy(alpha = 0.92f), modifier = Modifier.padding(top = 8.dp))
 
 /** Última tarjeta: la ficha del mes y el botón para compartirla como imagen. */
 @Composable
@@ -207,15 +210,15 @@ private fun ShareStory(w: MonthWrapped, top: androidx.compose.ui.unit.Dp) {
     val scope = rememberCoroutineScope()
     Column(
         Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF101010), Color(0xFF050505))))
-            .padding(top = top + 80.dp, start = 18.dp, end = 18.dp).navigationBarsPadding(),
+            .padding(top = top + 80.dp, start = 16.dp, end = 16.dp).navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("TU FICHA DEL MES", fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.75f))
-        Spacer(Modifier.height(18.dp))
+        Text("TU FICHA DEL MES", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.75f))
+        Spacer(Modifier.height(16.dp))
         Box(Modifier.drawWithContent { layer.record { this@drawWithContent.drawContent() }; drawLayer(layer) }) {
             MonthShareCard(w)
         }
-        Spacer(Modifier.height(26.dp))
+        Spacer(Modifier.height(24.dp))
         Row(
             Modifier.clip(CircleShape).background(Color.White).clickable {
                 scope.launch {
@@ -231,14 +234,14 @@ private fun ShareStory(w: MonthWrapped, top: androidx.compose.ui.unit.Dp) {
                     }
                     context.startActivity(Intent.createChooser(send, "Compartir mi mes"))
                 }
-            }.padding(horizontal = 26.dp, vertical = 14.dp),
+            }.padding(horizontal = 24.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(Icons.Filled.Share, null, tint = Color.Black)
-            Spacer(Modifier.width(10.dp))
-            Text("Compartir", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Spacer(Modifier.width(8.dp))
+            Text("Compartir", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         }
-        Text("Se comparte como imagen. Nada sale de tu móvil hasta que tú eliges dónde.", fontSize = 13.sp, color = Color.White.copy(alpha = 0.55f), textAlign = TextAlign.Center, modifier = Modifier.padding(top = 14.dp))
+        Text("Se comparte como imagen. Nada sale de tu móvil hasta que tú eliges dónde.", fontSize = 14.sp, color = Color.White.copy(alpha = 0.55f), textAlign = TextAlign.Center, modifier = Modifier.padding(top = 16.dp))
     }
 }
 
@@ -251,41 +254,41 @@ fun MonthShareCard(w: MonthWrapped, modifier: Modifier = Modifier) {
     val len = w.month.lengthOfMonth()
     val shown = if (w.isCurrent) w.daysElapsed else len
     Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(34.dp))
+        modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp))
             .background(Brush.linearGradient(listOf(Color(0xFF0E2A1B), Color(0xFF1E4D33))))
-            .padding(horizontal = 24.dp, vertical = 22.dp),
+            .padding(horizontal = 24.dp, vertical = 24.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("‹  ${monthName(w.month).uppercase()} ⌄  ›", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = faded)
-            Text(if (w.isCurrent) "Hoy" else "Último día", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = faded)
+            Text(if (w.isCurrent) "Hoy" else "Último día", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = faded)
         }
-        Text(if (w.isCurrent) "En el banco" else "Balance del mes", fontSize = 17.sp, color = faded, modifier = Modifier.padding(top = 14.dp))
-        Text(if (w.isCurrent) money.format(w.bank) else money.signed(w.left), fontSize = 48.sp, lineHeight = 52.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.5).sp, color = Color.White, maxLines = 1)
+        Text(if (w.isCurrent) "En el banco" else "Balance del mes", fontSize = 16.sp, color = faded, modifier = Modifier.padding(top = 16.dp))
+        Text(if (w.isCurrent) money.format(w.bank) else money.signed(w.left), fontSize = 48.sp, lineHeight = 56.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.5).sp, color = Color.White, maxLines = 1)
         val max = (w.daily.take(shown).maxOrNull() ?: 0.0).coerceAtLeast(1.0)
-        Row(Modifier.fillMaxWidth().height(78.dp).padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().height(78.dp).padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
             (0 until len).forEach { i ->
                 val v = w.daily[i]
                 val last = i == shown - 1
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (last) Box(Modifier.size(5.dp).clip(CircleShape).background(Color.White))
+                    if (last) Box(Modifier.size(4.dp).clip(CircleShape).background(Color.White))
                     if (last) Spacer(Modifier.height(4.dp))
                     Box(
-                        Modifier.fillMaxWidth().height(if (i < shown) (6 + 54 * (v / max)).dp else 4.dp).clip(RoundedCornerShape(3.dp))
+                        Modifier.fillMaxWidth().height(if (i < shown) (6 + 54 * (v / max)).dp else 4.dp).clip(RoundedCornerShape(4.dp))
                             .background(if (last) Color.White else Color.White.copy(alpha = if (i < shown) 0.42f else 0.12f)),
                     )
                 }
             }
         }
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp)) {
-            Text(shortDay(w.month.atDay(1)), Modifier.weight(1f), fontSize = 13.sp, color = faded)
-            if (w.isCurrent) Text("Hoy · ${today.dayOfMonth}   ", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(shortDay(w.month.atEndOfMonth()), fontSize = 13.sp, color = faded)
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            Text(shortDay(w.month.atDay(1)), Modifier.weight(1f), fontSize = 14.sp, color = faded)
+            if (w.isCurrent) Text("Hoy · ${today.dayOfMonth}   ", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(shortDay(w.month.atEndOfMonth()), fontSize = 14.sp, color = faded)
         }
         Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Ingresos ", fontSize = 14.sp, color = faded)
-            Text("+${money.format(w.income)}", Modifier.weight(1f), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = NeonGreen, maxLines = 1)
+            Text("+${money.format(w.income)}", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonGreen, maxLines = 1)
             Text("Gastos ", fontSize = 14.sp, color = faded)
-            Text("−${money.format(w.spent)}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
+            Text("−${money.format(w.spent)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 1)
         }
         Text("Ahorra, vaca 🐄", fontSize = 12.sp, color = Color.White.copy(alpha = 0.4f), modifier = Modifier.padding(top = 12.dp))
     }

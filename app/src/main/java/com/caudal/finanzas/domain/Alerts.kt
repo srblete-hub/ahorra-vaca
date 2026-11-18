@@ -27,7 +27,7 @@ data class LimitAlert(val key: String, val title: String, val text: String, val 
 /** Avisos al acercarte (80 %) o pasarte (100 %) de lo de hoy, lo óptimo de la semana o un tipo de gasto. */
 object LimitAlerts {
     fun check(today: LocalDate, expenses: List<Expense>, bills: List<RecurringBill>, savingIds: Set<Long>, snap: LimitSnapshot, fmt: (Double) -> String): List<LimitAlert> {
-        fun isBill(e: Expense) = Budgeting.isBillPayment(e, bills)
+        fun isBill(e: Expense) = Budgeting.isFixed(e, bills)
         val variable = expenses.filter { it.categoryId !in savingIds && !isBill(it) }
         val out = mutableListOf<LimitAlert>()
 

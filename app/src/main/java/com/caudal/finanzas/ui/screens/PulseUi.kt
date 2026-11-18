@@ -48,14 +48,14 @@ import java.time.LocalDate
 import java.util.Locale
 
 private val es = Locale.forLanguageTag("es-ES")
-private val Bg = Color(0xFF14181C)
-private val Panel = Color(0xFF22272C)
-private val Track = Color(0xFF353B41)
-private val Optimal = Color(0xFF8A9096)
-private val Green = Color(0xFF16EC06)
-private val Yellow = Color(0xFFFFDE00)
-private val Red = Color(0xFFFF2B2B)
-private val Teal = Color(0xFF1BE3B8)
+private val Bg = Color(0xFF2E6B3F)        // Prado
+private val Panel = Color(0xFF24573A)
+private val Track = Color(0xFF3F7A51)
+private val Optimal = Color(0xFFB9D3BF)
+private val Green = Color(0xFFBFE3C6)     // Pasto claro sobre prado
+private val Yellow = Color(0xFFE9B949)    // Heno
+private val Red = Color(0xFFF5A3B4)       // Ubre clara
+private val Teal = Color(0xFFDCEBD3)
 
 fun zoneColor(z: Zone) = when (z) { Zone.GREEN -> Green; Zone.YELLOW -> Yellow; Zone.RED -> Red }
 
@@ -64,7 +64,7 @@ fun zoneColor(z: Zone) = when (z) { Zone.GREEN -> Green; Zone.YELLOW -> Yellow; 
 private fun Ring(fraction: Double, color: Color, optimal: Double?, size: Dp, content: @Composable () -> Unit) {
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {
-            val w = 9.dp.toPx()
+            val w = 8.dp.toPx()
             val arc = Size(this.size.width - w, this.size.height - w)
             val tl = Offset(w / 2, w / 2)
             drawArc(Track, 0f, 360f, false, tl, arc, style = Stroke(w))
@@ -73,7 +73,7 @@ private fun Ring(fraction: Double, color: Color, optimal: Double?, size: Dp, con
                 val a = Math.toRadians(-90.0 + o.coerceIn(0.0, 1.0) * 360)
                 val r = arc.width / 2
                 val c = Offset(this.size.width / 2, this.size.height / 2)
-                drawLine(Color.White, Offset(c.x + (r - w) * Math.cos(a).toFloat(), c.y + (r - w) * Math.sin(a).toFloat()), Offset(c.x + (r + w / 2) * Math.cos(a).toFloat(), c.y + (r + w / 2) * Math.sin(a).toFloat()), 3.dp.toPx(), StrokeCap.Round)
+                drawLine(Color(0xFFFFFDF8), Offset(c.x + (r - w) * Math.cos(a).toFloat(), c.y + (r - w) * Math.sin(a).toFloat()), Offset(c.x + (r + w / 2) * Math.cos(a).toFloat(), c.y + (r + w / 2) * Math.sin(a).toFloat()), 4.dp.toPx(), StrokeCap.Round)
             }
             drawArc(color, -90f, (fraction.coerceIn(0.0, 1.0) * 360).toFloat(), false, tl, arc, style = Stroke(w, cap = StrokeCap.Round))
         }
@@ -84,40 +84,40 @@ private fun Ring(fraction: Double, color: Color, optimal: Double?, size: Dp, con
 /** El panel: gasto de la semana y presión de gasto. Cada cuadro abre su ficha ([onOpen] con su clave). */
 @Composable
 fun PulseHeader(p: Pulse, onOpen: (String) -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Bg).padding(vertical = 22.dp, horizontal = 12.dp)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(Bg).padding(vertical = 24.dp, horizontal = 12.dp)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MonitorBox("GASTO DE\nLA SEMANA", Modifier.weight(1f), { onOpen("week") }) {
                 val c = zoneColor(p.weekZone)
-                Box(Modifier.size(34.dp).clip(RoundedCornerShape(8.dp)).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
-                    Text("${p.weekScore.toInt()}", color = c, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
+                    Text("${p.weekScore.toInt()}", color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Column {
-                    Text(when (p.weekZone) { Zone.GREEN -> "EN RANGO"; Zone.YELLOW -> "ALGO ALTO"; Zone.RED -> "ALTO" }, color = c, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 1.sp)
-                    Text("óptimo hoy: ${p.optimalScore.toInt()}", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+                    Text(when (p.weekZone) { Zone.GREEN -> "EN RANGO"; Zone.YELLOW -> "ALGO ALTO"; Zone.RED -> "ALTO" }, color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text("óptimo hoy: ${p.optimalScore.toInt()}", color = Color(0xFFFFFDF8).copy(alpha = 0.8f), fontSize = 14.sp)
                 }
             }
             MonitorBox("PRESIÓN\nDE GASTO", Modifier.weight(1f), { onOpen("pressure") }) {
                 val c = zoneColor(p.pressureZone)
-                Box(Modifier.size(34.dp).clip(RoundedCornerShape(8.dp)).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
-                    Text(String.format(es, "%.1f", p.pressure), color = c, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
+                    Text(String.format(es, "%.1f", p.pressure), color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Column {
-                    Text(p.pressureLabel, color = c, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 1.sp)
-                    Text("hoy", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+                    Text(p.pressureLabel, color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+                    Text("hoy", color = Color(0xFFFFFDF8).copy(alpha = 0.8f), fontSize = 14.sp)
                 }
             }
         }
-        Text(p.statement, color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, modifier = Modifier.padding(top = 14.dp, start = 8.dp, end = 8.dp))
+        Text(p.statement, color = Color(0xFFFFFDF8).copy(alpha = 0.85f), fontSize = 14.sp, modifier = Modifier.padding(top = 16.dp, start = 8.dp, end = 8.dp))
     }
 }
 
 @Composable
 private fun Big(value: String, unit: String) {
     Row(verticalAlignment = Alignment.Bottom) {
-        Text(value, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-        if (unit.isNotEmpty()) Text(unit, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+        Text(value, color = Color(0xFFFFFDF8), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        if (unit.isNotEmpty()) Text(unit, color = Color(0xFFFFFDF8), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
     }
 }
 
@@ -127,20 +127,20 @@ private fun RingItem(label: String, onClick: () -> Unit, ring: @Composable () ->
         ring()
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(label, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(14.dp))
+            Text(label, color = Color(0xFFFFFDF8), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color(0xFFFFFDF8).copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
         }
     }
 }
 
 @Composable
 private fun MonitorBox(title: String, modifier: Modifier, onClick: () -> Unit, content: @Composable () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(18.dp)).background(Panel).clickable(onClick = onClick).padding(14.dp)) {
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(Panel).clickable(onClick = onClick).padding(16.dp)) {
         Row {
-            Text(title, Modifier.weight(1f), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp, lineHeight = 17.sp)
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color.White.copy(alpha = 0.6f))
+            Text(title, Modifier.weight(1f), color = Color(0xFFFFFDF8), fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp, lineHeight = 16.sp)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color(0xFFFFFDF8).copy(alpha = 0.6f))
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) { content() }
     }
 }
@@ -152,16 +152,16 @@ fun PulseInfoSheet(key: String, p: Pulse, onDismiss: () -> Unit) {
     if (key !in setOf("cushion", "margin", "health")) { PressureVisualSheet(p, onDismiss); return }
     val money = LocalMoney.current
     val i = PulseCalculator.info(key, p, money::format, LocalDate.now())
-    val c = zoneColor(i.zone)
+    val c = darkOf(i.zone)
     FormSheet(i.title, onDismiss, primary = "Entendido", onPrimary = onDismiss) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(64.dp).clip(CircleShape).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
-                Text(i.value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = when (i.zone) { Zone.GREEN -> Color(0xFF0E9E05); Zone.YELLOW -> Color(0xFF8A7500); Zone.RED -> Red })
+                Text(i.value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = when (i.zone) { Zone.GREEN -> Color(0xFF2E6B3F); Zone.YELLOW -> Color(0xFFB7791F); Zone.RED -> Color(0xFFC2415C) })
             }
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Text(
                 when (i.zone) { Zone.GREEN -> "En verde"; Zone.YELLOW -> "En amarillo"; Zone.RED -> "En rojo" },
-                fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink,
+                fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink,
             )
         }
         Section("Qué mide", i.what)
@@ -174,8 +174,8 @@ fun PulseInfoSheet(key: String, p: Pulse, onDismiss: () -> Unit) {
 @Composable
 private fun Section(title: String, text: String) {
     Column {
-        Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
-        Text(text, fontSize = 15.sp, lineHeight = 21.sp, color = P.ink)
+        Text(title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
+        Text(text, fontSize = 16.sp, lineHeight = 20.sp, color = P.ink)
     }
 }
 
@@ -183,51 +183,51 @@ private fun Section(title: String, text: String) {
 @Composable
 fun CircleSheet(c: FinanceCircle, weekAgo: Double?, onDismiss: () -> Unit) {
     val z = zoneOf(c.score)
-    val color = when (z) { Zone.GREEN -> Color(0xFF0E9E05); Zone.YELLOW -> Color(0xFF8A7500); Zone.RED -> Red }
+    val color = when (z) { Zone.GREEN -> Color(0xFF2E6B3F); Zone.YELLOW -> Color(0xFFB7791F); Zone.RED -> Color(0xFFC2415C) }
     FormSheet(c.title, onDismiss, primary = "Entendido", onPrimary = onDismiss) {
-        Text(c.question, fontSize = 15.sp, color = P.muted)
+        Text(c.question, fontSize = 16.sp, color = P.muted)
         Row(verticalAlignment = Alignment.Bottom) {
             Text("${c.score.toInt()}", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = color)
-            Text("/100", fontSize = 18.sp, color = P.muted, modifier = Modifier.padding(bottom = 8.dp, start = 4.dp))
+            Text("/100", fontSize = 20.sp, color = P.muted, modifier = Modifier.padding(bottom = 8.dp, start = 4.dp))
         }
         Text(
             "Confianza de los datos: ${(c.confidence * 100).toInt()} %" +
                 if (c.confidence < 0.99) " · sin corregir sería ${c.raw.toInt()}; con pocos datos la nota se acerca a 50 hasta tener 6 meses de historial." else "",
-            fontSize = 13.sp, color = P.muted,
+            fontSize = 14.sp, color = P.muted,
         )
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(16.dp)) {
             Column {
-                Text("Qué ha cambiado", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
-                Text(FinancialCircles.changeText(c.score, weekAgo), fontSize = 15.sp, color = P.ink)
+                Text("Qué ha cambiado", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
+                Text(FinancialCircles.changeText(c.score, weekAgo), fontSize = 16.sp, color = P.ink)
             }
         }
         c.factors.forEach { f ->
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("${f.name} · ${(f.weight * 100).toInt()} %", Modifier.weight(1f), fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                    Text("${f.name} · ${(f.weight * 100).toInt()} %", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                     val s = f.score
                     Text(
-                        s?.let { String.format(es, "%.1f", it) } ?: "sin datos", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                        color = when { s == null -> P.muted; zoneOf(s) == Zone.GREEN -> Color(0xFF0E9E05); zoneOf(s) == Zone.YELLOW -> Color(0xFF8A7500); else -> Red },
+                        s?.let { String.format(es, "%.1f", it) } ?: "sin datos", fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                        color = when { s == null -> P.muted; zoneOf(s) == Zone.GREEN -> Color(0xFF2E6B3F); zoneOf(s) == Zone.YELLOW -> Color(0xFFB7791F); else -> Color(0xFFC2415C) },
                     )
                 }
-                Box(Modifier.fillMaxWidth().padding(vertical = 4.dp).height(6.dp).clip(RoundedCornerShape(3.dp)).background(P.chip)) {
-                    f.score?.let { s -> Box(Modifier.fillMaxWidth((s / 100).toFloat().coerceIn(0.02f, 1f)).height(6.dp).clip(RoundedCornerShape(3.dp)).background(zoneColor(zoneOf(s)))) }
+                Box(Modifier.fillMaxWidth().padding(vertical = 4.dp).height(8.dp).clip(RoundedCornerShape(4.dp)).background(P.chip)) {
+                    f.score?.let { s -> Box(Modifier.fillMaxWidth((s / 100).toFloat().coerceIn(0.02f, 1f)).height(8.dp).clip(RoundedCornerShape(4.dp)).background(darkOf(zoneOf(s)))) }
                 }
-                Text(f.detail, fontSize = 13.sp, color = P.muted)
+                Text(f.detail, fontSize = 14.sp, color = P.muted)
                 if (f.formula.isNotBlank()) Text("Fórmula: ${f.formula}", fontSize = 12.sp, color = P.muted.copy(alpha = 0.8f))
             }
         }
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(color.copy(alpha = 0.12f)).padding(14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(color.copy(alpha = 0.12f)).padding(16.dp)) {
             Column {
-                Text("Tu siguiente mejora", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
-                Text(c.nextStep, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                Text("Tu siguiente mejora", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
+                Text(c.nextStep, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
             }
         }
     }
 }
 
-private fun darkOf(z: Zone) = when (z) { Zone.GREEN -> Color(0xFF0E9E05); Zone.YELLOW -> Color(0xFF8A7500); Zone.RED -> Red }
+private fun darkOf(z: Zone) = when (z) { Zone.GREEN -> Color(0xFF2E6B3F); Zone.YELLOW -> Color(0xFFB7791F); Zone.RED -> Color(0xFFC2415C) }
 
 /** Gasto de la semana, de un vistazo: barra con la marca de hoy y una columna por día. */
 @Composable
@@ -238,44 +238,44 @@ private fun WeekVisualSheet(p: Pulse, onDismiss: () -> Unit) {
     val perDay = (0..6).map { i -> val d = monday.plusDays(i.toLong()); d to (p.days.firstOrNull { it.date == d }?.spent ?: 0.0) }
     val dailyOpt = p.weekOptimal / 7
     val maxV = maxOf(perDay.maxOf { it.second }, dailyOpt, 1.0) * 1.15
-    val zc = zoneColor(p.weekZone)
+    val zc = darkOf(p.weekZone)
     val track = P.chip
     val left = p.weekOptimal - p.weekSpent
     FormSheet("Gasto de la semana", onDismiss, primary = "Entendido", onPrimary = onDismiss) {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(money.format(p.weekSpent), fontSize = 36.sp, fontWeight = FontWeight.Bold, color = darkOf(p.weekZone))
-            Text("  de ${money.format(p.weekOptimal)}", fontSize = 16.sp, color = P.muted, modifier = Modifier.padding(bottom = 7.dp))
+            Text("  de ${money.format(p.weekOptimal)}", fontSize = 16.sp, color = P.muted, modifier = Modifier.padding(bottom = 8.dp))
         }
-        Canvas(Modifier.fillMaxWidth().height(20.dp)) {
+        Canvas(Modifier.fillMaxWidth().height(24.dp)) {
             val w = size.width; val h = size.height * 0.7f; val y = size.height * 0.15f
             drawRoundRect(track, topLeft = Offset(0f, y), size = Size(w, h), cornerRadius = CornerRadius(h / 2))
             val f = (p.weekSpent / maxOf(1.0, p.weekOptimal)).toFloat().coerceIn(0f, 1f)
             if (f > 0) drawRoundRect(zc, topLeft = Offset(0f, y), size = Size(w * f, h), cornerRadius = CornerRadius(h / 2))
             val m = (p.weekOptimalToDate / maxOf(1.0, p.weekOptimal)).toFloat().coerceIn(0f, 1f)
-            drawRect(Color(0xFF6E6E73), topLeft = Offset(w * m - 3f, 0f), size = Size(6f, size.height))
+            drawRect(Color(0xFF7C7566), topLeft = Offset(w * m - 3f, 0f), size = Size(6f, size.height))
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(width = 4.dp, height = 12.dp).background(Color(0xFF6E6E73)))
-            Text("  Lo que tocaba hasta hoy: ${money.format(p.weekOptimalToDate)}", fontSize = 13.sp, color = P.muted)
+            Box(Modifier.size(width = 4.dp, height = 12.dp).background(Color(0xFF7C7566)))
+            Text("  Lo que tocaba hasta hoy: ${money.format(p.weekOptimalToDate)}", fontSize = 14.sp, color = P.muted)
         }
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
             perDay.forEach { (d, v) ->
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(if (v > 0) v.toInt().toString() else "", fontSize = 11.sp, color = P.muted)
                     val c = when { d.isAfter(today) -> track; v <= dailyOpt -> Green; v <= dailyOpt * 1.5 -> Yellow; else -> Red }
-                    Box(Modifier.fillMaxWidth().height((110 * (v / maxV)).coerceAtLeast(4.0).dp).clip(RoundedCornerShape(6.dp)).background(c))
+                    Box(Modifier.fillMaxWidth().height((110 * (v / maxV)).coerceAtLeast(4.0).dp).clip(RoundedCornerShape(8.dp)).background(c))
                     Text(
-                        listOf("L", "M", "X", "J", "V", "S", "D")[d.dayOfWeek.value - 1], fontSize = 13.sp,
+                        listOf("L", "M", "X", "J", "V", "S", "D")[d.dayOfWeek.value - 1], fontSize = 14.sp,
                         fontWeight = if (d == today) FontWeight.Bold else FontWeight.Normal, color = if (d == today) P.ink else P.muted,
                     )
                 }
             }
         }
-        Text("Ideal: ~${money.format(dailyOpt)} al día", fontSize = 13.sp, color = P.muted, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(zc.copy(alpha = 0.16f)).padding(14.dp), contentAlignment = Alignment.Center) {
+        Text("Ideal: ~${money.format(dailyOpt)} al día", fontSize = 14.sp, color = P.muted, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(zc.copy(alpha = 0.16f)).padding(16.dp), contentAlignment = Alignment.Center) {
             Text(
                 if (left >= 0) "Margen de gasto: ${money.format(left)} hasta el domingo" else "Te has pasado ${money.format(-left)} esta semana",
-                fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = darkOf(p.weekZone),
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = darkOf(p.weekZone),
             )
         }
     }
@@ -288,11 +288,11 @@ private fun PressureVisualSheet(p: Pulse, onDismiss: () -> Unit) {
     val z = p.pressureZone
     FormSheet("Presión de gasto", onDismiss, primary = "Entendido", onPrimary = onDismiss) {
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(String.format(es, "%.1f×", p.pressure), fontSize = 44.sp, fontWeight = FontWeight.Bold, color = darkOf(z))
-            Text("  presión ${p.pressureLabel.lowercase()}", fontSize = 18.sp, color = P.muted, modifier = Modifier.padding(bottom = 9.dp))
+            Text(String.format(es, "%.1f×", p.pressure), fontSize = 48.sp, fontWeight = FontWeight.Bold, color = darkOf(z))
+            Text("  presión ${p.pressureLabel.lowercase()}", fontSize = 20.sp, color = P.muted, modifier = Modifier.padding(bottom = 8.dp))
         }
         val needleColor = P.ink
-        Canvas(Modifier.fillMaxWidth().height(34.dp)) {
+        Canvas(Modifier.fillMaxWidth().height(32.dp)) {
             val w = size.width; val h = 16f * density / 2; val y = size.height / 2 - h / 2
             fun x(v: Double) = (v / 2.0).toFloat().coerceIn(0f, 1f) * w
             drawRoundRect(Green, topLeft = Offset(0f, y), size = Size(x(1.0), h), cornerRadius = CornerRadius(h / 2))
@@ -311,15 +311,15 @@ private fun PressureVisualSheet(p: Pulse, onDismiss: () -> Unit) {
             Column {
                 Row {
                     Text(label, Modifier.weight(1f), fontSize = 14.sp, color = P.muted)
-                    Text(money.format(v), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    Text(money.format(v), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 }
                 Box(
-                    Modifier.padding(top = 4.dp).fillMaxWidth((v / top).toFloat().coerceIn(0.02f, 1f)).height(12.dp).clip(RoundedCornerShape(6.dp))
-                        .background(if (i == 0) zoneColor(z) else Color(0xFFB0B0B5)),
+                    Modifier.padding(top = 4.dp).fillMaxWidth((v / top).toFloat().coerceIn(0.02f, 1f)).height(12.dp).clip(RoundedCornerShape(8.dp))
+                        .background(if (i == 0) darkOf(z) else Color(0xFFCFC7B6)),
                 )
             }
         }
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(zoneColor(z).copy(alpha = 0.16f)).padding(14.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(darkOf(z).copy(alpha = 0.16f)).padding(16.dp), contentAlignment = Alignment.Center) {
             Text(
                 when (z) {
                     Zone.GREEN -> "Hoy aún puedes gastar ${money.format(maxOf(0.0, p.todayAllowance - p.spentToday))}"

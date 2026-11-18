@@ -1,5 +1,9 @@
 package com.caudal.finanzas.ui.screens
 
+import androidx.compose.foundation.layout.size
+
+import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -126,16 +130,16 @@ fun WealthScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
         Bucket("Acciones", "${stocks.size} posiciones", stockValue, InvestedColor, Icons.AutoMirrored.Filled.TrendingUp) { onOpenInvest(InvestKind.STOCKS) },
     )
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { ScreenTitle("Patrimonio") { args.headerActions() } }
 
         item {
             MintCard {
                 Row(
-                    Modifier.fillMaxWidth().clip(CircleShape).background(P.ink.copy(alpha = 0.05f)).padding(3.dp),
+                    Modifier.fillMaxWidth().clip(CircleShape).background(P.ink.copy(alpha = 0.05f)).padding(4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) { Period.entries.forEach { p -> Pill(p.label, p == period, { period = p }) } }
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(16.dp))
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Overline("Patrimonio neto")
                     Spacer(Modifier.height(4.dp))
@@ -145,12 +149,12 @@ fun WealthScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
                         (if (change >= 0) "↑ " else "↓ ") + money.signed(change) +
                             (if (changeBase > 0) " (${signedPct(change / changeBase * 100)})" else "") + " · ${period.label.lowercase()}  ›",
                         style = MaterialTheme.typography.labelLarge, color = gainColor(change), textAlign = TextAlign.Center,
-                        modifier = Modifier.clip(CircleShape).clickable { showWhy = true }.padding(horizontal = 10.dp, vertical = 4.dp),
+                        modifier = Modifier.clip(CircleShape).clickable { showWhy = true }.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
-                    if (why != null) Text(why, fontSize = 13.sp, color = P.muted, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp))
+                    if (why != null) Text(why, fontSize = 14.sp, color = P.muted, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp))
                 }
-                Spacer(Modifier.height(10.dp))
-                LineChart(series, P.gain, Modifier.fillMaxWidth().height(110.dp))
+                Spacer(Modifier.height(8.dp))
+                LineChart(series, P.gain, Modifier.fillMaxWidth().height(112.dp))
             }
         }
 
@@ -164,12 +168,39 @@ fun WealthScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
                     below = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             ProgressLine(if (total > 0) b.value / total else 0.0, b.color, Modifier.weight(1f))
-                            Spacer(Modifier.width(10.dp))
+                            Spacer(Modifier.width(8.dp))
                             Text(if (total > 0) pct(b.value / total * 100) else "—", style = MaterialTheme.typography.labelSmall, color = P.muted)
                         }
                     },
                 )
             }
+        }
+
+        // ---------- Objetivo de ahorro: cuánto llevas y cuánto falta ----------
+        planning?.data?.let { d ->
+            val goal = planning?.goals?.firstOrNull()
+            val main = d.accounts.filter { it.type == com.caudal.finanzas.data.AccountType.BANK }.maxByOrNull { it.balance }
+            val savings = d.accounts.filter { it.isSaving() }.maxByOrNull { it.balance }
+            val cash = com.caudal.finanzas.domain.CashPlanner.of(d, settings.bankBuffer)
+            if (goal != null) item(key = "goal-hero") {
+                val tip = com.caudal.finanzas.domain.PepeSuggest.of(d, cash, goal, money::format)
+                SavingsGoalHero(
+                    goal, com.caudal.finanzas.domain.PepeSuggest.weekly(d, transfersAll), tip?.amount, settings.savingsLocked, settings.weeklyTip,
+                    onWithdraw = { savings?.let { args.onEdit(Editing.TransferForm(it.id)) } },
+                    onAdd = { main?.let { args.onEdit(Editing.TransferForm(it.id)) } },
+                    onLock = { vm.setSavingsLocked(!settings.savingsLocked) },
+                    onWeeklyTip = { vm.setWeeklyTip(it) },
+                    onEdit = { args.onEdit(Editing.GoalForm(0)) },
+                )
+            } else item { SavingsGoalCard(null) { args.onEdit(Editing.GoalForm(null)) } }
+            com.caudal.finanzas.domain.TypicalSpend.of(d)?.let { t -> item(key = "typical") { TypicalMonthCard(t) } }
+            planning?.goals?.takeIf { it.isNotEmpty() }?.let { gs -> item(key = "goal-rings") { GoalsRingList(gs) { args.onEdit(Editing.GoalForm(it)) } } }
+            cash?.let { c -> item(key = "cash-plan-w") {
+                CashPlanCard(
+                    c, onCushion = { vm.setBankBuffer(it) },
+                    onMoveFromSavings = if (savings != null && !settings.savingsLocked) ({ args.onEdit(Editing.TransferForm(savings.id)) }) else null,
+                )
+            } }
         }
 
         item {
@@ -184,7 +215,7 @@ fun WealthScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
         }
         listOf("Disponible" to availableAccounts, "Ahorro" to savingAccounts, "Deudas" to debtAccounts).filter { it.second.isNotEmpty() }.forEach { (label, list) ->
             item(key = "h-$label") {
-                Overline("$label · ${money.format(list.sumOf { it.balance })}", Modifier.padding(start = 6.dp, top = 4.dp))
+                Overline("$label · ${money.format(list.sumOf { it.balance })}", Modifier.padding(start = 8.dp, top = 4.dp))
             }
             item(key = "l-$label") {
                 CardList(list, key = { it.id }) { a ->
@@ -224,21 +255,21 @@ private fun WealthChangeSheet(d: com.caudal.finanzas.domain.FinanceData, fromDay
         .mapNotNull { (n, s, v) -> dayChanges[s]?.let { pct -> Triple("$n ($s)", pct, v - v / (1 + pct / 100)) } }
         .sortedByDescending { kotlin.math.abs(it.third) }
     com.caudal.finanzas.ui.FormSheet("Por qué ha cambiado", onDismiss, primary = "Entendido", onPrimary = onDismiss) {
-        Text("${money.signed(change)} · $periodLabel", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = gainColor(change))
+        Text("${money.signed(change)} · $periodLabel", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = gainColor(change))
         WhyLine("Lo que ha entrado en tus cuentas", inTotal, P.gain)
         WhyLine("Lo que has gastado", -outTotal, P.loss)
         WhyLine("Inversiones y ajustes de saldo", market, gainColor(market))
         Text("Las transferencias entre tus cuentas no cambian el total. Si corriges a mano el saldo de una cuenta, la diferencia sale en «ajustes de saldo».",fontSize = 12.sp, color = P.muted)
         if (moves.isNotEmpty()) {
-            Text("Tus inversiones hoy (24 h)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Tus inversiones hoy (24 h)", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
             moves.forEach { (n, pct, v) -> MoveLine(n, "${signedPct(pct)} en 24 h", v) }
         }
         if (incomes.isNotEmpty()) {
-            Text("Entradas", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Entradas", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
             incomes.take(15).forEach { MoveLine(it.note.ifBlank { "Ingreso" }, dayLabel(it.epochDay) + " · " + (d.accounts.firstOrNull { a -> a.id == it.accountId }?.name ?: ""), it.amount) }
         }
         if (spent.isNotEmpty()) {
-            Text("Salidas (las más grandes)", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Salidas (las más grandes)", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
             spent.sortedByDescending { it.amount }.take(15).forEach { MoveLine(it.note.ifBlank { "Gasto" }, dayLabel(it.epochDay) + " · " + (d.accounts.firstOrNull { a -> a.id == it.accountId }?.name ?: ""), -it.amount) }
         }
     }
@@ -246,9 +277,9 @@ private fun WealthChangeSheet(d: com.caudal.finanzas.domain.FinanceData, fromDay
 
 @Composable
 private fun WhyLine(label: String, value: Double, color: androidx.compose.ui.graphics.Color) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
-        Text(label, Modifier.weight(1f), fontSize = 15.sp, color = P.ink)
-        Text(LocalMoney.current.signed(value), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = color)
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(label, Modifier.weight(1f), fontSize = 16.sp, color = P.ink)
+        Text(LocalMoney.current.signed(value), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = color)
     }
 }
 
@@ -260,5 +291,46 @@ private fun MoveLine(title: String, sub: String, value: Double) {
             Text(sub, fontSize = 12.sp, color = P.muted)
         }
         Text(LocalMoney.current.signed(value), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = gainColor(value))
+    }
+}
+
+/** Anillo con lo que llevas de tu objetivo de ahorro, lo que te falta y a qué ritmo. */
+@Composable
+private fun SavingsGoalCard(g: com.caudal.finanzas.domain.GoalStatus?, onEdit: () -> Unit) {
+    val money = LocalMoney.current
+    com.caudal.finanzas.ui.MCard {
+        if (g == null) {
+            Text("Tu objetivo de ahorro", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Ponte una meta (un viaje, un colchón, una entrada…) y verás aquí cuánto te falta.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(top = 4.dp))
+            com.caudal.finanzas.ui.BrandButton("Poner objetivo", onEdit, Modifier.fillMaxWidth().padding(top = 12.dp))
+            return@MCard
+        }
+        val frac = if (g.goal.target > 0) (g.current / g.goal.target).coerceIn(0.0, 1.0) else 0.0
+        val left = (g.goal.target - g.current).coerceAtLeast(0.0)
+        Row(Modifier.clickable(onClick = onEdit), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(112.dp), contentAlignment = Alignment.Center) {
+                val track = P.chip
+                androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                    val st = androidx.compose.ui.graphics.drawscope.Stroke(12.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                    drawArc(track, -90f, 360f, false, style = st)
+                    if (frac > 0) drawArc(SavingsColor, -90f, (360 * frac).toFloat(), false, style = st)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("${(frac * 100).toInt()} %", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = P.ink)
+                    Text("hecho", fontSize = 12.sp, color = P.muted)
+                }
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text("OBJETIVO DE AHORRO", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = P.muted)
+                Text(g.goal.name.ifBlank { "Mi objetivo" }, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
+                Text("${money.format(g.current)} de ${money.format(g.goal.target)}", fontSize = 16.sp, color = P.ink, modifier = Modifier.padding(top = 4.dp))
+                Text(
+                    if (left <= 0) "¡Conseguido!"
+                    else "Te faltan ${money.format(left)}" + if (g.monthsLeft > 0) " · ${g.monthsLeft} ${if (g.monthsLeft == 1) "mes" else "meses"} (~${money.format(g.requiredMonthly)}/mes)" else "",
+                    fontSize = 14.sp, color = if (left <= 0) P.gain else P.muted, modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+        }
     }
 }

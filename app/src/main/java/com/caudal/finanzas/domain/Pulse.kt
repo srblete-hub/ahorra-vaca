@@ -98,7 +98,7 @@ object PulseCalculator {
         val cost = Insights.costOfLiving(d).monthly
         val cushion = if (cost > 0) min(100.0, d.wealth.savings / (cost * 3) * 100) else 100.0
         val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-        val weekSpent = d.spending.filter { it.epochDay in monday.toEpochDay()..today.toEpochDay() && !Budgeting.isBillPayment(it, d.bills) }.sumOf { it.amount }
+        val weekSpent = d.spending.filter { it.epochDay in monday.toEpochDay()..today.toEpochDay() && !Budgeting.isFixed(it, d.bills) }.sumOf { it.amount }
         val weekOptimal = base / month.lengthOfMonth() * 7
         val weekToDate = weekOptimal * today.dayOfWeek.value / 7
         val spentMonth = spentUntil(today)

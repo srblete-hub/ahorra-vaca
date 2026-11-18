@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -143,8 +144,21 @@ class AppTourTest {
         }
     }
 
+    /** Vuelve a ver Inicio arriba del todo (Inicio recuerda dónde te quedaste). */
+    private fun homeTop() {
+        compose.waitUntil(8_000) {
+            if (!exists("PRESIÓN")) runCatching {
+                compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange))
+                    .onFirst().performScrollToIndex(0)
+            }
+            exists("PRESIÓN")
+        }
+    }
+
     private fun scrollTo(text: String) {
-        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text, substring = true))
+        // La lista vertical de la pantalla (no los carruseles horizontales que haya dentro).
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange))
+            .onFirst().performScrollToNode(hasText(text, substring = true))
         compose.waitForIdle()
     }
 
@@ -238,7 +252,7 @@ class AppTourTest {
         shot("28c_panel_ficha_presion")
         compose.onNodeWithText("Entendido").performScrollTo().performClick()
         compose.waitUntil(5_000) { !exists("1,0 lo de hoy") }
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
         compose.onNodeWithContentDescription("Noticias").performClick()
         compose.waitUntil(5_000) { exists("Ethereum cae") }
         shot("30_noticias")
@@ -253,20 +267,31 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("Te has quedado sin noticias") }
         shot("30c_noticias_fin")
         compose.onNodeWithContentDescription("Cerrar").performClick()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
+        scrollTo("¿Lo compro o no?")
+        compose.onNode(hasSetTextAction() and hasText("Qué es", substring = true)).performTextInput("Camiseta Eme Studio")
+        compose.onNode(hasSetTextAction() and hasText("Cuánto cuesta", substring = true)).performTextInput("25")
+        shot("05e_lo_compro")
+        compose.onNodeWithText("Simular").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitUntil(5_000) { exists("Horas de trabajo") }
+        shot("05f_lo_compro_resultado")
+        compose.onNodeWithText("Entendido").performScrollTo().performClick()
+        compose.waitUntil(5_000) { !exists("Horas de trabajo") }
+        scrollTo("Pregúntale a Pepe")
+        shot("05g_pepe")
+        compose.onNodeWithText("¿En qué puedo recortar?").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitUntil(5_000) { exists("Escribe a Pepe") }
+        shot("05h_pepe_chat")
+        compose.onNodeWithContentDescription("Cerrar").performClick()
+        compose.waitUntil(5_000) { !exists("Escribe a Pepe") }
         scrollTo("Últimos movimientos")
         shot("05_movimientos")
-        scrollTo("Tu reparto")
-        shot("05a_reparto")
-        scrollTo("Robinhood este mes")
-        shot("05a2_reparto_robinhood")
-        scrollTo("Puedes gastar")
-        shot("05b_inicio_gastar")
-        scrollTo("este mes para gastar")
-        shot("05d_rueda")
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp(startY = centerY + 300f, endY = centerY - 300f) }
-        compose.waitForIdle()
-        shot("05d2_rueda_lista")
+        scrollTo("Tu dinero en el banco")
+        shot("05a_plan_nomina")
+        scrollTo("Colchón ")
+        shot("05a2_plan_nomina_detalle")
+        if (exists("Pepe te recomienda")) { scrollTo("Pepe te recomienda"); shot("05a3_pepe_recomienda") }
+        if (exists("LECTURA SEMANAL")) { scrollTo("LECTURA SEMANAL"); shot("05a4_lectura_semanal") }
         scrollTo("Consejos para llegar")
         shot("05e_objetivo")
         scrollTo("EDAD FINANCIERA")
@@ -274,11 +299,11 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("RITMO DE MADURACIÓN") }
         shot("26_edad_financiera")
         scrollTo("QUÉ TE SUMA")
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp() }
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
         compose.waitForIdle()
         shot("26b_edad_factores")
         back()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        compose.waitUntil(5_000) { !exists("RITMO DE MADURACIÓN") }
 
         // --- ¿Me lo compro? ---
         scrollTo("¿Me lo compro?")
@@ -288,12 +313,12 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("COMPRARLO AHORA") }
         shot("27_me_lo_compro")
         back()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
         scrollTo("¿SABÍAS QUE")
         shot("05c_inicio_intereses")
         scrollTo("Gasto detectado")
         shot("05d_inicio_mes")
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         compose.onNodeWithContentDescription("Ocultar importes").performClick()
         shot("06_inicio_importes_ocultos")
         compose.onNodeWithContentDescription("Mostrar importes").performClick()
@@ -306,13 +331,18 @@ class AppTourTest {
         scrollTo("Total:")
         shot("06c_futuro_fijos")
         back()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
 
         // --- Una cuenta por dentro + transferir ---
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
-        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Santander"))
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
+        // La fila de la cuenta en "Cuentas" (su texto junta el nombre y "Cuenta bancaria").
+        val accountRow = hasText("Santander") and hasText("Cuenta bancaria", substring = true)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToNode(accountRow)
+        // Que no quede debajo de la barra flotante de abajo.
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp(startY = centerY, endY = centerY - 600f) }
         compose.waitForIdle()
-        compose.onAllNodesWithText("Santander").onFirst().performClick()
+        shot("18z_inicio_cuentas")
+        compose.onAllNodes(accountRow).onFirst().performClick()
         compose.waitUntil(5_000) { exists("Ajustar saldo") }
         shot("19_cuenta")
         compose.onNodeWithText("Transferir").performClick()
@@ -322,21 +352,27 @@ class AppTourTest {
         compose.onNodeWithContentDescription("Cerrar").performClick()
         compose.waitUntil(5_000) { !exists("Hacia") }
         back()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
 
         tab("Patrimonio")
         compose.waitUntil(5_000) { exists("PATRIMONIO NETO") }
         shot("07_patrimonio")
+        scrollTo("Progreso del objetivo"); shot("07c_objetivo_ahorro")
+        scrollTo("Ahorro semanal"); shot("07d_objetivo_semanas")
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         compose.onAllNodesWithText("  ›", substring = true).onFirst().performClick()
         compose.waitUntil(5_000) { exists("Por qué ha cambiado") }
         shot("07b_patrimonio_por_que")
         compose.onNodeWithText("Entendido").performScrollTo().performClick()
         compose.waitUntil(5_000) { !exists("Por qué ha cambiado") }
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(4)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(4)
         shot("08_patrimonio_cuentas")
 
         // Cuenta remunerada: calculadora de intereses.
-        compose.onNodeWithText("Robinhood").performClick()
+        scrollTo("Tus cuentas")
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
+        compose.waitForIdle()
+        compose.onAllNodesWithText("Robinhood").onFirst().performClick()
         compose.waitUntil(5_000) { exists("Ajustar saldo") }
         shot("08a_cuenta_ing")
         compose.onNodeWithText("Editar").performClick()
@@ -352,6 +388,28 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("PATRIMONIO NETO") }
 
         tab("Movimientos")
+        compose.waitUntil(5_000) { exists("Buscar movimientos") }
+        shot("09_mov_lista")
+        scrollTo("Transacciones"); shot("09_mov_lista_transacciones")
+        scrollTo("Mercadona")
+        compose.onAllNodesWithText("Mercadona").onFirst().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnLongClick)
+        compose.waitUntil(5_000) { exists("1 movimiento") }
+        compose.onAllNodesWithText("Monster Energy").onFirst().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        compose.waitUntil(5_000) { exists("2 movimientos") }
+        shot("09_mov_lista_suma")
+        compose.onNodeWithText("Listo").performClick()
+        compose.waitUntil(5_000) { !exists("2 movimientos") }
+        compose.onNodeWithText("Calendario").performClick()
+        compose.waitUntil(5_000) { exists("INGRESADO") }
+        shot("09_mov_calendario")
+        scrollTo("Dentro de lo tuyo"); shot("09_mov_calendario_leyenda")
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
+        compose.onNodeWithText("Gráficas").performClick()
+        compose.waitUntil(5_000) { exists("Total gastado") }
+        shot("09_mov_graficas")
+        scrollTo("Por meses"); shot("09_mov_graficas_meses")
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
+        compose.onNodeWithText("Resumen").performClick()
         compose.waitUntil(5_000) { exists("Ha entrado") }
         shot("09_presupuesto")
         scrollTo("Ver tu futuro")
@@ -360,7 +418,7 @@ class AppTourTest {
         shot("09b_presupuesto_reparto")
 
         // --- En qué se ha ido y análisis ---
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         scrollTo("¿En qué se ha ido?")
         shot("09c_gastos_en_que")
         scrollTo("Cuentas con amigos")
@@ -382,7 +440,7 @@ class AppTourTest {
         scrollTo("GASTOS QUE PUEDES COMPARTIR"); shot("23e_analisis_compartir")
         scrollTo("¿Y SI…?"); shot("23f_analisis_ysi")
         scrollTo("Simulador de decisiones")
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp() }
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
         compose.waitForIdle()
         compose.onNodeWithText("Simulador de decisiones").performClick()
         compose.waitUntil(5_000) { exists("¿Qué pasaría si…?") }
@@ -392,7 +450,7 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("Ha entrado") }
 
 
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         compose.onNodeWithContentDescription("Añadir").performClick()
         compose.waitUntil(5_000) { exists("¿Qué quieres añadir?") }
         shot("10_anadir")
@@ -427,7 +485,7 @@ class AppTourTest {
         shot("12a_cripto_activos")
         scrollTo("Las más populares")
         shot("12g_cripto_mercado")
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         scrollTo("Activos")
         compose.onAllNodesWithText("Ethereum").onFirst().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitUntil(5_000) { exists("Precio de Ethereum") }
@@ -448,7 +506,7 @@ class AppTourTest {
         compose.waitUntil(5_000) { !exists("¿Cuánto dinero tienes en Bitcoin?") }
         back()
         compose.waitUntil(5_000) { exists("Favoritas") }
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         compose.onAllNodesWithText("Acciones").onFirst().performClick()
         compose.waitUntil(5_000) { exists("AAPL") }
         shot("13_acciones")
@@ -461,8 +519,10 @@ class AppTourTest {
         compose.waitUntil(5_000) { !exists("No la tienes") }
 
         tab("Perfil")
-        compose.waitUntil(5_000) { exists("TU NIVEL") }
+        compose.waitUntil(5_000) { exists("RACHA ACTUAL") }
         shot("17_perfil")
+        scrollTo("TU ACTIVIDAD"); shot("17a_perfil_racha")
+        scrollTo("TU WRAPPED")
         compose.onNodeWithText("TU WRAPPED").performClick()
         compose.waitUntil(5_000) { exists("Hola,") }
         shot("29_wrapped_1")
@@ -476,13 +536,13 @@ class AppTourTest {
         compose.waitUntil(5_000) { exists("TU FICHA DEL MES") }
         shot("29z_wrapped_ficha")
         compose.onNodeWithContentDescription("Cerrar").performClick()
-        compose.waitUntil(5_000) { exists("TU NIVEL") }
+        compose.waitUntil(5_000) { exists("RACHA ACTUAL") }
         scrollTo("Amigos")
         shot("17b_perfil_logros")
 
         // --- Amigos ---
         scrollTo("Crear cuenta o entrar")
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp() }
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
         compose.waitForIdle()
         compose.onNodeWithText("Crear cuenta o entrar").performClick()
         compose.waitUntil(5_000) { exists("Tu cuenta de Ahorra, vaca") }
@@ -496,7 +556,7 @@ class AppTourTest {
         closeCelebration()
         scrollTo("TUS AMIGOS")
         // Hasta el final, para que nada quede debajo de la barra flotante.
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp() }
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
         compose.waitForIdle()
         shot("18a_amigos")
         compose.onNodeWithText("Aceptar").performClick()
@@ -512,7 +572,7 @@ class AppTourTest {
         compose.onNodeWithContentDescription("Cerrar").performClick()
         compose.waitUntil(5_000) { !exists("@ de tu amigo") }
 
-        compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp() }
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp() }
         compose.waitForIdle()
         compose.onNodeWithText("Ana").performClick()
         compose.waitUntil(5_000) { exists("Racha de 3") }
@@ -520,7 +580,7 @@ class AppTourTest {
         compose.onNodeWithContentDescription("Cerrar").performClick()
         compose.waitUntil(5_000) { !exists("SUS LOGROS") }
 
-        compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+        compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performScrollToIndex(0)
         compose.waitUntil(5_000) { compose.onAllNodesWithContentDescription("Verificado").fetchSemanticsNodes().isNotEmpty() }
         shot("18d_perfil_verificado")
 
@@ -537,20 +597,20 @@ class AppTourTest {
         shot("16_pin_incorrecto")
         assertTrue(exists("PIN incorrecto. Te quedan 4 intentos."))
         typePin("123456")
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
 
         // --- Modo oscuro ---
         org.robolectric.RuntimeEnvironment.setQualifiers("+night")
         compose.activityRule.scenario.recreate()
-        compose.waitUntil(5_000) { exists("PRESIÓN") }
+        homeTop()
         closeCelebration()
         shot("20_oscuro_inicio")
-        scrollTo("Puedes gastar")
+        scrollTo("Tu dinero en el banco")
         shot("20b_oscuro_gastar")
         tab("Patrimonio")
         shot("21_oscuro_patrimonio")
         tab("Perfil")
-        compose.waitUntil(5_000) { exists("TU NIVEL") }
+        compose.waitUntil(5_000) { exists("RACHA ACTUAL") }
         shot("22_oscuro_perfil")
     }
 

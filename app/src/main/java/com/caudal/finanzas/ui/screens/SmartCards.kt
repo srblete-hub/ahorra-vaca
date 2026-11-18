@@ -79,7 +79,7 @@ fun LeaksCard(leaks: List<Leak>, onReview: (Leak) -> Unit) {
             IconTile(Icons.Filled.Visibility, SeriesColors[6], 40.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Dinero invisible", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("Dinero invisible", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("Pequeñas fugas que, juntas, pesan", fontSize = 14.sp, color = P.muted)
             }
         }
@@ -88,25 +88,25 @@ fun LeaksCard(leaks: List<Leak>, onReview: (Leak) -> Unit) {
             Text("No veo fugas: ni comisiones, ni compras pequeñas que se repitan, ni subidas de precio.", fontSize = 14.sp, color = P.muted)
             return@MCard
         }
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SeriesColors[6].copy(alpha = 0.10f)).padding(14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SeriesColors[6].copy(alpha = 0.10f)).padding(16.dp)) {
             Text(
                 "${if (leaks.size == 1) "Este gasto suma" else "Estos ${leaks.size} gastos suman"} ${money.format(leaks.sumOf { it.yearly })} al año",
-                fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = P.ink,
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink,
             )
         }
         leaks.forEachIndexed { i, l ->
             if (i > 0) HorizontalDivider(color = P.line, thickness = 0.6.dp)
-            Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(l.name, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink, maxLines = 1)
-                    Text("${l.kind.label} · ${l.detail}", fontSize = 13.sp, color = P.muted)
+                    Text("${l.kind.label} · ${l.detail}", fontSize = 14.sp, color = P.muted)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(money.format(l.yearly), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = if (l.kind == LeakKind.PRICE_UP || l.kind == LeakKind.FEE) P.loss else P.ink)
+                    Text(money.format(l.yearly), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (l.kind == LeakKind.PRICE_UP || l.kind == LeakKind.FEE) P.loss else P.ink)
                     Text("al año", fontSize = 12.sp, color = P.muted)
                 }
                 Spacer(Modifier.width(8.dp))
-                Text("Revisar", fontSize = 14.sp, color = P.gain, modifier = Modifier.clip(CircleShape).clickable { onReview(l) }.padding(6.dp))
+                Text("Revisar", fontSize = 14.sp, color = P.gain, modifier = Modifier.clip(CircleShape).clickable { onReview(l) }.padding(8.dp))
             }
         }
     }
@@ -120,15 +120,15 @@ fun AnomaliesCard(list: List<Anomaly>, onOpen: (Anomaly) -> Unit) {
             IconTile(Icons.Filled.ReportProblem, Orange, 40.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Algo distinto a lo normal", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("Algo distinto a lo normal", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("Comparado contigo mismo, no con otros", fontSize = 14.sp, color = P.muted)
             }
         }
-        if (list.isEmpty()) Text("Todo dentro de lo habitual este mes.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(top = 10.dp))
+        if (list.isEmpty()) Text("Todo dentro de lo habitual este mes.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
         list.forEach { a ->
             Row(Modifier.fillMaxWidth().padding(top = 12.dp).clip(RoundedCornerShape(12.dp)).clickable(enabled = a.expense != null) { onOpen(a) }) {
-                Box(Modifier.padding(top = 6.dp).size(9.dp).clip(CircleShape).background(if (a.severe) P.loss else Orange))
-                Spacer(Modifier.width(10.dp))
+                Box(Modifier.padding(top = 8.dp).size(8.dp).clip(CircleShape).background(if (a.severe) P.loss else Orange))
+                Spacer(Modifier.width(8.dp))
                 Column {
                     Text(a.title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                     Text(a.detail, fontSize = 14.sp, color = P.muted)
@@ -145,20 +145,20 @@ fun GoalsSection(
     onAdd: () -> Unit, onEdit: (Int) -> Unit, onMove: (Int, Int) -> Unit, onApplyPct: ((Double) -> Unit)?,
 ) {
     if (goals.isEmpty()) { GoalCard(null, onEdit = onAdd, onApplyPct = null); return }
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(if (goals.size == 1) "Tu objetivo" else "Tus objetivos, por prioridad", Modifier.weight(1f), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
             TextButton(onClick = onAdd) { Icon(Icons.Filled.Add, null, tint = P.gain); Text(" Añadir", color = P.gain) }
         }
         goals.forEachIndexed { i, g ->
-            if (goals.size > 1) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
+            if (goals.size > 1) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp)) {
                 Text("Prioridad ${i + 1}", Modifier.weight(1f), fontSize = 14.sp, fontWeight = FontWeight.Medium, color = P.muted)
                 if (i > 0) RoundIconButton(Icons.Filled.KeyboardArrowUp, "Subir prioridad de ${g.goal.name}", onClick = { onMove(i, -1) })
-                if (i < goals.lastIndex) { Spacer(Modifier.width(6.dp)); RoundIconButton(Icons.Filled.KeyboardArrowDown, "Bajar prioridad de ${g.goal.name}", onClick = { onMove(i, 1) }) }
+                if (i < goals.lastIndex) { Spacer(Modifier.width(8.dp)); RoundIconButton(Icons.Filled.KeyboardArrowDown, "Bajar prioridad de ${g.goal.name}", onClick = { onMove(i, 1) }) }
             }
             GoalCard(g, onEdit = { onEdit(i) }, onApplyPct = if (i == 0) onApplyPct else null)
         }
-        if (swapText != null) Text(swapText, fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(horizontal = 6.dp))
+        if (swapText != null) Text(swapText, fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(horizontal = 8.dp))
     }
 }
 
@@ -179,13 +179,13 @@ fun PurchaseScreen(vm: FinanceViewModel, onBack: () -> Unit) {
 
     LazyColumn(
         Modifier.fillMaxSize().background(P.bg),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text("¿Me lo compro?", style = MaterialTheme.typography.headlineMedium, color = P.ink)
                     Text("No te digo que no: te enseño qué pasa en cada caso", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -194,9 +194,9 @@ fun PurchaseScreen(vm: FinanceViewModel, onBack: () -> Unit) {
         }
         item {
             MCard {
-                Text("¿Cuánto cuesta?", fontSize = 15.sp, color = P.muted)
+                Text("¿Cuánto cuesta?", fontSize = 16.sp, color = P.muted)
                 BigAmountInput(price, { price = it }, currencySymbol(money.currency))
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
                 AmountField(cheaper, { cheaper = it }, "Alternativa más barata (vacío = un 30 % menos)", suffix = "€")
             }
         }
@@ -208,9 +208,9 @@ fun PurchaseScreen(vm: FinanceViewModel, onBack: () -> Unit) {
                 val content: @Composable () -> Unit = {
                     Overline(o.title)
                     Spacer(Modifier.height(4.dp))
-                    Text(money.format(o.cost), fontSize = 26.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                    Spacer(Modifier.height(6.dp))
-                    Text(PurchaseSimulator.goalDelayText(o.goalDelayDays, goalName), fontSize = 15.sp, fontWeight = FontWeight.Medium, color = if ((o.goalDelayDays ?: 0) > 0) Orange else P.gain)
+                    Text(money.format(o.cost), fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    Spacer(Modifier.height(8.dp))
+                    Text(PurchaseSimulator.goalDelayText(o.goalDelayDays, goalName), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if ((o.goalDelayDays ?: 0) > 0) Orange else P.gain)
                     if (o.note.isNotBlank()) Text(o.note, fontSize = 14.sp, color = P.muted)
                 }
                 if (i == 0) MintCard { content() } else MCard { content() }

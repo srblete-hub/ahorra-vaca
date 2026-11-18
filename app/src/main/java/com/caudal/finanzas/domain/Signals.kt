@@ -145,7 +145,7 @@ object WeeklyNudge {
     /** "Pablo, esta semana has gastado 12 € en Monster Energy…": el capricho que más se repite esta semana. */
     fun find(d: FinanceData, name: String, fmt: (Double) -> String): String? {
         val monday = d.today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).toEpochDay()
-        val week = d.spending.filter { it.epochDay >= monday && !Budgeting.isBillPayment(it, d.bills) && !it.spendTag().need && it.amount < 25 }
+        val week = d.spending.filter { it.epochDay >= monday && !Budgeting.isFixed(it, d.bills) && !it.spendTag().need && it.amount < 25 }
         val top = week.groupBy { Classifier.normalize(it.note) }.filter { it.key.isNotEmpty() && it.value.size >= 2 }
             .maxByOrNull { it.value.sumOf { e -> e.amount } }?.value ?: return null
         val spent = top.sumOf { it.amount }
@@ -261,7 +261,7 @@ object TrendDetector {
         val out = mutableListOf<Trend>()
         val monday = d.today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         val weekStarts = (1..12).map { monday.minusWeeks(it.toLong()) } // semanas completas, de la más reciente a la más antigua
-        val variable = d.spending.filter { !Budgeting.isBillPayment(it, d.bills) }
+        val variable = d.spending.filter { !Budgeting.isFixed(it, d.bills) }
         if (variable.isNotEmpty() && variable.minOf { it.epochDay } <= weekStarts.last().toEpochDay()) {
             fun weekTotal(start: LocalDate, tag: SpendTag) = variable.filter { it.spendTag() == tag && it.epochDay in start.toEpochDay()..start.plusDays(6).toEpochDay() }.sumOf { it.amount }
             SpendTag.entries.forEach { tag ->

@@ -24,14 +24,16 @@ enum class SpendTag(val label: String, val need: Boolean, val keywords: List<Str
             "restaurante", "bar", "cafeteria", "cafe", "cena", "comida", "almuerzo", "desayuno", "brunch", "tapas",
             "cervezas", "copas", "glovo", "just eat", "uber eats", "deliveroo", "mcdonald", "mcdonalds", "burger king",
             "telepizza", "dominos", "domino s", "kfc", "starbucks", "foster", "vips", "goiko", "montaditos", "five guys",
-            "pizzeria", "pizza", "sushi", "kebab", "tagliatella", "rodilla", "pans company", "tim hortons",
+            "pizzeria", "pizza", "sushi", "kebab", "popeyes", "llaollao", "100 montaditos", "taco bell", "tgb", "vips smart",
+            "panaderia cafeteria", "heladeria", "cerveceria", "taberna", "meson", "asador", "bocateria", "churreria", "pasteleria", "brasa", "tagliatella", "rodilla", "pans company", "tim hortons",
         ),
     ),
     TRANSPORT(
         "Transporte", true,
         listOf(
             "uber", "cabify", "bolt", "freenow", "free now", "taxi", "renfe", "metro", "emt", "tmb", "bus", "autobus",
-            "alsa", "blablacar", "gasolina", "gasoil", "diesel", "gasolinera", "repsol", "cepsa", "bp", "shell", "galp",
+            "alsa", "blablacar", "telpark", "parking", "aparcamiento", "parquimetro", "zona azul", "ora", "peaje", "autopista", "via t", "itv",
+            "cooltra", "acciona", "yego", "bicing", "lime", "moeve", "ballenoil", "plenoil", "petroprix", "bonarea gasolinera", "cargador", "gasolina", "gasoil", "diesel", "gasolinera", "repsol", "cepsa", "bp", "shell", "galp",
             "moeve", "ballenoil", "plenoil", "petronor", "parking", "aparcamiento", "peaje", "itv", "taller",
             "seguro coche", "seguro del coche", "abono transporte", "bicing", "lime",
         ),
@@ -51,7 +53,9 @@ enum class SpendTag(val label: String, val need: Boolean, val keywords: List<Str
             "netflix", "spotify", "hbo", "hbo max", "disney", "prime video", "amazon prime", "icloud", "apple one",
             "apple music", "youtube premium", "chatgpt", "openai", "claude", "google one", "xbox", "playstation", "ps plus",
             "nintendo", "twitch", "patreon", "dazn", "movistar plus", "filmin", "audible", "kindle unlimited",
-            "suscripcion", "crunchyroll", "skyshowtime", "duolingo",
+            "suscripcion", "crunchyroll", "skyshowtime", "duolingo", "x premium", "x corp", "twitter", "github", "notion", "canva",
+            "adobe", "microsoft 365", "office 365", "dropbox", "1password", "nordvpn", "expressvpn", "tinder", "bumble", "strava", "midjourney",
+            "anthropic", "max", "atresplayer", "tidal", "deezer", "storytel",
         ),
     ),
     SHOPPING(
@@ -60,23 +64,28 @@ enum class SpendTag(val label: String, val need: Boolean, val keywords: List<Str
             "amazon", "zara", "primark", "el corte ingles", "corte ingles", "shein", "aliexpress", "temu", "mediamarkt",
             "media markt", "decathlon", "fnac", "pull bear", "bershka", "mango", "h m", "stradivarius", "massimo dutti",
             "nike", "adidas", "apple store", "pccomponentes", "worten", "sephora", "druni", "primor", "ropa", "zapatillas",
-            "zapatos", "tienda", "compras", "vinted", "wallapop", "tiger",
+            "zapatos", "tienda", "compras", "camiseta", "camisetas", "pantalon", "pantalones", "sudadera", "chaqueta", "abrigo", "vestido",
+            "falda", "jersey", "gorra", "bolso", "mochila", "auriculares", "movil", "portatil", "consola", "vinted", "wallapop", "tiger", "action", "normal", "lefties", "springfield", "pull and bear",
+            "oysho", "uniqlo", "jd sports", "foot locker", "game", "el corte", "carrefour online", "miravia", "zalando", "asos", "apple com",
         ),
     ),
     HEALTH(
         "Salud y deporte", true,
         listOf(
             "farmacia", "medico", "dentista", "clinica", "hospital", "sanitas", "adeslas", "asisa", "dkv", "optica",
-            "fisio", "fisioterapia", "psicologo", "gimnasio", "gym", "basic fit", "mcfit", "altafit", "vivagym",
-            "holmes place", "crossfit", "padel", "piscina",
+            "fisio", "fisioterapia", "psicologo", "peluqueria", "barberia", "estetica", "manicura", "depilacion", "masaje", "podologo",
+            "parafarmacia", "mifarma", "atida", "promofarma", "analisis", "laboratorio", "seguro medico", "oculista", "lentillas",
         ),
     ),
     LEISURE(
         "Ocio", false,
         listOf(
-            "cine", "cinesa", "yelmo", "kinepolis", "ocine", "concierto", "entradas", "ticketmaster", "fever", "teatro",
-            "museo", "steam", "epic games", "bolera", "karaoke", "discoteca", "fiesta", "festival", "loteria", "futbol",
-            "videojuego", "juego", "escape room", "parque",
+            "cine", "cines", "cinesa", "yelmo", "kinepolis", "ocine", "odeon", "multicines", "filmoteca", "concierto", "conciertos",
+            "entradas", "entrada", "ticketmaster", "fever", "eventbrite", "dice", "taquilla", "teatro", "musical", "opera", "museo",
+            "exposicion", "zoo", "acuario", "parque de atracciones", "port aventura", "portaventura", "warner", "parque",
+            "steam", "epic games", "nintendo eshop", "videojuego", "videojuegos", "juego", "juegos", "game", "bolera", "karaoke",
+            "karting", "paintball", "laser tag", "escape room", "escape", "discoteca", "pub", "copas", "cocktail", "coctel",
+            "fiesta", "festival", "loteria", "apuestas", "casino", "billar", "dardos", "recreativos", "salon de juegos",
         ),
     ),
     TRAVEL(
@@ -84,6 +93,17 @@ enum class SpendTag(val label: String, val need: Boolean, val keywords: List<Str
         listOf(
             "ryanair", "vueling", "iberia", "easyjet", "air europa", "volotea", "booking", "airbnb", "hotel", "hostal",
             "expedia", "edreams", "trainline", "ouigo", "iryo", "viaje", "vuelo", "vacaciones", "apartamento",
+        ),
+    ),
+    SPORT(
+        "Deporte", false,
+        listOf(
+            "futbol", "futbito", "futbol 7", "futbol sala", "padel", "tenis", "squash", "baloncesto", "voley", "rugby", "golf",
+            "gimnasio", "gym", "basic fit", "mcfit", "altafit", "vivagym", "holmes place", "go fit", "dir", "anytime fitness",
+            "crossfit", "piscina", "natacion", "yoga", "pilates", "boxeo", "kickboxing", "artes marciales", "escalada", "rocodromo",
+            "ski", "esqui", "forfait", "surf", "kitesurf", "running", "maraton", "carrera popular", "dorsal", "triatlon", "ciclismo",
+            "bici", "spinning", "playtomic", "polideportivo", "club deportivo", "alquiler de pista", "pista", "liga", "inscripcion",
+            "decathlon", "sprinter", "deporte", "deportes", "entrenador", "entrenamiento",
         ),
     ),
     GIFTS("Regalos", false, listOf("regalo", "regalos", "cumpleanos", "boda", "flores", "floristeria", "detalle")),
@@ -110,9 +130,15 @@ object Classifier {
 
     /** Tipo de gasto por palabras clave, o null si no se reconoce. */
     fun guess(note: String): SpendTag? {
-        val n = " ${normalize(note)} "
-        if (n.isBlank()) return null
-        return index.firstOrNull { (kw, _) -> n.contains(" $kw ") }?.second
+        if (note.isBlank()) return null
+        // Primero con el nombre limpio ("MPVinted*" → "Vinted"), luego con el texto tal cual.
+        val exact = listOf(Merchants.clean(note), note).firstNotNullOfOrNull { t ->
+            val n = " ${normalize(t)} "
+            if (n.isBlank()) null else index.firstOrNull { (kw, _) -> n.contains(" $kw ") }?.second
+        }
+        if (exact != null) return exact
+        val words = normalize(note).split(' ').filter { it.length >= 4 }
+        return index.firstOrNull { (kw, _) -> kw.length >= 4 && ' ' !in kw && words.any { w -> w.startsWith(kw) || (kw.startsWith(w) && w.length >= 5) } }?.second
     }
 
     /**

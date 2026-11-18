@@ -178,7 +178,7 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
                 val status = WindowInsets.displayCutout.asPaddingValues().calculateTopPadding()
                 val nav = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 val args = ScreenArgs(
-                    contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 104.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 104.dp),
                     onEdit = { editing = it },
                     headerActions = {
                         HeaderPill {
@@ -210,13 +210,6 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
 
                 BottomBar(tab, settings, onTab = { tab = it }, onAdd = { editing = Editing.Chooser }, modifier = Modifier.align(Alignment.BottomCenter))
             }
-            // Tapa la barra de estado de Android: al hacer scroll nada se ve por detrás de la hora y los iconos.
-            // (en el Wrapped no: su degradado llega hasta arriba del todo)
-            if (overlay != Overlay.WRAPPED && overlay != Overlay.NEWS) Box(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth()
-                    .height(WindowInsets.displayCutout.asPaddingValues().calculateTopPadding())
-                    .background(if (overlay == Overlay.AGE) Color(0xFF050505) else P.bg),
-            )
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 96.dp))
         }
 
@@ -359,13 +352,13 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
 @Composable
 private fun BottomBar(tab: Tab, settings: com.caudal.finanzas.data.Settings, onTab: (Tab) -> Unit, onAdd: () -> Unit, modifier: Modifier = Modifier) {
     val p = P
-    val shape = RoundedCornerShape(38.dp)
+    val shape = RoundedCornerShape(40.dp)
     // Barra de cristal a todo el ancho: icono grande encima y texto debajo, la activa en una cápsula.
     Row(
-        modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 14.dp, vertical = 8.dp)
-            .shadow(22.dp, shape, ambientColor = Color(0x55000000), spotColor = Color(0x55000000))
+        modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp)
+            .shadow(24.dp, shape, ambientColor = Color(0x55000000), spotColor = Color(0x55000000))
             .clip(shape).background(p.glass).border(1.dp, p.cardBorder, shape)
-            .height(74.dp).padding(5.dp),
+            .height(72.dp).padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Tab.entries.forEach { t -> BarItem(t, t == tab, settings, Modifier.weight(1f)) { onTab(t) } }

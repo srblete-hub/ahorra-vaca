@@ -37,6 +37,12 @@ class PaymentListenerService : NotificationListenerService() {
 
         val title = n.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
         val text = (n.extras.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: n.extras.getCharSequence(Notification.EXTRA_TEXT))?.toString()
+        // Bizum (recibido o enviado) desde el aviso del banco, sin conectar el banco.
+        if (wallet == null) BizumParser.parse(title, text)?.let { b ->
+            if (PaymentParser.signature(b.raw) in settings.ignoredPayments) return
+            scope.launch { PaymentRecorder.recordBizum(applicationContext, b, appName) }
+            return
+        }
         val payment = PaymentParser.parse(title, text, isWallet = wallet != null) ?: return
         // Avisos que marcaste como "no era un pago": no se vuelven a apuntar.
         if (PaymentParser.signature(payment.raw) in settings.ignoredPayments) return
@@ -56,6 +62,32 @@ class PaymentListenerService : NotificationListenerService() {
 }
 
 object PaymentRecorder {
+    /** Un Bizum: si lo recibes, ingreso en la cuenta de la tarjeta; si lo envías, gasto con la categoría del concepto. */
+    suspend fun recordBizum(context: Context, b: Bizum, appName: String, now: Long = System.currentTimeMillis()) {
+        val settings = Prefs.get(context).settings.value
+        val dao = FinanceDatabase.get(context).dao()
+        val accountId = settings.cardAccountId.takeIf { id -> id != Settings.NONE && dao.accounts().first().any { it.id == id } }
+        val who = b.person ?: "alguien"
+        val note = (if (b.incoming) "Bizum de $who" else "Bizum a $who") + (b.concept?.let { " · $it" } ?: "")
+        if (b.incoming) {
+            // Mismo Bizum avisado dos veces en un minuto: solo uno.
+            if (dao.incomes().first().any { kotlin.math.abs(it.amount - b.amount) < 0.005 && it.note == note && now - it.createdAt < 60_000 }) return
+            dao.saveIncome(com.caudal.finanzas.data.Income(sourceId = null, amount = b.amount, note = note, epochDay = LocalDate.now().toEpochDay(), accountId = accountId, createdAt = now))
+            return
+        }
+        if (dao.recentCardPayments(b.amount, now - 60_000) > 0) return
+        val categories = dao.categories().first()
+        val tag = b.concept?.let { Classifier.guess(it) } ?: Classifier.classify(note, dao.allExpenses().first())
+        val categoryId = Classifier.bucketFor(tag, categories) ?: categories.firstOrNull { !it.isSavings }?.id ?: return
+        dao.saveExpense(
+            Expense(
+                categoryId = categoryId, amount = b.amount, note = note, epochDay = LocalDate.now().toEpochDay(), accountId = accountId,
+                fromCard = true, sourceApp = "$appName · Bizum", createdAt = now, tag = tag.name, rawText = b.raw.take(300),
+            ),
+        )
+        Notifier.checkAfterPayment(context, lastNote = note, lastAmount = b.amount, lastTag = tag)
+    }
+
     private const val DUPLICATE_WINDOW_MS = 3 * 60_000L
 
     /** Devuelve el gasto apuntado, o null si se descartó (otra moneda o repetido). */
@@ -89,7 +121,7 @@ object PaymentRecorder {
             rawText = payment.raw.take(300),
         )
         dao.saveExpense(expense)
-        Notifier.checkAfterPayment(context)
+        Notifier.checkAfterPayment(context, lastNote = com.caudal.finanzas.domain.Merchants.clean(note), lastAmount = payment.amount, lastTag = tag)
         return expense
     }
 }

@@ -155,7 +155,7 @@ fun ScreenTitle(title: String, subtitle: String? = null, modifier: Modifier = Mo
 
 @Composable
 fun SectionTitle(title: String, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
-    Row(modifier.fillMaxWidth().padding(start = 4.dp, top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier.fillMaxWidth().padding(start = 4.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, color = P.ink)
         action?.invoke()
     }
@@ -170,7 +170,7 @@ private val CardShape = RoundedCornerShape(24.dp)
 fun MCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    padding: Dp = 20.dp,
+    padding: Dp = 24.dp,
     color: Color = P.card,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -188,7 +188,7 @@ fun MCard(
     )
 }
 
-private val HeroShape = RoundedCornerShape(30.dp)
+private val HeroShape = RoundedCornerShape(32.dp)
 
 /** Tarjeta principal: un poco más clara arriba, con borde fino. */
 @Composable
@@ -197,11 +197,11 @@ fun MintCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() 
     Column(
         modifier
             .fillMaxWidth()
-            .then(if (!p.isDark) Modifier.shadow(6.dp, HeroShape, ambientColor = Color(0x14000000), spotColor = Color(0x1A000000)) else Modifier)
+            .then(if (!p.isDark) Modifier.shadow(8.dp, HeroShape, ambientColor = Color(0x14000000), spotColor = Color(0x1A000000)) else Modifier)
             .clip(HeroShape)
             .background(Brush.verticalGradient(listOf(p.mint, p.mintDeep)))
             .border(1.dp, p.cardBorder, HeroShape)
-            .padding(22.dp),
+            .padding(24.dp),
         content = content,
     )
 }
@@ -216,7 +216,7 @@ fun Modifier.appBackground(p: Palette): Modifier = this
 fun HeaderPill(content: @Composable RowScope.() -> Unit) {
     val p = P
     Row(
-        Modifier.clip(CircleShape).background(p.glass).border(1.dp, p.cardBorder, CircleShape).padding(horizontal = 6.dp, vertical = 4.dp),
+        Modifier.clip(CircleShape).background(p.glass).border(1.dp, p.cardBorder, CircleShape).padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         content = content,
@@ -225,14 +225,14 @@ fun HeaderPill(content: @Composable RowScope.() -> Unit) {
 
 @Composable
 fun PillIcon(icon: ImageVector, description: String, onClick: () -> Unit) {
-    Box(Modifier.size(42.dp).clip(CircleShape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        Icon(icon, description, Modifier.size(22.dp), tint = P.ink)
+    Box(Modifier.size(40.dp).clip(CircleShape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
+        Icon(icon, description, Modifier.size(24.dp), tint = P.ink)
     }
 }
 
 /** Logo redondo de una cuenta: colores de los bancos conocidos, o un color estable por nombre. */
 @Composable
-fun AccountLogo(name: String, size: Dp = 44.dp) {
+fun AccountLogo(name: String, size: Dp = 40.dp) {
     val n = name.lowercase(Spanish)
     val (bg, fg, text) = when {
         "bbva" in n -> Triple(Color(0xFF004481), Color.White, "BBVA")
@@ -265,7 +265,7 @@ fun AccountLogo(name: String, size: Dp = 44.dp) {
 @Composable
 fun BrandCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Color(0xFF0F3D27)).padding(22.dp),
+        modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(Color(0xFF0F3D27)).padding(24.dp),
         content = content,
     )
 }
@@ -276,11 +276,11 @@ fun BrandCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.()
 fun RoundIconButton(icon: ImageVector, description: String, onClick: () -> Unit, badge: Boolean = false) {
     val p = P
     Box(
-        Modifier.size(42.dp)
+        Modifier.size(40.dp)
             .clip(CircleShape).background(p.glass).border(1.dp, p.cardBorder, CircleShape).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, description, Modifier.size(20.dp), tint = p.ink)
+        Icon(icon, description, Modifier.size(24.dp), tint = p.ink)
         if (badge) Box(Modifier.align(Alignment.TopEnd).padding(8.dp).size(8.dp).clip(CircleShape).background(p.loss))
     }
 }
@@ -290,11 +290,11 @@ fun BrandButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(54.dp),
+        modifier = modifier.height(56.dp),
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(containerColor = P.brand, contentColor = P.onBrand),
     ) {
-        if (icon != null) { Icon(icon, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)) }
+        if (icon != null) { Icon(icon, null, Modifier.size(16.dp)); Spacer(Modifier.width(8.dp)) }
         Text(text, style = MaterialTheme.typography.titleSmall)
     }
 }
@@ -307,7 +307,7 @@ fun Pill(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifie
         modifier.clip(CircleShape)
             .background(if (selected) p.card else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -330,7 +330,7 @@ fun <T> Segmented(options: List<T>, selected: T, label: (T) -> String, onSelect:
                 Modifier.weight(1f).clip(CircleShape)
                     .background(if (on) p.card else Color.Transparent)
                     .clickable { onSelect(o) }
-                    .padding(vertical = 10.dp),
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(label(o), style = MaterialTheme.typography.labelLarge, color = if (on) p.ink else p.muted, fontWeight = if (on) FontWeight.Bold else FontWeight.Medium)
@@ -342,7 +342,7 @@ fun <T> Segmented(options: List<T>, selected: T, label: (T) -> String, onSelect:
 /** Etiqueta suave con fondo tintado ("88 % de tus ingresos"). */
 @Composable
 fun SoftTag(text: String, color: Color, modifier: Modifier = Modifier) {
-    Box(modifier.clip(CircleShape).background(color.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 5.dp)) {
+    Box(modifier.clip(CircleShape).background(color.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 4.dp)) {
         Text(text, color = color, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
     }
 }
@@ -351,15 +351,15 @@ fun SoftTag(text: String, color: Color, modifier: Modifier = Modifier) {
 
 /** Icono en un cuadrado redondeado con el color tintado. */
 @Composable
-fun IconTile(icon: ImageVector, color: Color, size: Dp = 42.dp) {
-    Box(Modifier.size(size).clip(RoundedCornerShape(14.dp)).background(color.copy(alpha = 0.13f)), contentAlignment = Alignment.Center) {
+fun IconTile(icon: ImageVector, color: Color, size: Dp = 40.dp) {
+    Box(Modifier.size(size).clip(RoundedCornerShape(16.dp)).background(color.copy(alpha = 0.13f)), contentAlignment = Alignment.Center) {
         Icon(icon, null, Modifier.size(size * 0.5f), tint = color)
     }
 }
 
 /** Círculo con iniciales (comercios, monedas, tickers). */
 @Composable
-fun Initials(text: String, color: Color, size: Dp = 42.dp) {
+fun Initials(text: String, color: Color, size: Dp = 40.dp) {
     Box(Modifier.size(size).clip(CircleShape).background(color), contentAlignment = Alignment.Center) {
         val t = text.take(3).uppercase(Spanish)
         // Una letra se ve grande; tres (BTC, ETH) más pequeñas para que quepan.
@@ -378,7 +378,7 @@ fun Avatar(name: String, version: Long, size: Dp, modifier: Modifier = Modifier,
             android.graphics.BitmapFactory.decodeFile(java.io.File(context.filesDir, AVATAR_FILE).path)?.asImageBitmap()
         }.getOrNull()
     }
-    val base = modifier.size(size).then(if (ring != null) Modifier.background(ring, CircleShape).padding(3.dp) else Modifier).clip(CircleShape)
+    val base = modifier.size(size).then(if (ring != null) Modifier.background(ring, CircleShape).padding(4.dp) else Modifier).clip(CircleShape)
     if (bitmap != null) {
         androidx.compose.foundation.Image(bitmap = bitmap, contentDescription = "Foto de perfil", modifier = base, contentScale = androidx.compose.ui.layout.ContentScale.Crop)
     } else {
@@ -414,7 +414,7 @@ fun <T> CardList(items: List<T>, key: ((T) -> Any)? = null, row: @Composable (T)
     MCard(padding = 0.dp) {
         items.forEachIndexed { i, item ->
             androidx.compose.runtime.key(key?.invoke(item) ?: i) {
-                if (i > 0) HorizontalDivider(Modifier.padding(start = 76.dp), color = P.line, thickness = 0.6.dp)
+                if (i > 0) HorizontalDivider(Modifier.padding(start = 80.dp), color = P.line, thickness = 0.6.dp)
                 row(item)
             }
         }
@@ -435,16 +435,16 @@ fun ListRow(
     Column(
         Modifier.fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(horizontal = 16.dp, vertical = 15.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (leading != null) { leading(); Spacer(Modifier.width(14.dp)) }
+            if (leading != null) { leading(); Spacer(Modifier.width(16.dp)) }
             Column(Modifier.weight(1f)) {
-                Text(title, fontSize = 17.sp, fontWeight = FontWeight.Medium, letterSpacing = (-0.2).sp, color = p.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Medium, letterSpacing = (-0.2).sp, color = p.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (subtitle != null) Text(subtitle, fontSize = 14.sp, color = p.muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             if (trailing != null) { Spacer(Modifier.width(8.dp)); trailing() }
-            if (chevron) Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(20.dp), tint = p.muted)
+            if (chevron) Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(24.dp), tint = p.muted)
         }
         if (below != null) Column(Modifier.padding(start = if (leading != null) 56.dp else 0.dp, top = 8.dp), content = below)
     }
@@ -462,7 +462,7 @@ fun AmountTrailing(text: String, sub: String? = null, color: Color = P.ink, subC
 
 /** Barra fina de progreso; roja al pasarse de 1. */
 @Composable
-fun ProgressLine(fraction: Double, color: Color, modifier: Modifier = Modifier, height: Dp = 6.dp, track: Color = P.chip) {
+fun ProgressLine(fraction: Double, color: Color, modifier: Modifier = Modifier, height: Dp = 8.dp, track: Color = P.chip) {
     val f = fraction.coerceIn(0.0, 1.0).toFloat()
     Box(modifier.fillMaxWidth().height(height).clip(CircleShape).background(track)) {
         if (f > 0f) Box(Modifier.fillMaxWidth(f).fillMaxHeight().clip(CircleShape).background(if (fraction > 1.0) P.loss else color))
@@ -472,10 +472,10 @@ fun ProgressLine(fraction: Double, color: Color, modifier: Modifier = Modifier, 
 data class Slice(val label: String, val value: Double, val color: Color)
 
 @Composable
-fun StackedBar(slices: List<Slice>, modifier: Modifier = Modifier, height: Dp = 10.dp) {
+fun StackedBar(slices: List<Slice>, modifier: Modifier = Modifier, height: Dp = 8.dp) {
     val positive = slices.filter { it.value > 0 }
     val total = positive.sumOf { it.value }
-    Row(modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    Row(modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         if (total <= 0) Box(Modifier.weight(1f).fillMaxHeight().clip(CircleShape).background(P.chip))
         else positive.forEach { s ->
             Box(Modifier.weight((s.value / total).toFloat().coerceAtLeast(0.02f)).fillMaxHeight().clip(CircleShape).background(s.color))
@@ -492,7 +492,7 @@ fun LineChart(values: List<Double>, color: Color, modifier: Modifier = Modifier)
         val min = pts.min()
         val max = pts.max()
         val range = (max - min).takeIf { it > 0 } ?: 1.0
-        val top = 6.dp.toPx()
+        val top = 8.dp.toPx()
         val h = size.height - top - 2.dp.toPx()
         val stepX = size.width / (pts.size - 1)
         fun y(v: Double) = top + (h * (1 - (v - min) / range)).toFloat()
@@ -508,7 +508,7 @@ fun LineChart(values: List<Double>, color: Color, modifier: Modifier = Modifier)
         drawPath(fill, Brush.verticalGradient(listOf(color.copy(alpha = 0.28f), color.copy(alpha = 0f))))
         drawPath(line, color, style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
         val end = Offset(size.width, y(pts.last()))
-        drawCircle(color.copy(alpha = 0.25f), 7.dp.toPx(), end)
+        drawCircle(color.copy(alpha = 0.25f), 8.dp.toPx(), end)
         drawCircle(color, 3.5.dp.toPx(), end)
     }
 }
@@ -517,8 +517,8 @@ fun LineChart(values: List<Double>, color: Color, modifier: Modifier = Modifier)
 fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier) {
     MCard(modifier) {
         Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            IconTile(icon, P.gain, size = 60.dp)
-            Spacer(Modifier.height(14.dp))
+            IconTile(icon, P.gain, size = 56.dp)
+            Spacer(Modifier.height(16.dp))
             Text(title, style = MaterialTheme.typography.titleMedium, color = P.ink, textAlign = TextAlign.Center)
             Spacer(Modifier.height(4.dp))
             Text(body, style = MaterialTheme.typography.bodyMedium, color = P.muted, textAlign = TextAlign.Center)
@@ -579,17 +579,17 @@ fun BigAmountInput(value: String, onValueChange: (String) -> Unit, currencySymbo
             onValueChange = { new -> onValueChange(new.filter { it.isDigit() || it == ',' || it == '.' }) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            textStyle = TextStyle(fontSize = 52.sp, fontWeight = FontWeight.ExtraBold, color = p.ink, textAlign = TextAlign.End, letterSpacing = (-2).sp),
+            textStyle = TextStyle(fontSize = 56.sp, fontWeight = FontWeight.ExtraBold, color = p.ink, textAlign = TextAlign.End, letterSpacing = (-2).sp),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(p.gain),
             modifier = Modifier.width(IntrinsicWidthFor(value)),
             decorationBox = { inner ->
                 Box(contentAlignment = Alignment.CenterEnd) {
-                    if (value.isEmpty()) Text("0", style = TextStyle(fontSize = 52.sp, fontWeight = FontWeight.ExtraBold, color = p.muted.copy(alpha = 0.5f)))
+                    if (value.isEmpty()) Text("0", style = TextStyle(fontSize = 56.sp, fontWeight = FontWeight.ExtraBold, color = p.muted.copy(alpha = 0.5f)))
                     inner()
                 }
             },
         )
-        Text(" $currencySymbol", style = TextStyle(fontSize = 26.sp, fontWeight = FontWeight.Bold, color = p.muted), modifier = Modifier.padding(bottom = 8.dp))
+        Text(" $currencySymbol", style = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.Bold, color = p.muted), modifier = Modifier.padding(bottom = 8.dp))
     }
 }
 
@@ -626,16 +626,16 @@ fun FormSheet(
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
     ) {
         Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 22.dp).navigationBarsPadding().imePadding(),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).navigationBarsPadding().imePadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f), style = MaterialTheme.typography.headlineSmall, color = P.ink)
                 if (onDelete != null) TextButton(onClick = onDelete) { Text("Borrar", color = P.loss) }
                 Box(
-                    Modifier.size(36.dp).clip(CircleShape).background(P.chip).clickable(onClick = onDismiss),
+                    Modifier.size(40.dp).clip(CircleShape).background(P.chip).clickable(onClick = onDismiss),
                     contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Filled.Close, "Cerrar", Modifier.size(18.dp), tint = P.ink) }
+                ) { Icon(Icons.Filled.Close, "Cerrar", Modifier.size(16.dp), tint = P.ink) }
             }
             header?.invoke(this)
             content()

@@ -283,7 +283,7 @@ object Insights {
     )
 
     fun habits(d: FinanceData, fmt: (Double) -> String, window: Int = 90): Habits? {
-        val variable = d.spending.filter { it.billId == null && it.epochDay <= d.today.toEpochDay() }
+        val variable = d.spending.filter { !Budgeting.isFixed(it, d.bills) && it.epochDay <= d.today.toEpochDay() }
         val first = variable.minOfOrNull { it.epochDay } ?: return null
         val start = max(first, d.today.toEpochDay() - window + 1)
         val days = (d.today.toEpochDay() - start + 1).toInt()

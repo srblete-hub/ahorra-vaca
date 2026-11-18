@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
@@ -31,6 +32,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -86,6 +88,9 @@ import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.math.abs
 
+/** Vista de Movimientos (0 calendario, 1 lista, 2 resumen, 3 gráficas), mientras la app está abierta. */
+private val movesView = androidx.compose.runtime.mutableIntStateOf(1)
+
 fun newIncomeSource() = IncomeSource(name = "", variable = false, amount = 0.0, dayFrom = 1, dayTo = 5)
 
 /** Cobro nuevo de [source] en [month], con lo esperado como importe de partida. */
@@ -121,7 +126,7 @@ fun IncomeSourceRow(sm: IncomeMath.SourceMonth, month: YearMonth, accounts: List
                     Box(
                         Modifier.padding(top = 2.dp).clip(CircleShape).background(P.brand)
                             .clickable { onEdit(Editing.IncomeForm(newIncomeFor(s, sm.amount, month))) }
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                     ) { Text("Cobrado", style = MaterialTheme.typography.labelSmall, color = P.onBrand, fontWeight = FontWeight.Bold) }
                     if (s.variable) Text(
                         if (sm.confirmed != null) "Cambiar importe" else "¿Cuánto este mes?",
@@ -144,6 +149,14 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
     val month by vm.month.collectAsStateWithLifecycle()
     val monthIncome by vm.monthIncome.collectAsStateWithLifecycle()
     val sources by vm.incomeSources.collectAsStateWithLifecycle()
+    val allIncomesList by vm.incomes.collectAsStateWithLifecycle()
+    val transfersList by vm.transfers.collectAsStateWithLifecycle()
+    // La vista elegida se recuerda aunque abras el análisis u otra pantalla y vuelvas.
+    var view by movesView
+    var query by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    var statsPeriod by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(0) }
+    var listPeriod by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(1) }
+    var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
     val money = LocalMoney.current
 
     // Copia local del reparto: los deslizadores la cambian al momento y se guarda al soltar.
@@ -161,46 +174,77 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
     var tagFilter by remember { mutableStateOf<SpendTag?>(null) }
 
     val savingIds = categories.filter { it.isSavings }.map { it.id }.toSet()
-    val spendingList = expenses.filter { it.categoryId !in savingIds }
+    // Alquiler y fijos son de una vez al mes: van aparte para no desvirtuar el gasto del día a día.
+    val spendingList = expenses.filter { it.categoryId !in savingIds && !com.caudal.finanzas.domain.Budgeting.isFixed(it, bills) }
+    val fixedMonth = expenses.filter { it.categoryId !in savingIds && com.caudal.finanzas.domain.Budgeting.isFixed(it, bills) }.sumOf { it.amount }
     val spentTotal = spendingList.sumOf { it.amount }
     val setAside = expenses.filter { it.categoryId in savingIds }.sumOf { it.amount }
     val received = monthIncome.received
     val tags = byTag(spendingList)
     val isCurrent = month == YearMonth.now()
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LaunchedEffect(month, view) { MoveSelection.clear() }
+    Box(Modifier.fillMaxSize()) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { ScreenTitle("Movimientos") { args.headerActions() } }
         item { MonthSelector(month, vm::shiftMonth) }
+        item { com.caudal.finanzas.ui.Segmented(listOf(1, 0, 3, 2), view, { listOf("Calendario", "Lista", "Resumen", "Gráficas")[it] }, { view = it }) }
+        if (view == 3) {
+            planning?.data?.let { d ->
+                statsSection(com.caudal.finanzas.domain.Stats.of(d, statsPeriod), statsPeriod, { statsPeriod = it }, { args.onEdit(Editing.TagDetail(it)) }, args.onEdit)
+            }
+            return@LazyColumn
+        }
+        if (view != 2) {
+            val moves = buildMoves(month, allExpenses, allIncomesList, transfersList, accounts, bills)
+            val len = month.lengthOfMonth()
+            val allowance = planning?.budget?.base?.takeIf { it > 0 }?.let { it / len } ?: (planning?.safe?.perDay ?: 0.0)
+            movesSection(
+                calendar = view == 0, month = month, moves = moves, allowance = allowance,
+                pending = if (isCurrent) planning?.bankPlan?.pendingTotal ?: 0.0 else 0.0,
+                // Cobros que aún no han llegado este mes (nómina, YouTube el 22…), con su importe previsto.
+                analytics = planning?.data?.let { com.caudal.finanzas.domain.Stats.analytics(it, listPeriod) },
+                period = listPeriod, onPeriod = { listPeriod = it },
+                expected = if (!isCurrent) emptyMap() else monthIncome.sources.filter { !it.isReceived && it.amount > 0 }.groupBy {
+                    month.atDay(minOf(it.source.dayFrom, month.lengthOfMonth())).let { d -> if (d.isBefore(LocalDate.now())) LocalDate.now() else d }
+                }.mapValues { (_, l) -> l.map { sm -> sm.source.name to ((if (sm.isEstimate) "+~" else "+") + Math.round(sm.amount)) } },
+                query = query, onQuery = { query = it },
+                selected = selectedDay?.takeIf { YearMonth.from(it) == month }, onSelect = { selectedDay = it },
+                onEdit = args.onEdit,
+            )
+            return@LazyColumn
+        }
 
         // ---------- Entró vs salió ----------
         item {
             MintCard {
                 Row {
                     Column(Modifier.weight(1f)) {
-                        Text("Ha entrado", fontSize = 15.sp, color = P.muted)
+                        Text("Ha entrado", fontSize = 16.sp, color = P.muted)
                         Text(money.format(received), fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = P.gain, letterSpacing = (-0.5).sp)
-                        if (income > received + 1) Text("de ~${money.format(income)} previstos", fontSize = 13.sp, color = P.muted)
+                        if (income > received + 1) Text("de ~${money.format(income)} previstos", fontSize = 14.sp, color = P.muted)
                     }
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                        Text("Has gastado", fontSize = 15.sp, color = P.muted)
+                        Text("Has gastado", fontSize = 16.sp, color = P.muted)
                         Text(money.format(spentTotal), fontSize = 28.sp, fontWeight = FontWeight.SemiBold, color = P.ink, letterSpacing = (-0.5).sp)
-                        Text("${spendingList.size} pagos", fontSize = 13.sp, color = P.muted)
+                        Text("${spendingList.size} pagos", fontSize = 14.sp, color = P.muted)
                     }
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(16.dp))
                 // Barra: lo gastado, lo apartado para ahorrar y lo que queda, sobre lo que ha entrado.
-                val base = maxOf(received, spentTotal + setAside).takeIf { it > 0 } ?: 1.0
+                val base = maxOf(received, spentTotal + setAside + fixedMonth).takeIf { it > 0 } ?: 1.0
                 StackedBar(
                     listOf(
-                        Slice("Sin gastar", (received - spentTotal - setAside).coerceAtLeast(0.0), P.gain),
+                        Slice("Sin gastar", (received - spentTotal - setAside - fixedMonth).coerceAtLeast(0.0), P.gain),
+                        Slice("Fijos", fixedMonth, Color(0xFF8E8E93)),
                         Slice("Ahorro", setAside, SeriesColors[1]),
                         Slice("Gastado", spentTotal, P.loss),
                     ),
                     height = 12.dp,
                 )
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Legend("Sin gastar", P.gain); Legend("Apartado", SeriesColors[1]); Legend("Gastado", P.loss)
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Legend("Sin gastar", P.gain); Legend("Apartado", SeriesColors[1]); Legend("Gastado", P.loss); if (fixedMonth > 0) Legend("Fijos", Color(0xFF8E8E93))
                 }
                 Spacer(Modifier.height(12.dp))
                 // Tu liquidez es solo la cuenta del banco: los ahorros no se tocan.
@@ -211,9 +255,10 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
                         received <= 0 -> "Aún no has cobrado este mes: llevas ${money.format(spentTotal)} gastados."
                         else -> "Has gastado el ${(spentTotal / received * 100).toInt()} % de lo que ha entrado" +
                             (if (setAside > 0) " y has apartado ${money.format(setAside)}" else "") + "." +
+                            (if (fixedMonth > 0) " Aparte, ${money.format(fixedMonth)} de alquiler y fijos (no cuentan aquí)." else "") +
                             if (isCurrent) " En el banco tienes ${money.format(liquid)}: tu dinero disponible (los ahorros no cuentan)." else ""
                     },
-                    fontSize = 15.sp, color = P.ink,
+                    fontSize = 16.sp, color = P.ink,
                 )
             }
         }
@@ -228,45 +273,45 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             item {
                 MCard {
                     Text("¿En qué se ha ido?", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                    Text("Toca una sección para ver en qué se ha ido, pago a pago", fontSize = 13.sp, color = P.muted)
-                    Spacer(Modifier.height(14.dp))
+                    Text("Toca una sección para ver en qué se ha ido, pago a pago", fontSize = 14.sp, color = P.muted)
+                    Spacer(Modifier.height(16.dp))
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Donut(tags.map { Slice(it.first.label, it.second, it.first.color()) }) {
                             Text(money.format(spentTotal), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-                            Text("gastado", fontSize = 13.sp, color = P.muted)
+                            Text("gastado", fontSize = 14.sp, color = P.muted)
                             val liquid = accounts.filter { it.type == com.caudal.finanzas.data.AccountType.BANK }.sumOf { it.balance }
                             if (isCurrent && liquid > 0) Text("de ${money.format(liquid)}", fontSize = 12.sp, color = P.muted)
-                            if (isCurrent && liquid > 0) Text("disponibles en el banco", fontSize = 10.sp, color = P.muted)
+                            if (isCurrent && liquid > 0) Text("disponibles en el banco", fontSize = 11.sp, color = P.muted)
                         }
                     }
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                     tags.forEach { (t, v) ->
                         val count = spendingList.count { it.spendTag() == t }
                         val selected = tagFilter == t
                         Row(
-                            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
                                 .background(if (selected) t.color().copy(alpha = 0.14f) else Color.Transparent)
-                                .clickable { args.onEdit(Editing.TagDetail(t)) }.padding(horizontal = 6.dp, vertical = 8.dp),
+                                .clickable { args.onEdit(Editing.TagDetail(t)) }.padding(horizontal = 8.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            IconTile(t.icon(), t.color(), 36.dp)
+                            IconTile(t.icon(), t.color(), 40.dp)
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(t.label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
-                                Text("$count ${if (count == 1) "pago" else "pagos"}" + if (t.need) " · necesario" else " · prescindible", fontSize = 13.sp, color = P.muted)
+                                Text("$count ${if (count == 1) "pago" else "pagos"}" + if (t.need) " · necesario" else " · prescindible", fontSize = 14.sp, color = P.muted)
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(money.format(v), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
-                                Text(pct(v / spentTotal * 100), fontSize = 13.sp, color = t.color())
+                                Text(pct(v / spentTotal * 100), fontSize = 14.sp, color = t.color())
                             }
-                            Text("  ›", fontSize = 20.sp, color = P.muted)
+                            androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight, null, androidx.compose.ui.Modifier.size(24.dp), tint = P.muted)
                         }
                     }
                     val needs = tags.filter { it.first.need }.sumOf { it.second }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "Necesario ${money.format(needs)} (${pct(needs / spentTotal * 100)}) · prescindible ${money.format(spentTotal - needs)} (${pct((spentTotal - needs) / spentTotal * 100)})",
-                        fontSize = 13.sp, color = P.muted,
+                        fontSize = 14.sp, color = P.muted,
                     )
                 }
             }
@@ -293,8 +338,8 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
                 if (story.spentPrev > 0 || story.incomePrev > 0) {
                     MCard {
                         Overline("¿Dónde se ha ido tu dinero?")
-                        Spacer(Modifier.height(6.dp))
-                        Text(Insights.describe(story, money::format), fontSize = 16.sp, color = P.ink, lineHeight = 22.sp)
+                        Spacer(Modifier.height(8.dp))
+                        Text(Insights.describe(story, money::format), fontSize = 16.sp, color = P.ink, lineHeight = 24.sp)
                     }
                 }
             }
@@ -375,15 +420,15 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
                         "${money.format(income * mainSavings.percent / 100)} al mes · ${money.format(income * mainSavings.percent / 100 * 12)} al año",
                         style = MaterialTheme.typography.bodySmall, color = P.muted,
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                     Text("Atajos (necesidades / ocio / ahorro):", style = MaterialTheme.typography.labelMedium, color = P.muted)
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Allocation.Preset.entries.forEach { p ->
                             Box(
                                 Modifier.clip(CircleShape).background(P.chip)
                                     .clickable { draft = Allocation.applyPreset(draft, p); save() }
-                                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                             ) {
                                 Text("${p.needs.toInt()}/${p.wants.toInt()}/${p.savings.toInt()}", style = MaterialTheme.typography.labelLarge, color = P.ink, fontWeight = FontWeight.Bold)
                             }
@@ -396,7 +441,7 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             item { SoftTag("El reparto suma ${pct(totalPct)}, no 100 %", P.loss) }
         }
         item {
-            Text("Toca una categoría para ajustar su %. Con el candado no se mueve.", style = MaterialTheme.typography.bodySmall, color = P.muted, modifier = Modifier.padding(start = 6.dp))
+            Text("Toca una categoría para ajustar su %. Con el candado no se mueve.", style = MaterialTheme.typography.bodySmall, color = P.muted, modifier = Modifier.padding(start = 8.dp))
         }
         item {
             CardList(draft, key = { it.id }) { c ->
@@ -426,14 +471,16 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             }
         }
     }
+    MoveSelectionBar(Modifier.align(Alignment.BottomCenter).padding(bottom = args.contentPadding.calculateBottomPadding()))
+    }
 }
 
 @Composable
 private fun Legend(text: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(9.dp).clip(CircleShape).background(color))
-        Spacer(Modifier.width(6.dp))
-        Text(text, fontSize = 13.sp, color = P.muted)
+        Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        Spacer(Modifier.width(8.dp))
+        Text(text, fontSize = 14.sp, color = P.muted)
     }
 }
 
@@ -456,7 +503,7 @@ private fun CategoryRow(
                 AmountTrailing(pct(c.percent), if (budget > 0) "usado ${pct(used / budget * 100)}" else null,
                     subColor = if (budget > 0 && used > budget && !c.isSavings) P.loss else P.muted)
                 Box(
-                    Modifier.padding(start = 6.dp).size(34.dp).clip(CircleShape).background(if (c.locked) P.ink else P.chip).clickable(onClick = onLock),
+                    Modifier.padding(start = 8.dp).size(32.dp).clip(CircleShape).background(if (c.locked) P.ink else P.chip).clickable(onClick = onLock),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -476,7 +523,7 @@ private fun CategoryRow(
                 enabled = !c.locked,
                 valueRange = 0f..100f,
                 colors = SliderDefaults.colors(thumbColor = color, activeTrackColor = color.copy(alpha = 0.5f), inactiveTrackColor = P.chip, disabledThumbColor = P.muted, disabledActiveTrackColor = P.line),
-                modifier = Modifier.fillMaxWidth().height(28.dp),
+                modifier = Modifier.fillMaxWidth().height(32.dp),
             )
         },
     )

@@ -123,12 +123,12 @@ fun MonthSelector(month: YearMonth, onShift: (Long) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         RoundIconButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Mes anterior", onClick = { onShift(-1) })
         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            Box(Modifier.clip(CircleShape).background(P.glass).padding(horizontal = 18.dp, vertical = 9.dp)) {
+            Box(Modifier.clip(CircleShape).background(P.glass).padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Text(month.format(monthFmt).replaceFirstChar { it.titlecase(es) }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
             }
         }
         if (month < YearMonth.now()) RoundIconButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Mes siguiente", onClick = { onShift(1) })
-        else Spacer(Modifier.size(42.dp))
+        else Spacer(Modifier.size(40.dp))
     }
 }
 
@@ -147,9 +147,9 @@ fun ExpenseRow(e: Expense, categories: List<Category>, accounts: List<Account>, 
                 if (cat?.isSavings == true) IconTile(categoryIcon(cat), SeriesColors[1]) else IconTile(t.icon(), t.color())
                 if (e.fromCard) {
                     Box(
-                        Modifier.align(Alignment.BottomEnd).size(18.dp).clip(CircleShape).background(P.card).padding(2.dp).clip(CircleShape).background(P.brand),
+                        Modifier.align(Alignment.BottomEnd).size(16.dp).clip(CircleShape).background(P.card).padding(2.dp).clip(CircleShape).background(P.brand),
                         contentAlignment = Alignment.Center,
-                    ) { Icon(Icons.Filled.CreditCard, null, Modifier.size(10.dp), tint = P.onBrand) }
+                    ) { Icon(Icons.Filled.CreditCard, null, Modifier.size(8.dp), tint = P.onBrand) }
                 }
             }
         },
@@ -198,6 +198,9 @@ fun HomeScreen(
     var filter by rememberSaveable { mutableStateOf(Filter.ALL) }
     var filterMenu by remember { mutableStateOf(false) }
     var pulseInfo by remember { mutableStateOf<String?>(null) }
+    var buyCheck by remember { mutableStateOf<com.caudal.finanzas.domain.BuyCheck?>(null) }
+    var pepeAsk by remember { mutableStateOf<String?>(null) }
+    var subsOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { vm.refreshIfStale() }
 
@@ -222,7 +225,9 @@ fun HomeScreen(
     val detected = expenses.firstOrNull { it.fromCard && System.currentTimeMillis() - it.createdAt < 24 * 3600_000L }
     val pad = Modifier.padding(horizontal = 0.dp)
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState(HomeScroll.index, HomeScroll.offset)
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { HomeScroll.index = listState.firstVisibleItemIndex; HomeScroll.offset = listState.firstVisibleItemScrollOffset } }
+    LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = args.contentPadding, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(Modifier.weight(1f))
@@ -230,10 +235,10 @@ fun HomeScreen(
             }
         }
         item {
-            Column(pad.padding(top = 10.dp, bottom = 2.dp)) {
+            Column(pad.padding(top = 8.dp, bottom = 2.dp)) {
                 Text(
                     if (settings.userName.isNotBlank()) "Hola, ${settings.userName}" else greeting,
-                    fontSize = 38.sp, lineHeight = 42.sp, fontWeight = FontWeight.Bold, letterSpacing = (-1).sp, color = P.ink,
+                    fontSize = 40.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold, fontFamily = com.caudal.finanzas.ui.SerifDisplay, letterSpacing = (-1).sp, color = P.ink,
                 )
             }
         }
@@ -245,12 +250,24 @@ fun HomeScreen(
             item {
                 val bankAccounts = accounts.filter { !it.isSaving() && !it.isDebt() }
                 val change = changeThisMonth(snapshots, wealth.total)
-                MintCard {
-                    Text("En el banco", fontSize = 18.sp, color = P.ink.copy(alpha = 0.85f))
-                    Spacer(Modifier.height(6.dp))
-                    AnimatedAmount(wealth.available, 44.sp, P.ink)
-                    Spacer(Modifier.height(14.dp))
-                    StackedBar(bankAccounts.mapIndexed { i, a -> Slice(a.name, a.balance, SeriesColors[i % SeriesColors.size]) }, height = 11.dp)
+                com.caudal.finanzas.ui.SpottedCard {
+                    Text("En el banco", fontSize = 18.sp, color = P.muted)
+                    Spacer(Modifier.height(8.dp))
+                    AnimatedAmount(wealth.available, 48.sp, P.ink)
+                    // Lo que te queda hoy, en la píldora de pasto de la marca.
+                    p?.let { pl -> com.caudal.finanzas.domain.TodayLeft.of(pl.data, com.caudal.finanzas.domain.CashPlanner.of(pl.data, settings.bankBuffer)) }?.let { (_, left) ->
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            if (left >= 0) "Hoy te quedan ${money.format(left)}" else "Hoy te has pasado ${money.format(-left)}",
+                            fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                            color = if (left >= 0) com.caudal.finanzas.ui.Vaca.PradoOscuro else com.caudal.finanzas.ui.Vaca.UbreFuerte,
+                            modifier = Modifier.clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(if (left >= 0) com.caudal.finanzas.ui.Vaca.Pasto else com.caudal.finanzas.ui.Vaca.UbreSuave)
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    StackedBar(bankAccounts.mapIndexed { i, a -> Slice(a.name, a.balance, SeriesColors[i % SeriesColors.size]) }, height = 12.dp)
                     Spacer(Modifier.height(16.dp))
                     // Lo ahorrado e invertido se suma aparte: no es dinero del día a día.
                     AddOnRow("+ Ahorrado", wealth.savings, SavingsColor) { onOpenTab(Tab.WEALTH) }
@@ -260,10 +277,10 @@ fun HomeScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Patrimonio total", Modifier.weight(1f), fontSize = 16.sp, color = P.muted)
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(money.format(wealth.total), fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                            Text(money.format(wealth.total), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                             if (change != null && kotlin.math.abs(change) >= 0.01) Text(
                                 (if (change >= 0) "↑ " else "↓ ") + money.signed(change) + " este mes",
-                                fontSize = 13.sp, color = gainColor(change),
+                                fontSize = 14.sp, color = gainColor(change),
                             )
                         }
                     }
@@ -296,6 +313,70 @@ fun HomeScreen(
                 }
             }
 
+            // ---------- Pregúntale a Pepe (contesta Claude con tu suscripción) ----------
+            if (p != null) item {
+                PepeCard { q -> pepeAsk = q }
+            }
+
+            // ---------- Recibos que pasan en los próximos días ----------
+            if (p != null) com.caudal.finanzas.domain.UpcomingBills.of(p.data).takeIf { it.isNotEmpty() }?.let { up ->
+                val bank = p.data.accounts.filter { it.type == com.caudal.finanzas.data.AccountType.BANK }.sumOf { it.balance }
+                item(key = "upcoming-bills") { UpcomingBillsCard(up, bank, p.data.today) }
+            }
+
+            // ---------- Tu dinero hasta la nómina (visual) ----------
+            if (p != null) com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer)?.let { c ->
+                val savingsId = p.data.accounts.filter { it.isSaving() }.maxByOrNull { it.balance }?.id
+                item(key = "cash-plan") {
+                    CashPlanCard(
+                        c, onCushion = { vm.setBankBuffer(it) },
+                        onMoveFromSavings = if (savingsId != null && !settings.savingsLocked) ({ args.onEdit(Editing.TransferForm(savingsId)) }) else null,
+                    )
+                }
+                // Pepe te recomienda: pasar lo que sobra por encima del colchón a tu ahorro.
+                val tip = com.caudal.finanzas.domain.PepeSuggest.of(p.data, c, p.goals.firstOrNull(), money::format)
+                if (tip != null && settings.weeklyTip && settings.pepeTipHiddenWeek != com.caudal.finanzas.domain.PepeSuggest.weekKey(LocalDate.now())) item(key = "pepe-tip") {
+                    PepeTipCard(tip, onMove = { vm.moveMoney(tip.fromId, tip.toId, tip.amount, "Pepe: al ahorro") }, onLater = { vm.hidePepeTip() })
+                }
+            }
+            // Lectura semanal: en qué se te fue el dinero sin darte cuenta.
+            if (p != null) com.caudal.finanzas.domain.WeeklyReader.of(p.data, money::format)?.let { r ->
+                item(key = "weekly-read") { WeeklyReadCard(r, onLimit = { args.onEdit(Editing.TagLimitForm(it)) }, onDetails = { args.onEdit(Editing.TagDetail(it)) }) }
+            }
+            // Revisión de suscripciones: subidas, pago anual y duplicadas.
+            if (p != null) com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.let { c ->
+                item(key = "subs-check") { SubscriptionCheckCard(c, c.actions.count { it.key !in settings.reviewedSubs }) { subsOpen = true } }
+            }
+
+            // ---------- Objetivo y edad financiera ----------
+            item {
+                GoalsSection(
+                    p?.goals ?: emptyList(),
+                    swapText = p?.let { remember(it, money) { com.caudal.finanzas.domain.GoalList.swapImpact(it.goalList, it.data, it.bankPlan, money::format) } },
+                    onAdd = { args.onEdit(Editing.GoalForm()) },
+                    onEdit = { args.onEdit(Editing.GoalForm(it)) },
+                    onMove = { i, by -> vm.moveGoal(i, by) },
+                    onApplyPct = null,
+                )
+            }
+
+            // ---------- Edad financiera (más arriba) ----------
+            item { FinancialAgeMini(p?.age) { args.onOpen(Overlay.AGE) } }
+
+            // ---------- Tus ahorros trabajando ----------
+            item {
+                MoneyWorkingSection(
+                    accounts, wealth.available,
+                    suggestedMonthly(income, categories.filter { it.isSavings }.sumOf { it.percent }),
+                    args.onEdit,
+                )
+            }
+
+            // ---------- ¿Lo compro o no? ----------
+            if (p != null) {
+                item { BuyCheckCard { n, pr -> buyCheck = com.caudal.finanzas.domain.BuyChecker.of(n, pr, p.data, p.bankPlan, p.budget, p.goals.firstOrNull(), money::format) } }
+            }
+
             // ---------- Últimos movimientos, de todas las cuentas ----------
             item {
                 RecentMovesCard(
@@ -321,61 +402,12 @@ fun HomeScreen(
                 if (anomalies.isNotEmpty()) item { AnomaliesCard(anomalies) { a -> a.expense?.let { args.onEdit(Editing.ExpenseForm(it)) } } }
             }
 
-            // ---------- Tu reparto: banco − alquiler → % al ahorro → para gastar ----------
-            p?.bankPlan?.let { plan ->
-                item {
-                    BankPlanCard(
-                        plan,
-                        onBuffer = { vm.setBankBuffer(it) },
-                        onMove = { vm.moveToSavings(plan) },
-                        onSettings = { args.onEdit(Editing.BankPlanForm) },
-                        onAddLateIncome = {
-                            args.onEdit(
-                                Editing.IncomeSourceForm(
-                                    com.caudal.finanzas.data.IncomeSource(name = "Resto de nómina", variable = false, amount = 250.0, dayFrom = 20, dayTo = 25, accountId = plan.main.id),
-                                ),
-                            )
-                        },
-                    )
-                }
-            }
-
-            // ---------- Cuánto meter en Robinhood y en qué gastar ----------
-            if (p != null) {
-                val sa = if (p.bankPlan?.target == null) com.caudal.finanzas.domain.SavingsAdvisor.advise(p.data, p.goal, money::format, p.bankPlan) else null
-                if (sa != null) item {
-                    val plan = p.bankPlan
-                    SavingsAdviceCard(
-                        sa, plan?.target?.name, plan?.saveGoal?.takeIf { plan.target != null },
-                        onApply = if (plan?.target != null && plan.remainder + plan.movedThisMonth > 0) ({
-                            val pct = Math.ceil(sa.recommended / (plan.remainder + plan.movedThisMonth) * 100).coerceIn(0.0, 100.0)
-                            vm.setBankPlan(plan.main.id, plan.target.id, pct)
-                        }) else null,
-                    )
-                }
-                p.budget?.takeIf { it.base > 0 }?.let { b -> item { BudgetWheelCard(b, onProfile = { args.onEdit(Editing.ProfileForm) }) { args.onEdit(Editing.TagLimitForm(it)) } } }
-            }
-
             // ---------- Nómina, recibos y cambios ----------
             if (p != null) {
-                com.caudal.finanzas.domain.PaycheckDistributor.split(p.data, p.goal, money::format)?.let { s -> item { PaycheckSplitCard(s) } }
                 com.caudal.finanzas.domain.PaymentOrganizer.analyze(p.data, p.bankPlan, money::format)?.takeIf { it.crunch }?.let { c -> item { BillCalendarCard(c) } }
                 val trends = com.caudal.finanzas.domain.TrendDetector.find(p.data, money::format)
                 if (trends.isNotEmpty()) item { TrendsCard(trends) }
             }
-
-            // ---------- Objetivo y edad financiera ----------
-            item {
-                GoalsSection(
-                    p?.goals ?: emptyList(),
-                    swapText = p?.let { remember(it, money) { com.caudal.finanzas.domain.GoalList.swapImpact(it.goalList, it.data, it.bankPlan, money::format) } },
-                    onAdd = { args.onEdit(Editing.GoalForm()) },
-                    onEdit = { args.onEdit(Editing.GoalForm(it)) },
-                    onMove = { i, by -> vm.moveGoal(i, by) },
-                    onApplyPct = null,
-                )
-            }
-            item { FinancialAgeMini(p?.age) { args.onOpen(Overlay.AGE) } }
 
             // ---------- Análisis y chat ----------
             item {
@@ -391,18 +423,18 @@ fun HomeScreen(
                 val total = wealth.total.takeIf { it > 0 } ?: 1.0
                 val rows = accounts.map { a ->
                     Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { AccountLogo(a.name, 46.dp) },
+                        { AccountLogo(a.name, 48.dp) },
                         a.name to (if (a.interestRate > 0) "${pct(a.interestRate)} TAE · ahora +${money.format(com.caudal.finanzas.domain.InterestMath.monthlyInterest(a.balance, a.interestRate))}/mes" else a.type.label),
                         a.signedBalance() to { args.onOpenAccount(a) },
                     )
                 } + listOfNotNull(
                     if (crypto.isNotEmpty()) Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { Initials("₿", Color(0xFFF7931A), 44.dp) },
+                        { Initials("₿", Color(0xFFF7931A), 40.dp) },
                         "Criptomonedas" to "${crypto.size} monedas",
                         crypto.sumOf { it.amount * it.price } to { onOpenInvest(InvestKind.CRYPTO) },
                     ) else null,
                     if (stocks.isNotEmpty()) Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { Initials("↗", Color(0xFFBF5AF2), 44.dp) },
+                        { Initials("↗", Color(0xFFBF5AF2), 40.dp) },
                         "Acciones y ETF" to "${stocks.size} posiciones",
                         stocks.sumOf { it.shares * it.price } to { onOpenInvest(InvestKind.STOCKS) },
                     ) else null,
@@ -415,10 +447,10 @@ fun HomeScreen(
                 }
             }
             item {
-                MCard(onClick = { onOpenTab(Tab.WEALTH) }, padding = 18.dp) {
+                MCard(onClick = { onOpenTab(Tab.WEALTH) }, padding = 16.dp) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("Ver gráficos", fontSize = 19.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                            Text("Ver gráficos", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = P.ink)
                             Text("Por cuenta y evolución de tu patrimonio", fontSize = 14.sp, color = P.muted)
                         }
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = P.muted)
@@ -442,21 +474,12 @@ fun HomeScreen(
                 item { FutureMiniCard(p.forecast.points.take(31), onOpenFuture) }
             }
 
-            // ---------- Tus ahorros trabajando ----------
-            item {
-                MoneyWorkingSection(
-                    accounts, wealth.available,
-                    suggestedMonthly(income, categories.filter { it.isSavings }.sumOf { it.percent }),
-                    args.onEdit,
-                )
-            }
-
             if (p != null) {
                 item { WhereDidItGoCard(p.comparison) }
                 item {
                     val level = p.level
                     val next = p.achievements.filter { !it.unlocked }.maxByOrNull { it.progress }
-                    MCard(onClick = { onOpenTab(Tab.PROFILE) }, padding = 18.dp) {
+                    MCard(onClick = { onOpenTab(Tab.PROFILE) }, padding = 16.dp) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.size(48.dp).clip(CircleShape).background(SeriesColors[3].copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
                                 Text("${level.number}", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = SeriesColors[3])
@@ -471,7 +494,7 @@ fun HomeScreen(
                             }
                             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = P.muted)
                         }
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(8.dp))
                         ProgressLine(level.progress(p.points), SeriesColors[3])
                     }
                 }
@@ -493,7 +516,7 @@ fun HomeScreen(
         if (nextIncome != null) {
             item {
                 MCard(padding = 0.dp) {
-                    Overline("Próximo cobro", Modifier.padding(start = 16.dp, top = 14.dp))
+                    Overline("Próximo cobro", Modifier.padding(start = 16.dp, top = 16.dp))
                     IncomeSourceRow(nextIncome, month, accounts, args.onEdit)
                 }
             }
@@ -519,7 +542,7 @@ fun HomeScreen(
                         onClick = onOpenSettings,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF0F3D27)),
                         shape = CircleShape,
-                    ) { Icon(Icons.Filled.CreditCard, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Activar", fontWeight = FontWeight.Bold) }
+                    ) { Icon(Icons.Filled.CreditCard, null, Modifier.size(16.dp)); Spacer(Modifier.width(8.dp)); Text("Activar", fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -559,6 +582,21 @@ fun HomeScreen(
             }
         }
     }
+    // La hoja de "¿Lo compro?" fuera de la lista: así se abre aunque la tarjeta quede abajo.
+    buyCheck?.let { c -> BuyCheckSheet(c) { buyCheck = null } }
+    pepeAsk?.let { q ->
+        p?.let { pl ->
+            PepeChat(
+                com.caudal.finanzas.domain.PepeBot.Ctx(pl.data, com.caudal.finanzas.domain.CashPlanner.of(pl.data, settings.bankBuffer), pl.goals.firstOrNull(), settings.userName, money::format),
+                q.takeIf { it.isNotBlank() },
+            ) { pepeAsk = null }
+        }
+    }
+    if (subsOpen) p?.data?.let { d ->
+        com.caudal.finanzas.domain.SubscriptionChecker.of(d)?.let { c ->
+            SubscriptionSheet(c, settings.reviewedSubs, com.caudal.finanzas.domain.SubscriptionChecker.savingsHealth(d), onToggle = { vm.toggleReviewedSub(it) }, onDismiss = { subsOpen = false })
+        }
+    }
 }
 
 /** Un movimiento cualquiera: gasto, cobro o transferencia, con su fecha para ordenarlos. */
@@ -588,21 +626,21 @@ private fun RecentMovesCard(
     }
     fun name(id: Long?) = accounts.firstOrNull { it.id == id }?.name
     MCard(padding = 0.dp) {
-        Row(Modifier.padding(start = 18.dp, end = 18.dp, top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("Últimos movimientos", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("De todas tus cuentas", fontSize = 14.sp, color = P.muted)
             }
             if (moves.size > 6) Text(
-                if (showAll) "Ver menos" else "Ver más", fontSize = 15.sp, color = P.gain, fontWeight = FontWeight.Medium,
+                if (showAll) "Ver menos" else "Ver más", fontSize = 16.sp, color = P.gain, fontWeight = FontWeight.Medium,
                 modifier = Modifier.clip(CircleShape).clickable { showAll = !showAll }.padding(8.dp),
             )
         }
         if (moves.isEmpty()) {
-            Text("Aún no hay movimientos. Los pagos con tarjeta aparecen aquí solos; los demás, con el +.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(18.dp))
+            Text("Aún no hay movimientos. Los pagos con tarjeta aparecen aquí solos; los demás, con el +.", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(16.dp))
         }
         moves.take(if (showAll) 25 else 6).forEachIndexed { i, m ->
-            if (i > 0) HorizontalDivider(Modifier.padding(start = 76.dp), color = P.line, thickness = 0.6.dp)
+            if (i > 0) HorizontalDivider(Modifier.padding(start = 80.dp), color = P.line, thickness = 0.6.dp)
             when (m) {
                 is Move.Out -> {
                     val t = m.e.spendTag()
@@ -637,19 +675,19 @@ private fun RecentMovesCard(
                 }
             }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
     }
 }
 
 /** "+ Ahorrado 9.140 €": lo que se suma al dinero del banco. */
 @Composable
 private fun AddOnRow(label: String, value: Double, color: Color, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(CircleShape).clickable(onClick = onClick).padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(10.dp).clip(CircleShape).background(color))
-        Spacer(Modifier.width(10.dp))
+    Row(Modifier.fillMaxWidth().clip(CircleShape).clickable(onClick = onClick).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        Spacer(Modifier.width(8.dp))
         Text(label, Modifier.weight(1f), fontSize = 16.sp, color = P.ink)
         Text(LocalMoney.current.format(kotlin.math.abs(value)), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(18.dp), tint = P.muted)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(16.dp), tint = P.muted)
     }
 }
 
@@ -657,9 +695,9 @@ private fun AddOnRow(label: String, value: Double, color: Color, onClick: () -> 
 fun ShortcutCard(title: String, sub: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
     MCard(modifier, onClick = onClick, padding = 16.dp) {
         IconTile(icon, color, 40.dp)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
-        Text(sub, fontSize = 13.sp, color = P.muted, maxLines = 1)
+        Text(sub, fontSize = 14.sp, color = P.muted, maxLines = 1)
     }
 }
 
@@ -675,7 +713,7 @@ fun HoldingsList(items: List<Holding>, onClick: () -> Unit) {
     CardList(items.sortedByDescending { it.value }.take(5)) { h ->
         ListRow(
             h.name, subtitle = "${com.caudal.finanzas.ui.quantity(h.qty)} ${h.symbol}", onClick = onClick,
-            leading = { Initials(h.symbol, symbolColor(h.symbol), 46.dp) },
+            leading = { Initials(h.symbol, symbolColor(h.symbol), 48.dp) },
             trailing = { AmountTrailing(money.format(h.value), h.pnlPct?.let { signedPct(it) }, subColor = gainColor(h.pnlPct ?: 0.0)) },
         )
     }
@@ -687,7 +725,7 @@ fun SafeToSpendCard(s: com.caudal.finanzas.domain.SafeToSpend) {
     val money = LocalMoney.current
     MCard {
         Text("Puedes gastar", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, color = P.muted)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         AnimatedAmount(s.safe.coerceAtLeast(0.0), 36.sp, if (s.safe > 0) P.gain else P.loss)
         Text(
             if (s.safe <= 0) "Lo que tienes está comprometido hasta tu próximo cobro"
@@ -696,7 +734,7 @@ fun SafeToSpendCard(s: com.caudal.finanzas.domain.SafeToSpend) {
         )
         Spacer(Modifier.height(12.dp))
         HorizontalDivider(color = P.line)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         BreakdownRow("Disponible en cuentas", money.format(s.available), P.ink)
         BreakdownRow("Gastos fijos pendientes", (if (s.pendingBills > 0) "-" else "") + money.format(s.pendingBills), if (s.pendingBills > 0) P.loss else P.muted)
         BreakdownRow("Reservado para ahorrar", (if (s.savingsReserve > 0) "-" else "") + money.format(s.savingsReserve), if (s.savingsReserve > 0) SeriesColors[1] else P.muted)
@@ -705,7 +743,7 @@ fun SafeToSpendCard(s: com.caudal.finanzas.domain.SafeToSpend) {
 
 @Composable
 private fun BreakdownRow(label: String, value: String, color: Color) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = P.muted)
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
     }
@@ -729,8 +767,8 @@ fun FutureMiniCard(points: List<Pair<LocalDate, Double>>, onOpen: () -> Unit) {
             }
             Icon(Icons.AutoMirrored.Filled.ShowChart, null, tint = P.muted)
         }
-        Spacer(Modifier.height(10.dp))
-        LineChart(points.map { it.second }, if (negative != null) P.loss else P.gain, Modifier.fillMaxWidth().height(70.dp))
+        Spacer(Modifier.height(8.dp))
+        LineChart(points.map { it.second }, if (negative != null) P.loss else P.gain, Modifier.fillMaxWidth().height(72.dp))
     }
 }
 
@@ -768,3 +806,6 @@ fun WhereDidItGoCard(c: com.caudal.finanzas.domain.MonthComparison) {
         )
     }
 }
+
+/** Dónde estabas en el Inicio, para volver al mismo sitio al cerrar otra pantalla (mientras la app está abierta). */
+private object HomeScroll { var index = 0; var offset = 0 }

@@ -61,8 +61,21 @@ object Budgeting {
     fun isBillPayment(e: com.caudal.finanzas.data.Expense, bills: List<com.caudal.finanzas.data.RecurringBill>): Boolean =
         e.billId != null || bills.any { b -> e.note.contains(b.name, ignoreCase = true) && kotlin.math.abs(e.amount - b.amount) <= b.amount * 0.1 }
 
+    private val HOUSING = listOf("alquiler", "hipoteca", "renta piso", "renta del piso", "comunidad de vecinos", "cuota comunidad", "ibi")
+
+    /**
+     * Gasto fijo de una vez al mes (alquiler, hipoteca, comunidad, recibos): no cuenta en el resumen del día a día
+     * ni en la media diaria, porque la desvirtúa. Aunque no esté dado de alta como recibo, se reconoce el alquiler
+     * por el texto y los pagos grandes de casa (250 € o más).
+     */
+    fun isFixed(e: com.caudal.finanzas.data.Expense, bills: List<com.caudal.finanzas.data.RecurringBill>): Boolean {
+        if (isBillPayment(e, bills)) return true
+        val n = Classifier.normalize(e.note)
+        return HOUSING.any { it in n } || (e.spendTag() == SpendTag.HOME && e.amount >= 250)
+    }
+
     /** Gasto variable (sin fijos ni ahorro) de un mes. */
-    fun variable(d: FinanceData, m: YearMonth) = d.spendingIn(m).filter { !isBillPayment(it, d.bills) }
+    fun variable(d: FinanceData, m: YearMonth) = d.spendingIn(m).filter { !isFixed(it, d.bills) }
 
     fun plan(d: FinanceData, saving: Double, limits: Map<SpendTag, TagLimit>, plan: BankPlan? = null, profile: Map<SpendTag, Double>? = null): SpendingBudget {
         val income = d.monthlyIncome

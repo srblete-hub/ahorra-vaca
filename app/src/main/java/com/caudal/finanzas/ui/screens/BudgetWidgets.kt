@@ -66,7 +66,7 @@ fun DailyAdviceCard(a: DailyAdvice) {
             IconTile(Icons.Filled.WbSunny, Amber, 40.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Consejo de hoy", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("Consejo de hoy", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text(a.headline, fontSize = 14.sp, color = P.muted)
             }
             if (a.perDay > 0) Column(horizontalAlignment = Alignment.End) {
@@ -74,12 +74,12 @@ fun DailyAdviceCard(a: DailyAdvice) {
                 Text("para hoy", fontSize = 12.sp, color = P.muted)
             }
         }
-        if (a.tips.isNotEmpty()) Spacer(Modifier.height(10.dp))
+        if (a.tips.isNotEmpty()) Spacer(Modifier.height(8.dp))
         a.tips.forEach { t ->
-            Row(Modifier.padding(top = 6.dp)) {
+            Row(Modifier.padding(top = 8.dp)) {
                 Icon(Icons.Filled.Lightbulb, null, Modifier.size(16.dp).padding(top = 2.dp), tint = Amber)
                 Spacer(Modifier.width(8.dp))
-                Text(t, fontSize = 15.sp, lineHeight = 21.sp, color = P.ink)
+                Text(t, fontSize = 16.sp, lineHeight = 20.sp, color = P.ink)
             }
         }
     }
@@ -94,14 +94,14 @@ fun SavingsAdviceCard(a: SavingsAdvice, targetName: String?, currentGoal: Double
             IconTile(Icons.Filled.Savings, SeriesColors[1], 40.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("¿Cuánto meter en ${targetName ?: "tu ahorro"}?", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text("¿Cuánto meter en ${targetName ?: "tu ahorro"}?", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("Mi recomendación para cada mes", fontSize = 14.sp, color = P.muted)
             }
         }
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            AnimatedAmount(a.recommended, 34.sp, SeriesColors[1])
-            Text("  al mes · ${a.pctOfIncome.toInt()} % de lo que entra", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(bottom = 6.dp))
+            AnimatedAmount(a.recommended, 32.sp, SeriesColors[1])
+            Text("  al mes · ${a.pctOfIncome.toInt()} % de lo que entra", fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(bottom = 8.dp))
         }
         Text(
             "En un año: ${money.format(a.inOneYear)}" + if (a.interestOneYear > 1) " (${money.format(a.interestOneYear)} de intereses)" else "",
@@ -114,11 +114,11 @@ fun SavingsAdviceCard(a: SavingsAdvice, targetName: String?, currentGoal: Double
             Text(
                 if (kotlin.math.abs(diff) < 10) "Tu reparto actual (${money.format(currentGoal)}) ya está en línea."
                 else "Tu reparto actual manda ${money.format(currentGoal)}: ${if (diff > 0) "algo más" else "algo menos"} de lo que te recomiendo.",
-                fontSize = 13.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp),
+                fontSize = 14.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp),
             )
         }
         if (onApply != null) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             BrandButton("Usar ${money.format(a.recommended)} en mi reparto", onApply, Modifier.fillMaxWidth())
         }
     }
@@ -133,41 +133,41 @@ fun BudgetWheelCard(b: SpendingBudget, onProfile: (() -> Unit)? = null, onEditTa
         Text(
             if (b.fromBank) "Lo que te queda este mes después del alquiler, los fijos y el ahorro, repartido por tipo de gasto"
             else "Ingresos ${money.format(b.income)} − fijos ${money.format(b.fixed)} − ahorro ${money.format(b.saving)}",
-            fontSize = 13.sp, color = P.muted,
+            fontSize = 14.sp, color = P.muted,
         )
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(16.dp))
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Donut(b.items.filter { it.monthly >= 1 || it.spent > 0 }.map { Slice(it.tag.label, it.monthly, it.tag.color()) }, size = 190.dp) {
-                Text(money.format(b.base), fontSize = 21.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                Text(money.format(b.base), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                 Text("este mes para gastar", fontSize = 12.sp, color = P.muted)
             }
         }
-        Spacer(Modifier.height(10.dp))
-        Text("Toca una para fijar cuánto quieres gastar (por semana o por mes); el resto se reparte según tu perfil de ahorrador.", fontSize = 13.sp, color = P.muted)
+        Spacer(Modifier.height(8.dp))
+        Text("Toca una para fijar cuánto quieres gastar (por semana o por mes); el resto se reparte según tu perfil de ahorrador.", fontSize = 14.sp, color = P.muted)
         if (onProfile != null) Text(
-            "Cambiar mi perfil de ahorrador", fontSize = 15.sp, color = P.gain, fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(top = 6.dp).clip(RoundedCornerShape(12.dp)).clickable(onClick = onProfile).padding(vertical = 4.dp),
+            "Cambiar mi perfil de ahorrador", fontSize = 16.sp, color = P.gain, fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 8.dp).clip(RoundedCornerShape(12.dp)).clickable(onClick = onProfile).padding(vertical = 4.dp),
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         b.items.filter { it.monthly >= 1 || it.spent > 0 }.forEachIndexed { i, t ->
             if (i > 0) HorizontalDivider(color = P.line, thickness = 0.6.dp)
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onEditTag(t.tag) }.padding(vertical = 10.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onEditTag(t.tag) }.padding(vertical = 8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconTile(t.tag.icon(), t.tag.color(), 36.dp)
+                    IconTile(t.tag.icon(), t.tag.color(), 40.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(t.tag.label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
                         Text(
                             "${money.format(t.monthly)}/mes · ${money.format(t.weekly)}/semana" + if (t.fixedByYou != null) " · fijado por ti" else "",
-                            fontSize = 13.sp, color = P.muted,
+                            fontSize = 14.sp, color = P.muted,
                         )
                     }
-                    Spacer(Modifier.width(10.dp))
-                    Text("${t.pct.toInt()} %", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = t.tag.color())
+                    Spacer(Modifier.width(8.dp))
+                    Text("${t.pct.toInt()} %", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = t.tag.color())
                 }
-                Row(Modifier.padding(start = 48.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.padding(start = 48.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     ProgressLine(if (t.monthly > 0) t.spent / t.monthly else 0.0, t.tag.color(), Modifier.weight(1f))
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         if (t.left >= 0) "quedan ${money.format(t.left)}" else "te pasas ${money.format(-t.left)}",
                         fontSize = 12.sp, color = if (t.left >= 0) P.muted else P.loss,
@@ -194,7 +194,7 @@ fun TagLimitSheet(tag: SpendTag, current: TagLimit?, currency: String, onSave: (
             )
         }
         if (current != null) Text(
-            "Volver a automático", fontSize = 15.sp, color = P.gain,
+            "Volver a automático", fontSize = 16.sp, color = P.gain,
             modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onAuto).padding(8.dp),
         )
     }
@@ -217,7 +217,7 @@ fun SavingProfileSheet(style: Int, goals: Set<String>, buffer: Double, onSave: (
                 val on = g.name in picked
                 Box(
                     Modifier.clip(RoundedCornerShape(50)).background(if (on) P.brand else P.chip)
-                        .clickable { picked = if (on) picked - g.name else picked + g.name }.padding(horizontal = 14.dp, vertical = 9.dp),
+                        .clickable { picked = if (on) picked - g.name else picked + g.name }.padding(horizontal = 16.dp, vertical = 8.dp),
                 ) { Text(g.label, fontSize = 14.sp, color = if (on) P.onBrand else P.ink) }
             }
         }
@@ -225,17 +225,17 @@ fun SavingProfileSheet(style: Int, goals: Set<String>, buffer: Double, onSave: (
         com.caudal.finanzas.domain.SavingProfile.STYLES.forEachIndexed { i, (name, sub) ->
             val on = i == chosen
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (on) P.brand else P.chip).clickable { chosen = i }.padding(14.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (on) P.brand else P.chip).clickable { chosen = i }.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f)) {
                     Text(name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (on) P.onBrand else P.ink)
-                    Text(sub, fontSize = 13.sp, color = if (on) P.onBrand.copy(alpha = 0.8f) else P.muted)
+                    Text(sub, fontSize = 14.sp, color = if (on) P.onBrand.copy(alpha = 0.8f) else P.muted)
                 }
             }
         }
         Text("¿Con cuánto quieres llegar a fin de mes?", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-        Text("Lo que te sobra a final de mes para no quedarte en negativo. \"Puedes gastar\" ya lo descuenta.", fontSize = 13.sp, color = P.muted)
+        Text("Lo que te sobra a final de mes para no quedarte en negativo. \"Puedes gastar\" ya lo descuenta.", fontSize = 14.sp, color = P.muted)
         androidx.compose.foundation.layout.FlowRow(
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
@@ -243,7 +243,7 @@ fun SavingProfileSheet(style: Int, goals: Set<String>, buffer: Double, onSave: (
             listOf(50.0, 100.0, 150.0, 200.0).forEach { b ->
                 val on = kotlin.math.abs(b - cushion) < 0.5
                 Box(
-                    Modifier.clip(RoundedCornerShape(50)).background(if (on) P.brand else P.chip).clickable { cushion = b }.padding(horizontal = 16.dp, vertical = 9.dp),
+                    Modifier.clip(RoundedCornerShape(50)).background(if (on) P.brand else P.chip).clickable { cushion = b }.padding(horizontal = 16.dp, vertical = 8.dp),
                 ) { Text("+${b.toInt()} €", fontSize = 14.sp, color = if (on) P.onBrand else P.ink) }
             }
         }

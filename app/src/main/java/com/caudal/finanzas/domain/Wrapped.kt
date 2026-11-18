@@ -29,6 +29,8 @@ data class MonthWrapped(
     val saved: Double,
     /** Saldo de tus cuentas corrientes ahora (tu liquidez; sin ahorros ni inversiones). */
     val bank: Double = 0.0,
+    /** Alquiler y fijos del mes (de una vez al mes): aparte, no cuentan en lo gastado ni en la media. */
+    val fixed: Double = 0.0,
 ) {
     val left get() = income - spent
     val perDay get() = if (daysElapsed > 0) spent / daysElapsed else 0.0
@@ -46,7 +48,8 @@ object Wrapped {
             month.isAfter(YearMonth.from(today)) -> 0
             else -> len
         }
-        val spending = d.spendingIn(month)
+        val all = d.spendingIn(month)
+        val spending = all.filter { !Budgeting.isFixed(it, d.bills) }
         val spent = spending.sumOf { it.amount }
         val daily = (1..len).map { day -> spending.filter { LocalDate.ofEpochDay(it.epochDay).dayOfMonth == day }.sumOf { it.amount } }
         val tags = spending.groupBy { it.spendTag() }.mapValues { (_, l) -> l.sumOf { it.amount } }.maxByOrNull { it.value }
@@ -56,7 +59,7 @@ object Wrapped {
         val weekday = spending.groupBy { LocalDate.ofEpochDay(it.epochDay).dayOfWeek }.mapValues { (_, l) -> l.sumOf { it.amount } }.maxByOrNull { it.value }
         val topDayIdx = daily.indices.maxByOrNull { daily[it] }?.takeIf { daily[it] > 0 }
         val prevMonth = month.minusMonths(1)
-        val prevList = d.spendingIn(prevMonth).filter { LocalDate.ofEpochDay(it.epochDay).dayOfMonth <= elapsed }
+        val prevList = d.spendingIn(prevMonth).filter { !Budgeting.isFixed(it, d.bills) }.filter { LocalDate.ofEpochDay(it.epochDay).dayOfMonth <= elapsed }
         val hasPrev = d.firstMonth?.let { !prevMonth.isBefore(it) } == true
         val savingAccounts = d.accounts.filter { it.type in setOf(AccountType.BANK_SAVINGS, AccountType.HOME_SAVINGS, AccountType.FUND) }.map { it.id }.toSet()
         val savedByTransfer = transfers.filter { it.toAccountId in savingAccounts && it.fromAccountId !in savingAccounts && d.inMonth(it.epochDay, month) }.sumOf { it.amount }
@@ -77,6 +80,7 @@ object Wrapped {
             prevSpent = if (hasPrev) prevList.sumOf { it.amount } else null,
             saved = savedByTransfer + savedByCategory,
             bank = d.accounts.filter { it.type == AccountType.BANK }.sumOf { it.balance },
+            fixed = all.filter { Budgeting.isFixed(it, d.bills) }.sumOf { it.amount },
         )
     }
 }

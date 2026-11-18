@@ -142,7 +142,7 @@ fun QuickEntrySheet(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconTile(p.tag.icon(), p.tag.color(), 38.dp)
+                IconTile(p.tag.icon(), p.tag.color(), 40.dp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(p.note, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
@@ -179,7 +179,7 @@ fun SplitSheet(expense: Expense, current: com.caudal.finanzas.data.Split?, onSav
             (2..8).forEach { n -> Choice("$n", n == people, { people = n; settled = settled.coerceAtMost(n - 1) }) }
         }
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(P.mint).padding(16.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.mint).padding(16.dp),
         ) {
             Text("A cada uno le toca", style = MaterialTheme.typography.bodySmall, color = P.muted)
             Text(money.format(share), style = MaterialTheme.typography.headlineSmall, color = P.ink)
@@ -317,7 +317,7 @@ fun BillSheet(
         TextInput(day, { day = it.filter(Char::isDigit).take(2) }, "Día en que se cobra", keyboardType = KeyboardType.Number)
         if (yearly) {
             FieldLabel("Mes")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 (1..12).forEach { m ->
                     Choice(java.time.Month.of(m).getDisplayName(java.time.format.TextStyle.SHORT, es).trimEnd('.'), m == month, { month = m })
                 }
@@ -366,10 +366,10 @@ private fun Choice(text: String, selected: Boolean, onClick: () -> Unit, icon: I
         Modifier.clip(CircleShape)
             .background(if (selected) p.brand else p.chip)
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (icon != null) { Icon(icon, null, Modifier.size(16.dp), tint = if (selected) p.onBrand else p.ink); Spacer(Modifier.width(6.dp)) }
+        if (icon != null) { Icon(icon, null, Modifier.size(16.dp), tint = if (selected) p.onBrand else p.ink); Spacer(Modifier.width(8.dp)) }
         Text(text, style = MaterialTheme.typography.labelLarge, color = if (selected) p.onBrand else p.ink)
     }
 }
@@ -392,7 +392,7 @@ fun AddChooserSheet(onPick: (Editing) -> Unit, onDismiss: () -> Unit, categories
         )
         options.forEachIndexed { i, (icon, title, sub) ->
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(P.chip).clickable {
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.chip).clickable {
                     onPick(
                         when (i - 2) {
                             -2 -> Editing.TransferForm(defaultAccount ?: accounts.firstOrNull()?.id ?: 0L)
@@ -410,11 +410,11 @@ fun AddChooserSheet(onPick: (Editing) -> Unit, onDismiss: () -> Unit, categories
                             else -> Editing.BillForm(newBill(categories, defaultAccount))
                         },
                     )
-                }.padding(14.dp),
+                }.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconTile(icon, SeriesColors[i % SeriesColors.size])
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
                     Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
                     Text(sub, style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -469,7 +469,7 @@ fun ExpenseSheet(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.CreditCard, null, tint = P.gain)
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Text("Apuntado solo con tu tarjeta · ${initial.sourceApp}", style = MaterialTheme.typography.bodySmall, color = P.ink)
             }
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(12.dp)) {
@@ -515,11 +515,11 @@ fun ExpenseSheet(
 
         if (onOwed != null && initial.id != 0L) {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).clickable(onClick = onOwed).padding(14.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).clickable(onClick = onOwed).padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.Group, null, tint = SeriesColors[1])
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Alguien me debe parte", style = MaterialTheme.typography.titleSmall, color = P.ink)
                     Text("Juanpa me debe la mitad, por ejemplo", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -528,11 +528,11 @@ fun ExpenseSheet(
         }
         if (onIsTransfer != null && initial.id != 0L && initial.accountId != null) {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).clickable(onClick = onIsTransfer).padding(14.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).clickable(onClick = onIsTransfer).padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.SwapHoriz, null, tint = P.gain)
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Era un traspaso a mis cuentas", style = MaterialTheme.typography.titleSmall, color = P.ink)
                     Text("Lo convierto en transferencia (no cuenta como gasto)", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -646,8 +646,8 @@ fun InterestCalculator(balance: Double, ratePct: Double) {
     val months = years * 12
 
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(P.mint).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.mint).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Overline("Si lo dejas como está")
         Row {
@@ -668,7 +668,7 @@ fun InterestCalculator(balance: Double, ratePct: Double) {
             AmountField(varMin, { varMin = it }, "Mínimo", Modifier.weight(1f), suffix = "€")
             AmountField(varMax, { varMax = it }, "Máximo", Modifier.weight(1f), suffix = "€")
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(1, 3, 5, 10, 20).forEach { y -> Choice("$y ${if (y == 1) "año" else "años"}", y == years, { years = y }) }
         }
 
@@ -731,7 +731,7 @@ fun IncomeSourceSheet(
         )
         TextInput(name, { name = it }, "Nombre (Nómina, Autónomo, YouTube…)")
         FieldLabel("¿Qué días cobras?")
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextInput(dayFrom, { dayFrom = it.filter(Char::isDigit).take(2) }, "Del día", Modifier.weight(1f), KeyboardType.Number)
             TextInput(dayTo, { dayTo = it.filter(Char::isDigit).take(2) }, "Al día", Modifier.weight(1f), KeyboardType.Number)
         }
@@ -809,7 +809,7 @@ fun CoinSearchSheet(search: suspend (String) -> List<CoinResult>, onPick: (CoinR
             placeholder = { Text("Bitcoin, ETH, Solana…") },
             singleLine = true,
             leadingIcon = { Icon(Icons.Filled.Search, null) },
-            trailingIcon = { if (loading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else IconButton(onClick = run, enabled = query.isNotBlank()) { Icon(Icons.AutoMirrored.Filled.TrendingUp, "Buscar") } },
+            trailingIcon = { if (loading) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp) else IconButton(onClick = run, enabled = query.isNotBlank()) { Icon(Icons.AutoMirrored.Filled.TrendingUp, "Buscar") } },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { if (query.isNotBlank()) run() }),
             shape = CircleShape,
@@ -825,7 +825,7 @@ fun CoinSearchSheet(search: suspend (String) -> List<CoinResult>, onPick: (CoinR
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onPick(c) }.padding(vertical = 8.dp, horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Initials(c.symbol, SeriesColors[(i + 2) % SeriesColors.size], 38.dp)
+                Initials(c.symbol, SeriesColors[(i + 2) % SeriesColors.size], 40.dp)
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(c.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
@@ -876,13 +876,13 @@ fun CryptoSheet(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(P.chip).padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Initials(initial.symbol, com.caudal.finanzas.ui.screens.symbolColor(initial.symbol), 36.dp)
+            Initials(initial.symbol, com.caudal.finanzas.ui.screens.symbolColor(initial.symbol), 40.dp)
             Spacer(Modifier.width(12.dp))
             Text(
                 when { pr != null -> "1 ${initial.symbol} = ${money.format(pr)} ahora"; loading -> "Buscando el precio…"; else -> "Sin conexión: pon la cantidad a mano" },
                 style = MaterialTheme.typography.titleSmall, color = P.ink, modifier = Modifier.weight(1f),
             )
-            if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+            if (loading) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
         }
         if (pr != null && !byQuantity) {
             FieldLabel("¿Cuánto dinero tienes en ${initial.name}?")
@@ -966,10 +966,10 @@ fun CategoriesSheet(initial: List<Category>, onSave: (List<Category>) -> Unit, o
     ) {
         Text("Marca como ahorro lo que no es para gastar.", style = MaterialTheme.typography.bodySmall, color = P.muted)
         rows.forEachIndexed { i, (cat, name, percent) ->
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(P.chip).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.chip).padding(12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Dot(SeriesColors[i % SeriesColors.size], 12.dp)
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(8.dp))
                     androidx.compose.foundation.text.BasicTextField(
                         name, { rows[i] = Triple(cat, it, percent) }, singleLine = true,
                         textStyle = MaterialTheme.typography.titleSmall.copy(color = P.ink, fontWeight = FontWeight.Bold),
@@ -982,7 +982,7 @@ fun CategoriesSheet(initial: List<Category>, onSave: (List<Category>) -> Unit, o
                         modifier = Modifier.width(48.dp),
                     )
                     Text(" %", color = P.muted)
-                    IconButton(onClick = { rows.removeAt(i) }, modifier = Modifier.size(36.dp)) { Icon(Icons.Filled.Close, "Quitar", tint = P.muted) }
+                    IconButton(onClick = { rows.removeAt(i) }, modifier = Modifier.size(40.dp)) { Icon(Icons.Filled.Close, "Quitar", tint = P.muted) }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(cat.isSavings, { rows[i] = Triple(cat.copy(isSavings = it), name, percent) }, colors = CheckboxDefaults.colors(checkedColor = P.gain))
@@ -991,7 +991,7 @@ fun CategoriesSheet(initial: List<Category>, onSave: (List<Category>) -> Unit, o
             }
         }
         TextButton(onClick = { rows.add(Triple(Category(name = "Nueva", percent = 0.0), "Nueva", "")) }) {
-            Icon(Icons.Filled.Add, null, tint = P.gain); Spacer(Modifier.width(6.dp)); Text("Añadir categoría", color = P.gain)
+            Icon(Icons.Filled.Add, null, tint = P.gain); Spacer(Modifier.width(8.dp)); Text("Añadir categoría", color = P.gain)
         }
         Box(Modifier.fillMaxWidth()) {
             SoftTag("Total: ${pct(total)}", if (abs(total - 100) < 0.01) P.gain else P.loss)
@@ -1023,7 +1023,7 @@ fun TagDetailSheet(
     FormSheet(tag.label, onDismiss, primary = "Fijar límite para ${tag.label.lowercase()}", onPrimary = onSetLimit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconTile(tag.icon(), tag.color(), 48.dp)
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(money.format(total), style = MaterialTheme.typography.headlineSmall, color = P.ink)
                 Text(
@@ -1052,11 +1052,13 @@ fun TagDetailSheet(
         if (list.isEmpty()) Text("No hay movimientos de este tipo este mes.", style = MaterialTheme.typography.bodyMedium, color = P.muted)
         list.forEach { e ->
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable { onOpenExpense(e) }.padding(vertical = 8.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onOpenExpense(e) }.padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                MerchantLogo(e.note, tag, 40.dp)
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(e.note.ifBlank { tag.label }, style = MaterialTheme.typography.titleSmall, color = P.ink, maxLines = 1)
+                    Text(com.caudal.finanzas.domain.Merchants.clean(e.note).ifBlank { tag.label }, style = MaterialTheme.typography.titleSmall, color = P.ink, maxLines = 1)
                     Text(
                         listOfNotNull(
                             LocalDate.ofEpochDay(e.epochDay).format(java.time.format.DateTimeFormatter.ofPattern("EEE d MMM", es)),

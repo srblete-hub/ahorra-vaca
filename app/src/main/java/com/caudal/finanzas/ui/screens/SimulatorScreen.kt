@@ -85,13 +85,13 @@ fun SimulatorScreen(vm: FinanceViewModel, onBack: () -> Unit) {
 
     LazyColumn(
         Modifier.fillMaxSize().background(P.bg),
-        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = status + 8.dp, bottom = nav + 32.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = status + 8.dp, bottom = nav + 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(16.dp))
                 Column {
                     Text("¿Qué pasaría si…?", style = MaterialTheme.typography.headlineMedium, color = P.ink)
                     Text("Tu vida ahora frente a un escenario paralelo", style = MaterialTheme.typography.bodySmall, color = P.muted)
@@ -102,21 +102,21 @@ fun SimulatorScreen(vm: FinanceViewModel, onBack: () -> Unit) {
         if (decision == Decision.MOVE) item { MoveComparison(base) }
         if (decision != Decision.MOVE) item {
             MCard {
-                Text(decision.intro, fontSize = 15.sp, color = P.ink)
+                Text(decision.intro, fontSize = 16.sp, color = P.ink)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "Ahora: ingresas ${money.format(base.income)} y tu vida cuesta ${money.format(base.cost)} al mes" +
                         if (decision == Decision.MOVE && base.rent > 0) " (alquiler ${money.format(base.rent)})." else ".",
-                    fontSize = 13.sp, color = P.muted,
+                    fontSize = 14.sp, color = P.muted,
                 )
-                Spacer(Modifier.height(10.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     decision.fields.forEach { f ->
                         val key = "${decision.name}:$f"
                         AmountField(values[key] ?: "", { values[key] = it }, f, suffix = if (f.startsWith("Meses")) null else "€")
                     }
                 }
-                if (decision == Decision.ALONE) Text("Contamos dos meses de alquiler de fianza como pago inicial.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp))
+                if (decision == Decision.ALONE) Text("Contamos dos meses de alquiler de fianza como pago inicial.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
             }
         }
         if (decision != Decision.MOVE) item {
@@ -140,7 +140,7 @@ fun SimulatorScreen(vm: FinanceViewModel, onBack: () -> Unit) {
                 Compare("Dinero en 5 años", money.format(r.in5yNow), money.format(r.in5yAfter))
                 Compare("Colchón (meses de vida)", "%.1f".format(r.emergencyNow), "%.1f".format(r.emergencyAfter))
                 if (upfront > 0) Compare("Pago inicial", "—", money.format(upfront))
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
                     when {
                         r.runwayMonths != null -> "Con este cambio perderías ${money.format(-r.savingAfter)} al mes: tus ahorros durarían unos ${r.runwayMonths.toInt()} meses."
@@ -148,9 +148,9 @@ fun SimulatorScreen(vm: FinanceViewModel, onBack: () -> Unit) {
                         r.savingAfter >= r.savingNow -> "Saldrías ganando: ahorrarías ${money.format(r.savingAfter - r.savingNow)} más al mes."
                         else -> "Asumible: ahorrarías ${money.format(r.savingNow - r.savingAfter)} menos al mes."
                     },
-                    fontSize = 15.sp, fontWeight = FontWeight.Medium, color = P.ink,
+                    fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink,
                 )
-                Text("Estimación con tus ingresos y tu coste de vida reales; no incluye intereses ni subidas de precios.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 6.dp))
+                Text("Estimación con tus ingresos y tu coste de vida reales; no incluye intereses ni subidas de precios.", fontSize = 12.sp, color = P.muted, modifier = Modifier.padding(top = 8.dp))
             }
         }
     }
@@ -192,12 +192,12 @@ private fun MoveComparison(base: Insights.SimBase) {
         Housing("Compartir vivienda", shared + utilities / 2 + transport, shared * depositMonths + moving / 2, "Fianza de tu parte + media mudanza"),
         Housing("Un piso más barato", cheaper + utilities + transport, cheaper * depositMonths + moving, "Fianza ${money.format(cheaper * depositMonths)} + mudanza ${money.format(moving)}"),
     )
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         MCard {
-            Text("Cuéntame el piso que estás mirando", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
-            Text("Rellena lo que sepas; lo demás lleva un valor de ejemplo.", fontSize = 13.sp, color = P.muted)
-            Spacer(Modifier.height(10.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Cuéntame el piso que estás mirando", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Rellena lo que sepas; lo demás lleva un valor de ejemplo.", fontSize = 14.sp, color = P.muted)
+            Spacer(Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
                     "Tu alquiler ahora" to base.rent, "Alquiler del piso nuevo" to 750.0, "Meses de fianza" to 2.0, "Mudanza y muebles" to 300.0,
                     "Suministros extra al mes (luz, agua, internet)" to 0.0, "Transporte extra al mes" to 0.0,
@@ -213,11 +213,11 @@ private fun MoveComparison(base: Insights.SimBase) {
             val start = base.savings - o.upfront
             MCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(o.name, Modifier.weight(1f), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    Text(o.name, Modifier.weight(1f), fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
                     Text(money.signed(saving) + "/mes", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (saving >= 0) P.gain else P.loss)
                 }
-                Text(o.detail, fontSize = 13.sp, color = P.muted)
-                HorizontalDivider(Modifier.padding(vertical = 10.dp), color = P.line)
+                Text(o.detail, fontSize = 14.sp, color = P.muted)
+                HorizontalDivider(Modifier.padding(vertical = 8.dp), color = P.line)
                 Compare("Vivienda al mes (todo incluido)", "", money.format(o.monthly))
                 Compare("Pago al empezar", "", money.format(o.upfront))
                 Compare("Gastos fijos del mes", "", money.format(costAfter))

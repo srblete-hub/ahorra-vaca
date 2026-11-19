@@ -143,6 +143,31 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
         if (settings.onboardingDone && settings.savingStyle < 0 && editing == null) editing = Editing.ProfileForm
     }
     LaunchedEffect(Unit) { vm.newAchievements.collect { celebrate = celebrate + it } }
+    // Algo compartido desde otra app (aviso del banco, Tricount, foto de un ticket): se abre el gasto ya rellenado para confirmarlo.
+    val shared by appVm.shared.collectAsStateWithLifecycle()
+    val reading by appVm.readingTicket.collectAsStateWithLifecycle()
+    LaunchedEffect(reading) { if (reading) snackbar.showSnackbar("Leyendo el ticket…") }
+    LaunchedEffect(shared, categories, accounts) {
+        val s = shared ?: return@LaunchedEffect
+        if (categories.isEmpty()) return@LaunchedEffect
+        appVm.receiveShared(null)
+        val bank = accounts.firstOrNull { it.id == settings.cardAccountId }?.id ?: accounts.firstOrNull { it.type == com.caudal.finanzas.data.AccountType.BANK }?.id
+        editing = if (s.income) Editing.IncomeForm(com.caudal.finanzas.data.Income(sourceId = null, amount = s.amount ?: 0.0, note = s.note, epochDay = s.day.toEpochDay(), accountId = bank))
+        else {
+            val tag = com.caudal.finanzas.domain.Classifier.classify(s.note, allExpenses)
+            Editing.ExpenseForm(
+                com.caudal.finanzas.data.Expense(
+                    categoryId = com.caudal.finanzas.domain.Classifier.bucketFor(tag, categories) ?: categories.firstOrNull { !it.isSavings }?.id ?: 0,
+                    amount = s.amount ?: 0.0, note = s.note, epochDay = s.day.toEpochDay(), accountId = bank, tag = tag.name,
+                ),
+            )
+        }
+        snackbar.currentSnackbarData?.dismiss()
+        snackbar.showSnackbar(
+            if (s.amount == null) (if (s.from == "ticket") "No he podido leer el total del ticket: escríbelo tú" else "No he encontrado el importe: escríbelo tú")
+            else "Revisa que esté bien y guárdalo",
+        )
+    }
 
     CompositionLocalProvider(LocalMoney provides MoneyFormat(settings.currency, settings.hideAmounts)) {
         Box(Modifier.fillMaxSize().appBackground(P)) {

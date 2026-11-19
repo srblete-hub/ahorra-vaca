@@ -6,6 +6,7 @@ Paquete: `com.caudal.finanzas` (el proyecto se llamó antes "Caudal").
 ## Reglas fijas (no cambiarlas sin que Pablo lo pida)
 - **Todo gratis.** Nada de APIs de pago, créditos ni claves. Fuentes usadas: CoinGecko (gratis, limita consultas → hay espaciado de 2,5 s, caché de 60 s y reintento en `PriceService.get`), Yahoo Finance (acciones), Reddit `/hot.json`, RSS de Cinco Días, El País, Expansión, BeInCrypto y Google Noticias.
 - **Sin IA dentro de la app.** Todos los textos y consejos salen de reglas fijas y cálculos con los datos del usuario.
+  Única excepción, aprobada por Pablo: leer el texto de la foto de un ticket con ML Kit (`TicketOcr`, dentro del móvil, sin internet). Lo que pone lo interpretan reglas (`SharedReader`).
 - **Números precisos y coherentes.** Nada de "te quedan X" contando ahorros: la **liquidez es solo la cuenta del banco** (tipo `BANK`); los ahorros (Robinhood) no se tocan.
 - Nunca recomendar comprar o vender inversiones; avisos de "no es una recomendación".
 - Sin anuncios en las noticias (filtro en `NewsService.isAd`).
@@ -33,7 +34,7 @@ Paquete: `com.caudal.finanzas` (el proyecto se llamó antes "Caudal").
 
 ## Código
 - `domain/`: lógica pura (Planning/BankPlan, Budget, Pulse, Signals, Goals, Wrapped, Debts, NewsImpact…). Con pruebas en `app/src/test`.
-- `data/`: Room (versión 8), `Prefs` (SharedPreferences), `PriceService`, `NewsService`.
+- `data/`: Room (versión 9), `Prefs` (SharedPreferences), `PriceService`, `NewsService`.
 - `ui/`: Compose. `MainScreen.kt` gestiona pestañas, overlays (`Overlay`) y hojas (`Editing`).
 - `AppTourTest` (Robolectric + Roborazzi) recorre toda la app y saca capturas en `screenshots/`. Si cambias textos que el recorrido busca, actualízalo.
 

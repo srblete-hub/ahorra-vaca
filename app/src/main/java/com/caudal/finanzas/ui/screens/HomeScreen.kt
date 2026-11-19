@@ -356,9 +356,11 @@ fun HomeScreen(
             if (p != null) com.caudal.finanzas.domain.WeeklyReader.of(p.data, money::format)?.let { r ->
                 item(key = "weekly-read") { WeeklyReadCard(r, onLimit = { args.onEdit(Editing.TagLimitForm(it)) }, onDetails = { args.onEdit(Editing.TagDetail(it)) }) }
             }
-            // Revisión de suscripciones: subidas, pago anual y duplicadas.
-            if (p != null) com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.let { c ->
-                item(key = "subs-check") { SubscriptionCheckCard(c, c.actions.count { it.key !in settings.reviewedSubs }) { subsOpen = true } }
+            // Suscripciones: cuánto pagas, el próximo cobro y las ideas para pagar menos.
+            if (p != null) {
+                val subs = com.caudal.finanzas.domain.BillReminders.upcoming(p.data, p.data.bills.filter(com.caudal.finanzas.domain.BillReminders::isSubscription))
+                val pending = com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.actions?.count { it.key !in settings.reviewedSubs } ?: 0
+                item(key = "subs-check") { SubscriptionsCard(subs, p.data.today, pending) { subsOpen = true } }
             }
 
             // ---------- Objetivo y edad financiera ----------
@@ -599,9 +601,28 @@ fun HomeScreen(
         }
     }
     if (subsOpen) p?.data?.let { d ->
-        com.caudal.finanzas.domain.SubscriptionChecker.of(d)?.let { c ->
-            SubscriptionSheet(c, settings.reviewedSubs, com.caudal.finanzas.domain.SubscriptionChecker.savingsHealth(d), onToggle = { vm.toggleReviewedSub(it) }, onDismiss = { subsOpen = false })
-        }
+        val subs = com.caudal.finanzas.domain.BillReminders.upcoming(d, d.bills.filter(com.caudal.finanzas.domain.BillReminders::isSubscription))
+        val known = d.bills.map { com.caudal.finanzas.domain.Classifier.normalize(it.name) }
+        val detected = com.caudal.finanzas.domain.RecurringDetector.find(d).filter { !it.fromBills && it.kind == "Suscripción" && com.caudal.finanzas.domain.Classifier.normalize(it.name) !in known }
+        val subsCategory = com.caudal.finanzas.domain.Classifier.bucketFor(com.caudal.finanzas.domain.SpendTag.SUBSCRIPTIONS, categories)
+            ?: categories.firstOrNull { !it.isSavings }?.id ?: 0L
+        val bankId = accounts.firstOrNull { it.id == settings.cardAccountId }?.id ?: accounts.firstOrNull { it.type == com.caudal.finanzas.data.AccountType.BANK }?.id
+        SubscriptionsSheet(
+            subs, detected, com.caudal.finanzas.domain.SubscriptionChecker.of(d), settings.reviewedSubs, settings.billRemindDays, d.today,
+            onRemindDays = { vm.setBillRemindDays(it) },
+            onEdit = { subsOpen = false; args.onEdit(Editing.BillForm(it)) },
+            onFollow = { r ->
+                vm.save(com.caudal.finanzas.data.RecurringBill(name = r.name, amount = r.last, day = r.lastDate.dayOfMonth, categoryId = subsCategory, accountId = bankId))
+            },
+            onAdd = { item ->
+                subsOpen = false
+                args.onEdit(Editing.BillForm(com.caudal.finanzas.data.RecurringBill(
+                    name = item?.name ?: "", amount = item?.price ?: 0.0, day = d.today.dayOfMonth, categoryId = subsCategory, accountId = bankId,
+                )))
+            },
+            onToggle = { vm.toggleReviewedSub(it) },
+            onDismiss = { subsOpen = false },
+        )
     }
 }
 

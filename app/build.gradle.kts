@@ -111,6 +111,8 @@ dependencies {
 
     // Huella dactilar
     implementation("androidx.biometric:biometric:1.1.0")
+    // Leer el texto de la foto de un ticket, dentro del móvil y sin internet (gratis).
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 

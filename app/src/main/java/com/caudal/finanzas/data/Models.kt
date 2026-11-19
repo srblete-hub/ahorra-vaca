@@ -115,6 +115,10 @@ data class RecurringBill(
     val month: Int = 1,
     val categoryId: Long,
     val accountId: Long? = null,
+    /** Si es una prueba gratis, el día (epochDay) en que se acaba y empiezan a cobrar. */
+    val trialEnds: Long? = null,
+    /** Avisar antes de cada cobro. */
+    @ColumnInfo(defaultValue = "1") val remind: Boolean = true,
 )
 
 /** Dinero movido de una cuenta a otra (no es gasto ni ingreso: el patrimonio no cambia). */

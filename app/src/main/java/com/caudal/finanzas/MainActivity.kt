@@ -28,6 +28,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         // Vigilar el precio de tus cripto cada hora y avisar si se mueven mucho.
         com.caudal.finanzas.payments.CryptoWatch.schedule(this)
+        if (savedInstanceState == null) handleShare(intent)
         enableEdgeToEdge()
         hideStatusBar()
         setContent {
@@ -49,6 +50,31 @@ class MainActivity : FragmentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleShare(intent)
+    }
+
+    /** "Compartir → Ahorra, vaca": texto (aviso del banco, Tricount…) o la foto de un ticket. */
+    private fun handleShare(intent: android.content.Intent?) {
+        if (intent?.action != android.content.Intent.ACTION_SEND) return
+        val type = intent.type ?: return
+        val today = java.time.LocalDate.now()
+        if (type.startsWith("image/")) {
+            val uri = androidx.core.content.IntentCompat.getParcelableExtra(intent, android.content.Intent.EXTRA_STREAM, android.net.Uri::class.java) ?: return
+            appVm.readingTicket.value = true
+            com.caudal.finanzas.payments.TicketOcr.read(this, uri) { text ->
+                appVm.receiveShared(
+                    text?.let { com.caudal.finanzas.domain.SharedReader.read(it, today, from = "ticket") }
+                        ?: com.caudal.finanzas.domain.SharedEntry(null, "Ticket", today, from = "ticket"),
+                )
+            }
+        } else {
+            val text = listOfNotNull(intent.getStringExtra(android.content.Intent.EXTRA_SUBJECT), intent.getCharSequenceExtra(android.content.Intent.EXTRA_TEXT)?.toString()).joinToString("\n")
+            appVm.receiveShared(com.caudal.finanzas.domain.SharedReader.read(text, today) ?: com.caudal.finanzas.domain.SharedEntry(null, "", today))
         }
     }
 

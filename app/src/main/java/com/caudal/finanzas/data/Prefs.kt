@@ -50,6 +50,8 @@ data class Settings(
     val tagLimitsRaw: String? = null,
     /** Bloquear capturas y ocultar la app en "recientes". Apagado: se pueden hacer capturas. */
     val blockScreenshots: Boolean = false,
+    /** Con cuántos días de antelación avisar de cada cobro (0 = no avisar). */
+    val billRemindDays: Int = 2,
     /** Objetivos en orden de prioridad: "nombre|objetivo|inicio|fecha" por línea. */
     val goalsRaw: String = "",
     /** Gastos que esperas que te devuelvan. */
@@ -124,6 +126,7 @@ class Prefs private constructor(context: Context) {
         birthYear = sp.getInt(BIRTH_YEAR, 0),
         tagLimitsRaw = sp.getString(TAG_LIMITS, null),
         blockScreenshots = sp.getBoolean(BLOCK_SHOTS, false),
+        billRemindDays = sp.getInt(BILL_REMIND, 2),
         refundIds = (sp.getStringSet(REFUNDS, emptySet()) ?: emptySet()).mapNotNull { it.toLongOrNull() }.toSet(),
         dayChanges = (sp.getString(DAY_CHANGES, "") ?: "").split(';').mapNotNull { p ->
             p.split(':').takeIf { it.size == 2 }?.let { (k, v) -> v.toDoubleOrNull()?.let { k to it } }
@@ -214,6 +217,7 @@ class Prefs private constructor(context: Context) {
     fun hidePepeTip(week: String) = edit { putString(PEPE_HIDDEN, week) }
     fun setSavingsLocked(v: Boolean) = edit { putBoolean(SAVINGS_LOCKED, v) }
     fun setWeeklyTip(v: Boolean) = edit { putBoolean(WEEKLY_TIP, v) }
+    fun setBillRemindDays(v: Int) = edit { putInt(BILL_REMIND, v) }
     fun toggleReviewedSub(key: String) {
         val now = sp.getStringSet(REVIEWED_SUBS, emptySet()) ?: emptySet()
         edit { putStringSet(REVIEWED_SUBS, if (key in now) now - key else now + key) }
@@ -288,6 +292,7 @@ class Prefs private constructor(context: Context) {
         private const val SAVINGS_LOCKED = "savings_locked"
         private const val WEEKLY_TIP = "weekly_tip"
         private const val REVIEWED_SUBS = "reviewed_subs"
+        private const val BILL_REMIND = "bill_remind_days"
         private const val SEEN_NEWS = "seen_news"
         private const val RECENT_TICKERS = "recent_tickers"
         private const val TRICOUNT = "tricount"

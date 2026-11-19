@@ -301,14 +301,24 @@ fun BillSheet(
     var month by remember { mutableStateOf(initial.month) }
     var categoryId by remember { mutableStateOf(initial.categoryId) }
     var accountId by remember { mutableStateOf(initial.accountId) }
+    var remind by remember { mutableStateOf(initial.remind) }
+    val today = LocalDate.now()
+    var trial by remember { mutableStateOf(initial.trialEnds?.let { it >= today.toEpochDay() } == true) }
+    var trialDays by remember { mutableStateOf(initial.trialEnds?.let { (it - today.toEpochDay()).coerceAtLeast(0).toString() } ?: "7") }
     val value = amount.toAmount()
     val dayNum = day.toIntOrNull()?.takeIf { it in 1..31 }
+    val trialNum = trialDays.toIntOrNull()?.takeIf { it in 0..400 }
     val es = java.util.Locale.forLanguageTag("es-ES")
 
     FormSheet(
         if (initial.id == 0L) "Nuevo gasto fijo" else initial.name, onDismiss,
-        onPrimary = { onSave(initial.copy(name = name.trim(), amount = value!!, day = dayNum!!, yearly = yearly, month = month, categoryId = categoryId, accountId = accountId)) },
-        primaryEnabled = name.isNotBlank() && value != null && value > 0 && dayNum != null && categories.any { it.id == categoryId },
+        onPrimary = {
+            onSave(initial.copy(
+                name = name.trim(), amount = value!!, day = dayNum!!, yearly = yearly, month = month, categoryId = categoryId, accountId = accountId,
+                remind = remind, trialEnds = if (trial) today.toEpochDay() + trialNum!! else null,
+            ))
+        },
+        primaryEnabled = name.isNotBlank() && value != null && value > 0 && dayNum != null && categories.any { it.id == categoryId } && (!trial || trialNum != null),
         onDelete = onDelete,
     ) {
         Segmented(listOf(false, true), yearly, { if (it) "Cada año" else "Cada mes" }, { yearly = it })
@@ -323,6 +333,9 @@ fun BillSheet(
                 }
             }
         }
+        SwitchRow("Avisarme antes de cada cobro", "Te llega un aviso unos días antes (lo eliges en Tus suscripciones)", remind) { remind = it }
+        SwitchRow("Es una prueba gratis", "Te aviso antes de que acabe para que la canceles si no la quieres", trial) { trial = it }
+        if (trial) TextInput(trialDays, { trialDays = it.filter(Char::isDigit).take(3) }, "Días de prueba que te quedan", keyboardType = KeyboardType.Number)
         FieldLabel("Categoría")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             categories.forEach { c -> Choice(c.name, c.id == categoryId, { categoryId = c.id }, categoryIcon(c)) }

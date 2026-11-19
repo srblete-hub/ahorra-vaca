@@ -16,6 +16,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
@@ -42,14 +45,42 @@ private val SPOTS = listOf(
     "M30 168c10-6 26-4 30 6s-4 20-16 22-24-4-24-12 2-12 10-16Z",
 )
 
-/** Las manchas, escaladas para cubrir la caja (como `slice` en SVG). */
+/**
+ * Las manchas, escaladas para cubrir la caja (como `slice` en SVG). Se mueven muy despacio: cada una
+ * deriva unos pocos puntos, gira un pelo y se estira y encoge, así cambia de sitio y de forma sin llamar la atención.
+ */
 @Composable
-fun Spots(modifier: Modifier = Modifier, tone: Color = Vaca.Mancha) {
+fun Spots(modifier: Modifier = Modifier, tone: Color = Vaca.Mancha, still: Boolean = false) {
     val paths = remember { SPOTS.map { PathParser().parsePathString(it).toPath() } }
+    val centers = remember(paths) { paths.map { it.getBounds().center } }
+    val phase = if (still) 0f else {
+        val t = androidx.compose.animation.core.rememberInfiniteTransition(label = "manchas")
+        val v by t.animateFloat(
+            0f, (2 * Math.PI).toFloat(),
+            androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(18_000, easing = androidx.compose.animation.core.LinearEasing)),
+            label = "fase",
+        )
+        v
+    }
     Canvas(modifier) {
         val k = maxOf(size.width / 320f, size.height / 200f)
         translate((size.width - 320f * k) / 2, (size.height - 200f * k) / 2) {
-            scale(k, k, pivot = androidx.compose.ui.geometry.Offset.Zero) { paths.forEach { drawPath(it, tone) } }
+            scale(k, k, pivot = androidx.compose.ui.geometry.Offset.Zero) {
+                paths.forEachIndexed { i, path ->
+                    // Cada mancha con su propio ritmo (1 o 2 vueltas por ciclo) y desfase, para que no vayan a la par.
+                    val a = phase * (1 + i % 2) + i * 1.3f
+                    val dx = kotlin.math.sin(a) * 4f
+                    val dy = kotlin.math.cos(a * 0.8f + i) * 3f
+                    val sx = 1f + kotlin.math.sin(a + 0.7f) * 0.05f
+                    val sy = 1f - kotlin.math.sin(a + 0.7f) * 0.04f
+                    val c = centers[i]
+                    withTransform({
+                        translate(dx, dy)
+                        rotate(kotlin.math.sin(a * 0.6f) * 4f, c)
+                        scale(sx, sy, c)
+                    }) { drawPath(path, tone) }
+                }
+            }
         }
     }
 }

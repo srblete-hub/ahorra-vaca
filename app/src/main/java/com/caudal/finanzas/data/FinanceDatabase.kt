@@ -161,7 +161,7 @@ interface FinanceDao {
         Account::class, Category::class, Expense::class, CryptoHolding::class, StockHolding::class,
         NetWorthSnapshot::class, IncomeSource::class, Income::class, RecurringBill::class, Transfer::class, Split::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = true,
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -247,9 +247,17 @@ abstract class FinanceDatabase : RoomDatabase() {
             }
         }
 
+        /** v9: pruebas gratis y "avisarme antes del cobro" en los gastos fijos. */
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE bills ADD COLUMN trialEnds INTEGER")
+                db.execSQL("ALTER TABLE bills ADD COLUMN remind INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
         fun get(context: Context): FinanceDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, FinanceDatabase::class.java, "caudal.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                 .addCallback(SeedCategories)
                 .build()
                 .also { instance = it }

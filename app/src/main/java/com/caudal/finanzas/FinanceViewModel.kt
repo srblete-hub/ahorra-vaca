@@ -514,6 +514,7 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
     fun setSavingsLocked(v: Boolean) = prefs.setSavingsLocked(v)
     fun setWeeklyTip(v: Boolean) = prefs.setWeeklyTip(v)
     fun toggleReviewedSub(key: String) = prefs.toggleReviewedSub(key)
+    fun setBillRemindDays(v: Int) = prefs.setBillRemindDays(v)
     /** Apunta un traspaso entre tus cuentas (lo que propone Pepe). */
     fun moveMoney(fromId: Long, toId: Long, amount: Double, note: String) = viewModelScope.launch {
         dao.saveTransfer(com.caudal.finanzas.data.Transfer(fromAccountId = fromId, toAccountId = toId, amount = amount, note = note, epochDay = java.time.LocalDate.now().toEpochDay()))

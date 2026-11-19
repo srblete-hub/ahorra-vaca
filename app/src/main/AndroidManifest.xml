@@ -30,6 +30,17 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- "Compartir → Ahorra, vaca": un aviso del banco, un gasto de Tricount o la foto de un ticket. -->
+            <intent-filter android:label="Apuntar en Ahorra, vaca">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter android:label="Apuntar ticket en Ahorra, vaca">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
 
         <!-- Detecta pagos con tarjeta en las notificaciones de Wallet y del banco. -->

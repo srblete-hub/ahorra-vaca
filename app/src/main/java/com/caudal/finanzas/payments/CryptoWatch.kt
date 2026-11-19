@@ -87,7 +87,10 @@ class CryptoAlarmReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) { CryptoWatch.schedule(context); return }
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
-            try { CryptoWatch.check(context.applicationContext) } finally { pending.finish() }
+            try {
+                runCatching { CryptoWatch.check(context.applicationContext) }
+                runCatching { BillWatch.check(context.applicationContext) }
+            } finally { pending.finish() }
         }
     }
 }

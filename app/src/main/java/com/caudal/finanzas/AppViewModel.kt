@@ -61,6 +61,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _unlocked.value = true
     }
 
+    /** Lo que llega al compartir con la app desde otra; [MainScreen] lo abre rellenado. */
+    val shared = MutableStateFlow<com.caudal.finanzas.domain.SharedEntry?>(null)
+    val readingTicket = MutableStateFlow(false)
+    fun receiveShared(e: com.caudal.finanzas.domain.SharedEntry?) {
+        if (e != null) readingTicket.value = false
+        shared.value = e
+    }
+
     fun lock() {
         _unlocked.value = false
     }

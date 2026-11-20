@@ -1,5 +1,17 @@
 package com.caudal.finanzas.ui
 
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -387,40 +399,86 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
     }
 }
 
-/** Barra inferior flotante de cristal: pestañas con icono y texto, y el + aparte. */
+/** Icono de cada pestaña: contorno si no está elegida, relleno si lo está (una sola familia, todos de 24). */
+private fun Tab.barIcon(selected: Boolean): ImageVector = when (this) {
+    Tab.HOME -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
+    Tab.WEALTH -> if (selected) Icons.Filled.AccountBalanceWallet else Icons.Outlined.AccountBalanceWallet
+    Tab.BUDGET -> if (selected) Icons.AutoMirrored.Filled.ReceiptLong else Icons.AutoMirrored.Outlined.ReceiptLong
+    Tab.INVEST -> if (selected) Icons.AutoMirrored.Filled.ShowChart else Icons.AutoMirrored.Outlined.ShowChart
+    Tab.PROFILE -> Icons.Filled.Person
+}
+
+/**
+ * Barra de abajo: una pieza sólida de tinta (como la tarjeta del banco) que flota sobre un degradado del fondo,
+ * así lo que pasa por debajo se desvanece en vez de leerse a través. La pestaña elegida lleva una pastilla
+ * de pasto que se desliza de una a otra con un muelle sin rebote.
+ */
 @Composable
 private fun BottomBar(tab: Tab, settings: com.caudal.finanzas.data.Settings, onTab: (Tab) -> Unit, onAdd: () -> Unit, modifier: Modifier = Modifier) {
     val p = P
-    val shape = RoundedCornerShape(40.dp)
-    // Barra de cristal a todo el ancho: icono grande encima y texto debajo, la activa en una cápsula.
-    Row(
-        modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp)
-            .shadow(24.dp, shape, ambientColor = Color(0x55000000), spotColor = Color(0x55000000))
-            .clip(shape).background(p.glass).border(1.dp, p.cardBorder, shape)
-            .height(72.dp).padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    val dark = androidx.compose.foundation.isSystemInDarkTheme()
+    val barColor = if (dark) Color(0xFF302C24) else Vaca.Tinta
+    val shape = RoundedCornerShape(32.dp)
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val index = Tab.entries.indexOf(tab)
+    Box(
+        modifier.fillMaxWidth()
+            // Borde de desplazamiento: el contenido se funde con el fondo antes de llegar a la barra.
+            .background(androidx.compose.ui.graphics.Brush.verticalGradient(0f to p.bg.copy(alpha = 0f), 0.45f to p.bg.copy(alpha = 0.92f), 1f to p.bg))
+            .navigationBarsPadding().padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
     ) {
-        Tab.entries.forEach { t -> BarItem(t, t == tab, settings, Modifier.weight(1f)) { onTab(t) } }
+        androidx.compose.foundation.layout.BoxWithConstraints(
+            Modifier.fillMaxWidth().shadow(8.dp, shape, ambientColor = Color(0x33000000), spotColor = Color(0x33000000))
+                .clip(shape).background(barColor)
+                // En oscuro, un filo de luz separa la barra de las tarjetas que pasan por debajo.
+                .then(if (dark) Modifier.border(1.dp, Vaca.Leche.copy(alpha = 0.12f), shape) else Modifier)
+                .height(64.dp).padding(horizontal = 4.dp)
+                .selectableGroup(),
+        ) {
+            val itemWidth = maxWidth / Tab.entries.size
+            // Un solo indicador que viaja: deja claro de dónde vienes y a dónde vas.
+            val x by androidx.compose.animation.core.animateDpAsState(
+                itemWidth * index + (itemWidth - 56.dp) / 2,
+                androidx.compose.animation.core.spring(dampingRatio = 1f, stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow),
+                label = "indicador",
+            )
+            Box(Modifier.offset(x = x, y = 6.dp).size(width = 56.dp, height = 32.dp).clip(CircleShape).background(Vaca.Pasto))
+            Row(Modifier.fillMaxSize()) {
+                Tab.entries.forEach { t ->
+                    BarItem(t, t == tab, settings, Modifier.weight(1f)) {
+                        if (t != tab) haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                        onTab(t)
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun BarItem(tab: Tab, selected: Boolean, settings: com.caudal.finanzas.data.Settings, modifier: Modifier, onClick: () -> Unit) {
-    val p = P
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    // Al tocar, el icono se hunde un poco al momento: la barra responde al dedo, no al soltar.
+    val scale by androidx.compose.animation.core.animateFloatAsState(if (pressed) 0.92f else 1f, androidx.compose.animation.core.tween(120), label = "pulsar")
+    val tint by androidx.compose.animation.animateColorAsState(if (selected) Vaca.Prado else Vaca.Leche.copy(alpha = 0.72f), androidx.compose.animation.core.tween(180), label = "icono")
     Column(
-        modifier.fillMaxHeight().clip(RoundedCornerShape(32.dp)).background(if (selected) p.chip else Color.Transparent).clickable(onClick = onClick),
+        modifier.fillMaxHeight()
+            .selectable(selected = selected, interactionSource = source, indication = null, role = androidx.compose.ui.semantics.Role.Tab, onClick = onClick)
+            .semantics { contentDescription = tab.barLabel }
+            .padding(top = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
-        if (tab == Tab.PROFILE) Avatar(settings.userName, settings.avatarVersion, 27.dp, ring = if (selected) p.ink else null)
-        else Icon(tab.icon, null, Modifier.size(27.dp), tint = p.ink.copy(alpha = if (selected) 1f else 0.85f))
-        Spacer(Modifier.height(2.dp))
+        Box(Modifier.size(width = 56.dp, height = 32.dp).graphicsLayer { scaleX = scale; scaleY = scale }, contentAlignment = Alignment.Center) {
+            if (tab == Tab.PROFILE) Avatar(settings.userName, settings.avatarVersion, 24.dp, ring = if (selected) Vaca.Prado else null)
+            else Icon(tab.barIcon(selected), null, Modifier.size(24.dp), tint = tint)
+        }
+        Spacer(Modifier.height(4.dp))
         Text(
-            tab.barLabel, fontSize = 11.sp, letterSpacing = (-0.2).sp, maxLines = 1, softWrap = false,
+            tab.barLabel, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 1, softWrap = false,
             overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = p.ink.copy(alpha = if (selected) 1f else 0.85f),
-            modifier = Modifier.semantics { contentDescription = tab.barLabel },
+            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+            color = if (selected) Vaca.Leche else Vaca.Leche.copy(alpha = 0.72f),
         )
     }
 }

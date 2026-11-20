@@ -183,7 +183,7 @@ private fun DayCard(moves: List<MoveItem>, onEdit: (Editing) -> Unit) {
 @Composable
 private fun Tile(label: String, value: String, color: Color, dark: Boolean, modifier: Modifier) {
     Column(modifier.clip(RoundedCornerShape(24.dp)).background(if (dark) Color(0xFF151515) else P.card).padding(horizontal = 16.dp, vertical = 16.dp)) {
-        Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp, color = if (dark) Color.White.copy(alpha = 0.7f) else P.muted)
+        Text(label, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (dark) Color.White.copy(alpha = 0.7f) else P.muted)
         androidx.compose.foundation.text.BasicText(
             value, maxLines = 1,
             style = TextStyle(fontWeight = FontWeight.Bold, color = if (dark) Color.White else color),
@@ -219,9 +219,9 @@ fun LazyListScope.movesSection(
         item {
             val money = LocalMoney.current
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Tile("INGRESADO", money.format(moves.filter { it.kind == MoveKind.INCOME }.sumOf { it.amount }), P.gain, false, Modifier.weight(1f))
-                Tile("GASTADO", money.format(moves.filter { it.kind == MoveKind.EXPENSE && !it.fixed }.sumOf { -it.amount }), P.loss, false, Modifier.weight(1f))
-                Tile("POR PAGAR", money.format(pending), P.ink, true, Modifier.weight(1f))
+                Tile("Ingresado", money.format(moves.filter { it.kind == MoveKind.INCOME }.sumOf { it.amount }), P.gain, false, Modifier.weight(1f))
+                Tile("Gastado", money.format(moves.filter { it.kind == MoveKind.EXPENSE && !it.fixed }.sumOf { -it.amount }), P.loss, false, Modifier.weight(1f))
+                Tile("Por pagar", money.format(pending), P.ink, true, Modifier.weight(1f))
             }
         }
         item {
@@ -328,12 +328,16 @@ fun LazyListScope.movesSection(
         // ---------- Cabecera tipo "Analytics": Semana / Mes / Año, total, cambio y barras ----------
         if (analytics != null) {
             item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Chips pequeños: un filtro secundario, no compite con el selector Lista/Calendario/… de arriba.
+                Row(Modifier.fillMaxWidth().padding(start = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Semana", "Mes", "Año").forEachIndexed { i, t ->
+                        val on = i == period
                         Box(
-                            Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (i == period) P.brand else P.chip).clickable { onPeriod(i) }.padding(vertical = 12.dp),
+                            Modifier.clip(CircleShape).background(if (on) P.ink else Color.Transparent)
+                                .border(1.dp, if (on) Color.Transparent else P.ink.copy(alpha = 0.15f), CircleShape)
+                                .clickable { onPeriod(i) }.padding(horizontal = 16.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center,
-                        ) { Text(t, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (i == period) P.onBrand else P.ink) }
+                        ) { Text(t, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (on) P.bg else P.ink) }
                     }
                 }
             }

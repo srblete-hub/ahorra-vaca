@@ -139,7 +139,7 @@ fun Amount(
 
 @Composable
 fun Overline(text: String, modifier: Modifier = Modifier, color: Color = P.muted) {
-    Text(text.uppercase(Spanish), modifier = modifier, style = OverlineStyle, color = color)
+    Text(text, modifier = modifier, style = OverlineStyle, color = color)
 }
 
 @Composable

@@ -1,6 +1,10 @@
 package com.caudal.finanzas.ui
 
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Newspaper
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
@@ -232,13 +236,13 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
                     headerActions = {
                         HeaderPill {
                             PillIcon(
-                                if (settings.hideAmounts) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                if (settings.hideAmounts) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                                 if (settings.hideAmounts) "Mostrar importes" else "Ocultar importes",
                                 onClick = { appVm.setHideAmounts(!settings.hideAmounts) },
                             )
                             PillIcon(Icons.Filled.Add, "Añadir", onClick = { editing = Editing.Chooser })
-                            PillIcon(Icons.Filled.Newspaper, "Noticias", onClick = { overlay = Overlay.NEWS })
-                            PillIcon(Icons.Filled.Settings, "Ajustes", onClick = { showSettings = true })
+                            PillIcon(Icons.Outlined.Newspaper, "Noticias", onClick = { overlay = Overlay.NEWS })
+                            PillIcon(Icons.Outlined.Settings, "Ajustes", onClick = { showSettings = true })
                         }
                     },
                     onOpenAccount = { openAccount = it.id },

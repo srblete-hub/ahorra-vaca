@@ -141,8 +141,8 @@ private val AppTypography = Typography().run {
     )
 }
 
-/** Etiqueta pequeña en mayúsculas y espaciada ("PATRIMONIO NETO"). */
-val OverlineStyle = TextStyle(fontFamily = InterFamily, fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 2.sp)
+// Etiqueta pequeña encima de un dato: en minúscula normal y sin espaciar (las mayúsculas espaciadas sonaban a plantilla).
+val OverlineStyle = TextStyle(fontFamily = InterFamily, fontSize = 14.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.sp)
 
 @Composable
 fun CaudalTheme(content: @Composable () -> Unit) {

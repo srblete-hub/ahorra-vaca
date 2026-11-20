@@ -164,7 +164,7 @@ private fun NewsPage(
                 if (impact?.relevant == true) {
                     Spacer(Modifier.width(8.dp))
                     Box(Modifier.clip(RoundedCornerShape(50)).background(Color(0xFFFFD60A)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        Text("TE AFECTA", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = Color.Black)
+                        Text("Te afecta", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                 }
             }

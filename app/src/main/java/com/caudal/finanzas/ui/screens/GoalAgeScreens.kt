@@ -249,7 +249,7 @@ fun AgeOrb(age: FinancialAge, size: androidx.compose.ui.unit.Dp = 260.dp) {
         }
         if (size >= 150.dp) Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(String.format(es, "%.1f", age.age), fontSize = 54.sp, fontWeight = FontWeight.Bold, color = Color.White, letterSpacing = (-1).sp)
-            Text("EDAD FINANCIERA", fontSize = 12.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f))
+            Text("Edad financiera", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f))
             Spacer(Modifier.height(4.dp))
             Text(
                 if (abs(age.difference) < 0.05) "igual que tu edad" else if (age.difference > 0) "${years(age.difference)} años más madura" else "${years(age.difference)} años por detrás",
@@ -263,7 +263,7 @@ fun AgeOrb(age: FinancialAge, size: androidx.compose.ui.unit.Dp = 260.dp) {
 @Composable
 fun PaceOfAging(pace: Double) {
     Column(Modifier.fillMaxWidth()) {
-        Text("RITMO DE MADURACIÓN", fontSize = 12.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
+        Text("Ritmo de maduración", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = P.muted)
         Spacer(Modifier.height(4.dp))
         Text(String.format(es, "%.1fx", pace), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = P.ink, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         Row(Modifier.fillMaxWidth()) {
@@ -294,7 +294,7 @@ fun FinancialAgeMini(age: FinancialAge?, onClick: () -> Unit) {
     MCard(onClick = onClick, padding = 16.dp, color = com.caudal.finanzas.ui.Vaca.Tinta) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("EDAD FINANCIERA", fontSize = 12.sp, letterSpacing = 1.5.sp, color = Color.White.copy(alpha = 0.7f))
+                Text("Edad financiera", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                 if (age == null) {
                     Text("¿Cuántos años tiene tu dinero?", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     Text("Descúbrelo según tus hábitos y tu ahorro", fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f))
@@ -353,8 +353,8 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onClick = onBack)
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("SALUD FINANCIERA", fontSize = 14.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text("PRÓXIMA ACTUALIZACIÓN EN $nextUpdate ${if (nextUpdate == 1) "DÍA" else "DÍAS"}", fontSize = 11.sp, letterSpacing = 1.sp, color = Color.White.copy(alpha = 0.6f))
+                    Text("Salud financiera", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Próxima actualización en $nextUpdate ${if (nextUpdate == 1) "día" else "días"}", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
                 }
                 Spacer(Modifier.width(40.dp))
             }
@@ -407,7 +407,7 @@ fun FinancialAgeScreen(vm: FinanceViewModel, onEdit: (Editing) -> Unit, onBack: 
         }
         item {
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFF16181A)).padding(vertical = 8.dp)) {
-                Text("QUÉ TE SUMA Y QUÉ TE RESTA", fontSize = 12.sp, letterSpacing = 1.5.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.padding(16.dp, 8.dp))
+                Text("Qué te suma y qué te resta", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f), modifier = Modifier.padding(16.dp, 8.dp))
                 age.factors.forEachIndexed { i, f ->
                     if (i > 0) HorizontalDivider(color = Color.White.copy(alpha = 0.08f), modifier = Modifier.padding(horizontal = 16.dp))
                     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {

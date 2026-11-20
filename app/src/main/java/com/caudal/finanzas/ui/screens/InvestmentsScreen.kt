@@ -247,13 +247,12 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
                     if (refreshing) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp, color = P.gain)
                     else RoundIconButton(Icons.Filled.Refresh, "Actualizar precios", onClick = { if (kind == InvestKind.CRYPTO) vm.refreshCrypto() else vm.refreshStocks() })
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // Como en "En el banco": euros grandes y los céntimos más pequeños, en el mismo color (se leen bien).
+                Row(verticalAlignment = Alignment.Bottom) {
                     val text = money.format(value)
                     val cut = text.lastIndexOf(',')
-                    Text(if (cut > 0) text.substring(0, cut) else text, fontSize = 40.sp, fontWeight = FontWeight.Bold, color = P.ink, letterSpacing = (-1).sp)
-                    if (cut > 0) Text(text.substring(cut), fontSize = 40.sp, fontWeight = FontWeight.Bold, color = P.muted, letterSpacing = (-1).sp)
-                    Spacer(Modifier.width(8.dp))
-                    if (portfolio.size >= 2) Spark(portfolio, if (portfolio.last() >= portfolio.first()) P.gain else P.loss, Modifier.width(56.dp).height(32.dp))
+                    Text(if (cut > 0) text.substring(0, cut) else text, fontSize = 48.sp, fontWeight = FontWeight.ExtraBold, color = P.ink, letterSpacing = (-1.5).sp)
+                    if (cut > 0) Text(text.substring(cut), Modifier.padding(bottom = 6.dp), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = P.ink)
                 }
                 if (cost > 0) Text(
                     "${money.signed(value - cost)} (${signedPct((value - cost) / cost * 100)}) desde que compraste",
@@ -275,42 +274,48 @@ fun InvestmentsScreen(vm: FinanceViewModel, args: ScreenArgs, kind: InvestKind, 
         // ---------- ¿De qué se está hablando? (solo cripto) ----------
         if (kind == InvestKind.CRYPTO) item {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(OnPastel).clickable { buzzOpen = true; vm.loadBuzz() }.padding(16.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(com.caudal.finanzas.ui.Vaca.Tinta).clickable { buzzOpen = true; vm.loadBuzz() }.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Filled.Newspaper, null, Modifier.size(32.dp), tint = Color.White)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("¿De qué se está hablando?", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-                    Text("Tendencias de CoinGecko y lo más votado en Reddit", fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f))
+                Box(Modifier.size(40.dp).clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Pasto), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.Newspaper, null, Modifier.size(24.dp), tint = com.caudal.finanzas.ui.Vaca.Prado)
                 }
-                Text("Ver", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Pastels[1])
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("¿De qué se está hablando?", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Leche)
+                    Text("Tendencias de CoinGecko y lo más votado en Reddit", fontSize = 14.sp, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.7f))
+                }
+                Spacer(Modifier.width(8.dp))
+                Text("Ver", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Pasto)
             }
         }
 
-        // ---------- Favoritas: tarjetas de color ----------
+        // ---------- Favoritas: tarjetas crema; el color solo en la línea (verde si sube, rosa si baja) ----------
         item { Text("Favoritas", fontSize = 20.sp, color = P.muted, modifier = Modifier.padding(start = 4.dp)) }
         item {
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 positions.take(5).forEachIndexed { i, p ->
-                    val bg = Pastels[i % Pastels.size]
-                    Column(Modifier.width(160.dp).clip(RoundedCornerShape(24.dp)).background(bg).clickable { onOpenHolding(p.key) }.padding(16.dp)) {
+                    val change = dayChanges[p.symbol] ?: monthChange(p)
+                    Column(
+                        Modifier.width(160.dp).clip(RoundedCornerShape(24.dp)).background(P.card).border(1.dp, P.cardBorder, RoundedCornerShape(24.dp))
+                            .clickable { onOpenHolding(p.key) }.padding(16.dp),
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Initials(p.symbol, symbolColor(p.symbol), 32.dp)
                             Spacer(Modifier.width(8.dp))
                             Column {
-                                Text(p.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = OnPastel, maxLines = 1)
-                                Text(p.symbol, fontSize = 12.sp, color = OnPastel.copy(alpha = 0.6f))
+                                Text(p.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
+                                Text(p.symbol, fontSize = 12.sp, color = P.muted)
                             }
                         }
                         Spacer(Modifier.height(8.dp))
-                        Spark(history["${p.symbol}:1"].orEmpty(), Color.White, Modifier.fillMaxWidth().height(56.dp))
+                        Spark(history["${p.symbol}:1"].orEmpty(), if ((change ?: 0.0) >= 0) P.gain else P.loss, Modifier.fillMaxWidth().height(56.dp))
                         Spacer(Modifier.height(8.dp))
-                        if (p.isCrypto) Text("Lo tuyo", fontSize = 11.sp, color = OnPastel.copy(alpha = 0.6f))
-                        Text(money.format(p.value), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnPastel)
-                        coinUsd(p)?.let { Text("1 ${p.symbol} = ${usd(it)}", fontSize = 12.sp, color = OnPastel.copy(alpha = 0.7f), maxLines = 1) }
-                        Spacer(Modifier.height(4.dp))
-                        (dayChanges[p.symbol] ?: monthChange(p))?.let { ChangeChip(it, dark = true) }
+                        if (p.isCrypto) Text("Lo tuyo", fontSize = 12.sp, color = P.muted)
+                        Text(money.format(p.value), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = P.ink)
+                        coinUsd(p)?.let { Text("1 ${p.symbol} = ${usd(it)}", fontSize = 12.sp, color = P.muted, maxLines = 1) }
+                        Spacer(Modifier.height(8.dp))
+                        change?.let { ChangeChip(it) }
                     }
                 }
             }
@@ -701,7 +706,7 @@ private fun BuzzSheet(vm: FinanceViewModel, onOpenCoin: (com.caudal.finanzas.dom
             else -> {
                 buzz.featured?.let { f ->
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Pastels[1]).clickable { onOpenCoin(f) }.padding(16.dp)) {
-                        Text("MÁS RUIDO POSITIVO", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = OnPastel.copy(alpha = 0.7f))
+                        Text("Más ruido positivo", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = OnPastel.copy(alpha = 0.7f))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Initials(f.symbol, symbolColor(f.symbol), 40.dp); Spacer(Modifier.width(8.dp))
                             Text("${f.name} (${f.symbol})", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = OnPastel)

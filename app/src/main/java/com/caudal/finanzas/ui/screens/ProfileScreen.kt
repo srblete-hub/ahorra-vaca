@@ -193,7 +193,7 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
             }
             val months = remember(p.data) { p.data.expenses.map { java.time.YearMonth.from(java.time.LocalDate.ofEpochDay(it.epochDay)) }.distinct().size }
             Column {
-                Text("TU ACTIVIDAD", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, color = P.muted, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
+                Text("Tu actividad", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = P.muted, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ActivityTile(Icons.Filled.Groups, "$friends", "Amigos", Modifier.weight(1f))
                     ActivityTile(Icons.Filled.EmojiEvents, "${unlocked.size}", "Logros", Modifier.weight(1f))
@@ -210,7 +210,7 @@ fun ProfileScreen(vm: FinanceViewModel, appVm: AppViewModel, settings: Settings,
                     .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF60A5FA), Color(0xFF2563EB), Color(0xFF0B1E4F))))
                     .clickable { args.onOpen(com.caudal.finanzas.ui.Overlay.WRAPPED) }.padding(24.dp),
             ) {
-                Text("TU WRAPPED", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.8f))
+                Text("Tu wrapped", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.8f))
                 Text("Tu $mName, en tarjetas", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 Text("Tus números del mes, al día, y una ficha para compartir →", fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
             }
@@ -317,46 +317,47 @@ private fun EditProfileSheet(settings: Settings, appVm: AppViewModel, onDone: ()
 private fun MemberCard(level: Int, name: String, missing: Int?, since: java.time.YearMonth?) {
     Box(
         Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp))
-            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF1E4D33), Color(0xFF3F8A5F)))),
+            // Tinta con manchas, como la tarjeta del banco: es la tarjeta de socio de la vaca.
+            .background(com.caudal.finanzas.ui.Vaca.Tinta),
     ) {
-        Box(Modifier.align(Alignment.CenterEnd).padding(end = 0.dp).size(260.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.06f)))
+        com.caudal.finanzas.ui.Spots(Modifier.matchParentSize())
         androidx.compose.foundation.Image(
             androidx.compose.ui.res.painterResource(com.caudal.finanzas.R.drawable.ic_launcher_foreground), null,
             Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 8.dp).size(128.dp),
         )
         Column(Modifier.padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).background(Color(0xFF0B2E1D)), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)).background(com.caudal.finanzas.ui.Vaca.Pasto), contentAlignment = Alignment.Center) {
                     androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(com.caudal.finanzas.R.drawable.ic_launcher_foreground), null, Modifier.size(48.dp))
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Ahorra, vaca", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text("MIEMBRO", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 3.sp, color = Color.White.copy(alpha = 0.75f))
+                    Text("Ahorra, vaca", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = com.caudal.finanzas.ui.Vaca.Leche)
+                    Text("Miembro", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.75f))
                 }
                 Row(
-                    Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                    Modifier.clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF4ADE80)))
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(Color(0xFF8FC79A)))
                     Spacer(Modifier.width(8.dp))
-                    Text("Activo", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Text("Activo", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Leche)
                 }
             }
             Spacer(Modifier.height(24.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.WorkspacePremium, null, Modifier.size(32.dp), tint = Color(0xFFB7E4C7))
+                Icon(Icons.Filled.WorkspacePremium, null, Modifier.size(32.dp), tint = com.caudal.finanzas.ui.Vaca.Pasto)
                 Spacer(Modifier.width(8.dp))
                 // A la derecha va la vaca: el texto deja su hueco.
                 Column(Modifier.padding(end = 112.dp)) {
-                    Text("NIVEL $level", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                    Text(name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.9f))
-                    since?.let { Text("Ahorrando desde " + String.format("%02d/%d", it.monthValue, it.year), fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f)) }
+                    Text("Nivel $level", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = com.caudal.finanzas.ui.Vaca.Leche)
+                    Text(name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.9f))
+                    since?.let { Text("Ahorrando desde " + String.format("%02d/%d", it.monthValue, it.year), fontSize = 14.sp, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.8f)) }
                 }
             }
             Spacer(Modifier.height(16.dp))
-            Text("SIGUIENTE NIVEL", fontSize = 12.sp, letterSpacing = 3.sp, color = Color.White.copy(alpha = 0.7f))
-            Text(missing?.let { "Faltan $it pts" } ?: "Nivel máximo", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Siguiente nivel", fontSize = 14.sp, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.7f))
+            Text(missing?.let { "Faltan $it pts" } ?: "Nivel máximo", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = com.caudal.finanzas.ui.Vaca.Leche)
         }
     }
 }
@@ -367,29 +368,29 @@ private fun StreakCard(s: com.caudal.finanzas.domain.SpendStreak) {
     val money = LocalMoney.current
     Box(
         Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp))
-            .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFEFA25C), Color(0xFFE0703A)))),
+            // Rosa ubre suave en vez del naranja: la racha usa los colores de la marca.
+            .background(com.caudal.finanzas.ui.Vaca.UbreSuave),
     ) {
-        Box(Modifier.align(Alignment.TopEnd).size(220.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.08f)))
         Column(Modifier.padding(24.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    Text("RACHA ACTUAL", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp, color = Color.White.copy(alpha = 0.85f))
+                    Text("Racha actual", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = com.caudal.finanzas.ui.Vaca.Tinta.copy(alpha = 0.85f))
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Icon(Icons.Filled.LocalFireDepartment, null, Modifier.size(48.dp).padding(bottom = 8.dp), tint = Color.White)
-                        Text("${s.current}", fontSize = 72.sp, lineHeight = 72.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                        Text(if (s.current == 1) " día" else " días", fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = Color.White, modifier = Modifier.padding(bottom = 12.dp))
+                        Icon(Icons.Filled.LocalFireDepartment, null, Modifier.size(48.dp).padding(bottom = 8.dp), tint = com.caudal.finanzas.ui.Vaca.UbreFuerte)
+                        Text("${s.current}", fontSize = 72.sp, lineHeight = 72.sp, fontWeight = FontWeight.ExtraBold, color = com.caudal.finanzas.ui.Vaca.Tinta)
+                        Text(if (s.current == 1) " día" else " días", fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Tinta, modifier = Modifier.padding(bottom = 12.dp))
                     }
                 }
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        Text("Récord ${s.record}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    Box(Modifier.clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                        Text("Récord ${s.record}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Tinta)
                     }
                     Row(
-                        Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 12.dp, vertical = 8.dp),
+                        Modifier.clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Filled.Eco, null, Modifier.size(16.dp), tint = Color.White)
-                        Text(" ×${s.noSpendThisMonth}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        Icon(Icons.Filled.Eco, null, Modifier.size(16.dp), tint = com.caudal.finanzas.ui.Vaca.Tinta)
+                        Text(" ×${s.noSpendThisMonth}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Tinta)
                     }
                 }
             }
@@ -400,18 +401,18 @@ private fun StreakCard(s: com.caudal.finanzas.domain.SpendStreak) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             Modifier.size(40.dp).clip(CircleShape)
-                                .background(when (m) { com.caudal.finanzas.domain.DayMark.FUTURE -> Color.Transparent; com.caudal.finanzas.domain.DayMark.OVER -> Color.White.copy(alpha = 0.25f); else -> Color.White })
-                                .border(2.dp, Color.White.copy(alpha = if (m == com.caudal.finanzas.domain.DayMark.FUTURE) 0.45f else 0f), CircleShape),
+                                .background(when (m) { com.caudal.finanzas.domain.DayMark.FUTURE -> Color.Transparent; com.caudal.finanzas.domain.DayMark.OVER -> com.caudal.finanzas.ui.Vaca.Tinta.copy(alpha = 0.08f); else -> com.caudal.finanzas.ui.Vaca.UbreFuerte })
+                                .border(2.dp, com.caudal.finanzas.ui.Vaca.UbreFuerte.copy(alpha = if (m == com.caudal.finanzas.domain.DayMark.FUTURE) 0.35f else 0f), CircleShape),
                             contentAlignment = Alignment.Center,
                         ) {
                             when (m) {
-                                com.caudal.finanzas.domain.DayMark.OK -> Icon(Icons.Filled.Check, null, Modifier.size(24.dp), tint = Color(0xFFE0703A))
-                                com.caudal.finanzas.domain.DayMark.NO_SPEND -> Icon(Icons.Filled.Eco, null, Modifier.size(24.dp), tint = Color(0xFFE0703A))
-                                com.caudal.finanzas.domain.DayMark.OVER -> Icon(Icons.Filled.Close, null, Modifier.size(16.dp), tint = Color.White)
+                                com.caudal.finanzas.domain.DayMark.OK -> Icon(Icons.Filled.Check, null, Modifier.size(24.dp), tint = com.caudal.finanzas.ui.Vaca.Leche)
+                                com.caudal.finanzas.domain.DayMark.NO_SPEND -> Icon(Icons.Filled.Eco, null, Modifier.size(24.dp), tint = com.caudal.finanzas.ui.Vaca.Leche)
+                                com.caudal.finanzas.domain.DayMark.OVER -> Icon(Icons.Filled.Close, null, Modifier.size(16.dp), tint = com.caudal.finanzas.ui.Vaca.Tinta)
                                 else -> {}
                             }
                         }
-                        Text(names[i], fontSize = 14.sp, color = Color.White, modifier = Modifier.padding(top = 4.dp))
+                        Text(names[i], fontSize = 14.sp, color = com.caudal.finanzas.ui.Vaca.Tinta, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
             }
@@ -422,15 +423,15 @@ private fun StreakCard(s: com.caudal.finanzas.domain.SpendStreak) {
                     com.caudal.finanzas.domain.DayMark.OK -> "Hoy: ${money.format(s.spentToday)} de ${money.format(s.allowance)}, dentro de lo tuyo"
                     else -> "Hoy te has pasado: la racha vuelve a empezar mañana"
                 },
-                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White,
+                fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Tinta,
             )
             s.nextGoal?.let { g ->
                 Text(
                     "${g - s.current} ${if (g - s.current == 1) "día" else "días"} para tu racha de ${if (g == 30) "1 mes" else "$g días"}.",
-                    fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(top = 8.dp),
+                    fontSize = 14.sp, color = com.caudal.finanzas.ui.Vaca.Tinta.copy(alpha = 0.85f), modifier = Modifier.padding(top = 8.dp),
                 )
             }
-            Text("Cuenta los días que gastas lo que te toca o menos; el alquiler y los fijos no cuentan.", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f), modifier = Modifier.padding(top = 4.dp))
+            Text("Cuenta los días que gastas lo que te toca o menos; el alquiler y los fijos no cuentan.", fontSize = 12.sp, color = com.caudal.finanzas.ui.Vaca.Tinta.copy(alpha = 0.7f), modifier = Modifier.padding(top = 4.dp))
         }
     }
 }

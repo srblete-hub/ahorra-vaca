@@ -322,7 +322,7 @@ private fun SavingsGoalCard(g: com.caudal.finanzas.domain.GoalStatus?, onEdit: (
             }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text("OBJETIVO DE AHORRO", fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, color = P.muted)
+                Text("Objetivo de ahorro", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = P.muted)
                 Text(g.goal.name.ifBlank { "Mi objetivo" }, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink, maxLines = 1)
                 Text("${money.format(g.current)} de ${money.format(g.goal.target)}", fontSize = 16.sp, color = P.ink, modifier = Modifier.padding(top = 4.dp))
                 Text(

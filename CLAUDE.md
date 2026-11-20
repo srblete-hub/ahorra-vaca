@@ -48,3 +48,10 @@ $env:JAVA_HOME="<ruta al JDK 21>"
 .\gradlew.bat testDebugUnitTest assembleRelease
 ```
 La APK sale en `app/build/outputs/apk/release/app-release.apk`; se copia como `Ahorra-vaca.apk` en la raíz para pasarla al móvil. Las pruebas completas tardan ~10 min.
+
+**Firma para el móvil:** con minSdk 29, Gradle y `apksigner` solo ponen la firma v3, y algunos instaladores dan
+"There was a problem while parsing the package". Hay que volver a firmar la APK con v1+v2+v3 (clave de debug) al copiarla:
+```
+java -jar <sdk>/build-tools/36.0.0/lib/apksigner.jar sign --ks ~/.android/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --min-sdk-version 21 --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out AhorraVaca.apk app/build/outputs/apk/release/app-release.apk
+```
+(`apksigner.bat` falla por los espacios de la ruta: usar el `.jar`). Solo se incluyen arm64-v8a y armeabi-v7a.

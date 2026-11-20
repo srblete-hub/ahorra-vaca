@@ -184,3 +184,26 @@ object RevolutAsk {
         }
         .sortedByDescending { it.epochDay }
 }
+
+// ---------- Eventos: varios pagos juntos ("Cine jueves") ----------
+
+/** Un pago dentro de un evento: lo que era, cuánto y su tipo. */
+data class EventPart(val note: String, val amount: Double, val tag: String, val createdAt: Long)
+
+object Events {
+    private const val HEAD = "EVENTO"
+
+    /** Texto que se guarda en el gasto del evento: una línea por pago ("Palomitas|6.5|LEISURE|…"). */
+    fun encode(parts: List<EventPart>): String = HEAD + "\n" + parts.joinToString("\n") {
+        "${it.note.replace("|", " ").replace("\n", " ")}|${it.amount}|${it.tag}|${it.createdAt}"
+    }
+
+    /** El desglose de un evento, o null si el gasto no es un evento. */
+    fun parse(raw: String): List<EventPart>? {
+        if (!raw.startsWith(HEAD + "\n")) return null
+        return raw.lines().drop(1).mapNotNull { l ->
+            val p = l.split('|')
+            if (p.size < 4) null else p[1].toDoubleOrNull()?.let { EventPart(p[0], it, p[2], p[3].toLongOrNull() ?: 0L) }
+        }.takeIf { it.isNotEmpty() }
+    }
+}

@@ -305,6 +305,7 @@ fun HomeScreen(
                 RecentMovesCard(
                     expenses = allExpensesList, incomes = allIncomes, transfers = transfers,
                     accounts = accounts, onEdit = args.onEdit, onOpenAccount = args.onOpenAccount,
+                    onMerge = { ids, n -> vm.mergeExpenses(ids, n) },
                 )
             }
 
@@ -545,9 +546,25 @@ private fun RecentMovesCard(
     accounts: List<Account>,
     onEdit: (Editing) -> Unit,
     onOpenAccount: (Account) -> Unit,
+    onMerge: (List<Long>, String) -> Unit = { _, _ -> },
 ) {
     val money = LocalMoney.current
     var showAll by remember { mutableStateOf(false) }
+    // Mantén pulsado un gasto y toca otros para juntarlos en un evento ("Cine jueves").
+    var picked by remember { mutableStateOf(setOf<Long>()) }
+    var naming by remember { mutableStateOf(false) }
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    fun toggle(id: Long) { picked = if (id in picked) picked - id else picked + id }
+    if (naming) {
+        val sel = expenses.filter { it.id in picked }
+        val first = sel.minByOrNull { it.createdAt }
+        val es = java.util.Locale.forLanguageTag("es-ES")
+        val suggestion = first?.let { f ->
+            (f.spendTag().takeIf { it != com.caudal.finanzas.domain.SpendTag.OTHER }?.label ?: f.note) + " " +
+                LocalDate.ofEpochDay(f.epochDay).dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, es)
+        } ?: "Evento"
+        EventNameDialog(sel.size, sel.sumOf { it.amount }, suggestion, onDismiss = { naming = false }) { n -> onMerge(picked.toList(), n); picked = emptySet(); naming = false }
+    }
     val moves = remember(expenses, incomes, transfers) {
         (expenses.map { Move.Out(it) } + incomes.map { Move.In(it) } + transfers.map { Move.Moved(it) })
             .sortedWith(compareByDescending<Move> { it.day }.thenByDescending { it.created })
@@ -573,10 +590,13 @@ private fun RecentMovesCard(
                 is Move.Out -> {
                     val t = m.e.spendTag()
                     val acc = name(m.e.accountId)
+                    val parts = com.caudal.finanzas.domain.Events.parse(m.e.rawText)
                     ListRow(
                         m.e.note.ifBlank { t.label },
-                        subtitle = listOfNotNull(dayLabel(m.e.epochDay), acc?.let { "de $it" } ?: "sin cuenta", if (m.e.fromCard) "tarjeta" else null).joinToString(" · "),
-                        onClick = { onEdit(Editing.ExpenseForm(m.e)) },
+                        subtitle = listOfNotNull(dayLabel(m.e.epochDay), parts?.let { "${it.size} pagos" }, acc?.let { "de $it" } ?: "sin cuenta", if (m.e.fromCard) "tarjeta" else null).joinToString(" · "),
+                        onClick = { if (picked.isNotEmpty()) toggle(m.e.id) else onEdit(Editing.ExpenseForm(m.e)) },
+                        onLongClick = { haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress); toggle(m.e.id) },
+                        selected = m.e.id in picked,
                         leading = { com.caudal.finanzas.ui.MerchantLogo(m.e.note, t, 40.dp) },
                         trailing = { AmountTrailing("−" + money.format(m.e.amount), t.label) },
                     )
@@ -604,6 +624,28 @@ private fun RecentMovesCard(
             }
         }
         Spacer(Modifier.height(8.dp))
+        if (picked.isNotEmpty()) {
+            val sel = expenses.filter { it.id in picked }
+            Row(
+                Modifier.fillMaxWidth().padding(16.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp)).background(com.caudal.finanzas.ui.Vaca.Tinta).padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("${sel.size} ${if (sel.size == 1) "gasto" else "gastos"}", fontSize = 12.sp, color = com.caudal.finanzas.ui.Vaca.Leche.copy(alpha = 0.7f))
+                    Text(money.format(sel.sumOf { it.amount }), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = com.caudal.finanzas.ui.Vaca.Leche)
+                }
+                if (sel.size >= 2) Box(
+                    Modifier.clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Pasto).clickable { naming = true }.padding(horizontal = 16.dp, vertical = 8.dp),
+                ) { Text("Juntar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.PradoOscuro) }
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    Modifier.clip(CircleShape).background(com.caudal.finanzas.ui.Vaca.Leche).clickable { picked = emptySet() }.padding(horizontal = 16.dp, vertical = 8.dp),
+                ) { Text("Cancelar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = com.caudal.finanzas.ui.Vaca.Tinta) }
+            }
+        } else Text(
+            "Mantén pulsado un gasto y toca otros para juntarlos",
+            Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), fontSize = 12.sp, color = P.muted,
+        )
     }
 }
 

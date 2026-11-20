@@ -234,8 +234,13 @@ object Classifier {
             .trim()
 
     // Las frases más largas primero: "uber eats" gana a "uber" y "seguro coche" a "seguro".
-    private val index: List<Pair<String, SpendTag>> =
-        SpendTag.entries.flatMap { t -> t.keywords.map { normalize(it) to t } }.sortedByDescending { it.first.length }
+    private val index: List<Pair<String, SpendTag>> by lazy {
+        val own = SpendTag.entries.flatMap { t -> t.keywords.map { normalize(it) to t } }
+        val known = own.map { it.first }.toSet()
+        // Diccionario amplio de comercios (importado): suma lo que la app no tenía; las reglas propias ganan.
+        val extra = MerchantDictionary.WORDS.flatMap { (t, ws) -> ws.map { normalize(it) to t } }.filter { it.first !in known }
+        (own + extra).sortedByDescending { it.first.length }
+    }
 
     /** Tipo de gasto por palabras clave, o null si no se reconoce. */
     fun guess(note: String): SpendTag? {
@@ -248,7 +253,7 @@ object Classifier {
         if (exact != null) return exact
         // Trozos de palabra que delatan el tipo aunque vayan pegados a otra cosa: "Neocine", "Multicines", "BurgerLab"…
         val joined = normalize(Merchants.clean(note))
-        CONTAINS.firstOrNull { (frag, _) -> joined.split(' ').any { w -> frag in w } }?.let { return it.second }
+        (CONTAINS + MerchantDictionary.FRAGMENTS).firstOrNull { (frag, _) -> joined.split(' ').any { w -> frag in w } }?.let { return it.second }
         val words = normalize(note).split(' ').filter { it.length >= 4 }
         return index.firstOrNull { (kw, _) -> kw.length >= 4 && ' ' !in kw && words.any { w -> w.startsWith(kw) || (kw.startsWith(w) && w.length >= 5) } }?.second
     }

@@ -466,6 +466,7 @@ fun ExpenseSheet(
     onNotPayment: (() -> Unit)? = null,
     onIsTransfer: (() -> Unit)? = null,
     onOwed: (() -> Unit)? = null,
+    onSplit: (() -> Unit)? = null,
 ) {
     var amount by remember { mutableStateOf(initial.amount.editable()) }
     var note by remember { mutableStateOf(initial.note) }
@@ -507,6 +508,31 @@ fun ExpenseSheet(
             }
             if (onNotPayment != null) TextButton(onClick = onNotPayment) {
                 Text("No era un pago: borrarlo y no volver a apuntar avisos así", color = P.loss)
+            }
+        }
+        // Evento ("Cine jueves"): el desglose de los pagos que lleva dentro.
+        com.caudal.finanzas.domain.Events.parse(initial.rawText)?.let { parts ->
+            val money = LocalMoney.current
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(P.chip).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Desglose · ${parts.size} pagos", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = P.ink)
+                parts.forEach { pt ->
+                    val t = com.caudal.finanzas.domain.SpendTag.of(pt.tag) ?: com.caudal.finanzas.domain.SpendTag.OTHER
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        MerchantLogo(pt.note, t, 32.dp)
+                        Spacer(Modifier.width(16.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(pt.note, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = P.ink, maxLines = 1)
+                            Text(t.label, style = MaterialTheme.typography.bodySmall, color = P.muted)
+                        }
+                        Text(money.format(pt.amount), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = P.ink)
+                    }
+                }
+                androidx.compose.material3.HorizontalDivider(color = P.line)
+                Row {
+                    Text("Total", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = P.muted)
+                    Text(money.format(parts.sumOf { it.amount }), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = P.ink)
+                }
+                if (onSplit != null) TextButton(onClick = onSplit) { Text("Separar en pagos sueltos", color = P.gain) }
             }
         }
         BigAmountInput(amount, { amount = it }, currencySymbol(currency))

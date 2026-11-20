@@ -585,6 +585,12 @@ private fun MergeDialog(items: List<MoveItem>, onDismiss: () -> Unit, onSave: (S
         val what = f.tag?.takeIf { it != SpendTag.OTHER }?.label ?: f.title
         "$what ${f.day.dayOfWeek.getDisplayName(JTextStyle.FULL, es)}"
     } ?: "Evento"
+    EventNameDialog(items.size, items.sumOf { -it.amount }, suggestion, onDismiss, onSave)
+}
+
+/** Pide el nombre del evento al juntar pagos ("Cine jueves"). */
+@Composable
+fun EventNameDialog(count: Int, total: Double, suggestion: String, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var name by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(suggestion) }
     val money = LocalMoney.current
     androidx.compose.material3.AlertDialog(
@@ -593,7 +599,7 @@ private fun MergeDialog(items: List<MoveItem>, onDismiss: () -> Unit, onSave: (S
         title = { Text("Juntar en un evento", fontWeight = FontWeight.Bold, color = P.ink) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("${items.size} pagos · ${money.format(items.sumOf { -it.amount })}. Quedan como uno solo, con el detalle dentro.", fontSize = 14.sp, color = P.muted)
+                Text("$count pagos · ${money.format(total)}. Quedan como uno solo, con el desglose dentro.", fontSize = 14.sp, color = P.muted)
                 com.caudal.finanzas.ui.TextInput(name, { name = it }, "Nombre (Cine jueves, Cena con Juanpa…)")
             }
         },

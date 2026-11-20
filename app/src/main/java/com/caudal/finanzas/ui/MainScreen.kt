@@ -280,6 +280,7 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
                 onRefund = { vm.setRefund(e.expense.id, it) },
                 onNotPayment = if (e.expense.fromCard && e.expense.id != 0L) ({ vm.notAPayment(e.expense); close() }) else null,
                 onIsTransfer = { editing = Editing.ConvertTransfer(e.expense) },
+                onSplit = if (com.caudal.finanzas.domain.Events.parse(e.expense.rawText) != null) ({ vm.splitEvent(e.expense); close() }) else null,
                 onOwed = {
                     val known = com.caudal.finanzas.domain.Debts.people(com.caudal.finanzas.domain.Debts.parse(settings.debtsRaw), com.caudal.finanzas.domain.Debts.parseTricount(settings.tricountRaw))
                     editing = Editing.DebtForm(

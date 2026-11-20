@@ -31,7 +31,8 @@ Paquete: `com.caudal.finanzas` (el proyecto se llamó antes "Caudal").
 - **Lectura semanal** (`WeeklyRead`): los gastos "a golpes" (transporte, ropa, viajes…) se miran por meses y solo avisan si hay un pago anormalmente grande o muchos más pagos; los de diario, frente a la mediana semanal.
 - **Avisos de pagos**: nunca se leen correo ni mensajería (`PaymentParser.NEVER_APPS`, `EMAIL_LIKE`); las devoluciones del banco entran como ingreso.
 - **Recibos y suscripciones**: se descuentan solos el día del cobro (`BillCharger`), sin duplicar con el aviso del banco.
-- **Juntar pagos**: en Movimientos, mantener pulsado, seleccionar y "Juntar" ("Cine jueves").
+- **Juntar pagos**: en Movimientos y en Inicio, mantener pulsado, seleccionar y "Juntar" ("Cine jueves"). El desglose va en `rawText` (`Events.encode/parse`); se ve al abrir el evento y se puede "Separar".
+- **Diccionario de comercios**: `domain/MerchantDictionary.kt` se genera con `python tools/generar_diccionario.py tools/diccionario_comercios_finanzas.json app/src/main/java/com/caudal/finanzas/domain/MerchantDictionary.kt` (filtra genéricas, ambiguas y la lista `REVIEW_DROP`). No editarlo a mano.
 - **Edad financiera**: incluye la comparación con la riqueza neta mediana de España (EFF 2022 del Banco de España: 20.000 € los hogares de menos de 35 años; 142.700 € todos).
 - **Patrimonio**: variación con desglose al tocarla; intereses compuestos reales por cuenta (`InterestEarned`). Los objetivos de ahorro (colchón) solo cuentan ahorro, no cripto ni acciones.
 - **Movimientos** (antes "Gastos"): entró/salió, en qué puedes gastar, en qué se ha ido (tocar = pagos), cuentas con amigos + Tricount, ingresos.

@@ -532,11 +532,27 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
         all.groupBy { it.accountId }.values.forEach { group ->
             if (group.size < 2) return@forEach
             val base = group.first()
-            val detail = "Evento: " + group.joinToString(" · ") { "${com.caudal.finanzas.domain.Merchants.clean(it.note).ifBlank { "pago" }} ${"%.2f".format(java.util.Locale.forLanguageTag("es-ES"), it.amount)} €" }
+            // Si alguno ya era un evento, se juntan sus pagos de dentro (no eventos dentro de eventos).
+            val parts = group.flatMap { e ->
+                com.caudal.finanzas.domain.Events.parse(e.rawText)
+                    ?: listOf(com.caudal.finanzas.domain.EventPart(com.caudal.finanzas.domain.Merchants.clean(e.note).ifBlank { "Pago" }, e.amount, e.spendTagName(), e.createdAt))
+            }
             group.forEach { dao.removeExpense(it) }
-            dao.saveExpense(base.copy(id = 0, amount = group.sumOf { it.amount }, note = name, rawText = detail.take(300), fromCard = false))
+            dao.saveExpense(base.copy(id = 0, amount = group.sumOf { it.amount }, note = name, rawText = com.caudal.finanzas.domain.Events.encode(parts), fromCard = false, billId = null))
         }
         _messages.emit("Juntado en \"$name\"")
+    }
+
+    /** Deshace un evento: vuelven los pagos sueltos, en la misma cuenta y el mismo día. */
+    fun splitEvent(e: Expense) = viewModelScope.launch {
+        val parts = com.caudal.finanzas.domain.Events.parse(e.rawText) ?: return@launch
+        dao.removeExpense(e)
+        parts.forEach { p ->
+            val tag = com.caudal.finanzas.domain.SpendTag.of(p.tag)
+            val cat = tag?.let { com.caudal.finanzas.domain.Classifier.bucketFor(it, categories.value) } ?: e.categoryId
+            dao.saveExpense(e.copy(id = 0, amount = p.amount, note = p.note, tag = p.tag, rawText = "", categoryId = cat, createdAt = p.createdAt.takeIf { it > 0 } ?: e.createdAt))
+        }
+        _messages.emit("Separado en ${parts.size} pagos")
     }
 
     /** Lo que pasaste a Revolut: dices en qué se gastó y queda con su tipo ("Revolut · Ocio"). */
@@ -763,3 +779,6 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
         if (stocks.value.any { it.updatedAt in 1 until limit }) refreshStocks(quiet = true)
     }
 }
+
+/** Nombre del tipo de un gasto (el elegido o el deducido). */
+private fun Expense.spendTagName(): String = com.caudal.finanzas.domain.SpendTag.of(tag)?.name ?: com.caudal.finanzas.domain.Classifier.guess(note)?.name ?: com.caudal.finanzas.domain.SpendTag.OTHER.name

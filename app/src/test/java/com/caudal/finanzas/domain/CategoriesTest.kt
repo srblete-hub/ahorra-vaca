@@ -45,4 +45,22 @@ class CategoriesTest {
         val done = e.copy(note = "Revolut · Ocio", tag = SpendTag.LEISURE.name)
         assertTrue(RevolutAsk.pending(data(listOf(done))).isEmpty())
     }
+
+    @Test fun importedDictionaryWithoutFalsePositives() {
+        assertEquals(SpendTag.PETS, Classifier.guess("Peluqueria canina Luna"))
+        assertEquals(SpendTag.SUPER, Classifier.guess("Frutas y verduras Paco"))
+        assertEquals(SpendTag.FOOD, Classifier.guess("Costa Coffee Atocha"))
+        assertEquals(SpendTag.TRANSPORT, Classifier.guess("Waylet Repsol"))
+        assertEquals(SpendTag.LEISURE, Classifier.guess("Cirque du Soleil"))
+        // Palabras peligrosas que se quitaron a mano.
+        assertTrue(Classifier.guess("Pago con Mastercard") != SpendTag.EDUCATION)
+        assertTrue(Classifier.guess("Caja Rural") != SpendTag.GIFTS)
+    }
+
+    @Test fun eventKeepsItsBreakdown() {
+        val parts = listOf(EventPart("Entradas", 8.5, "LEISURE", 1L), EventPart("Palomitas", 6.0, "FOOD", 2L))
+        val back = Events.parse(Events.encode(parts))!!
+        assertEquals(parts, back)
+        assertNull(Events.parse("Compra con tarjeta de 12 €"))
+    }
 }

@@ -215,32 +215,6 @@ fun SavingsGoalHero(
             Box(Modifier.padding(vertical = 16.dp).fillMaxWidth().height(1.dp).background(Color(0xFFEDE6D6)))
             DetailRow(Icons.Filled.CalendarMonth, "Fecha de inicio", g.goal.start.format(DateTimeFormatter.ofPattern("d MMM yyyy", ES)))
             DetailRow(Icons.Filled.Schedule, "Quedan", "${java.time.temporal.ChronoUnit.DAYS.between(today, g.goal.deadline).coerceAtLeast(0)} días")
-            // Semanas.
-            Column(Modifier.padding(top = 16.dp).fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Color(0xFFF6F1E6)).padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(com.caudal.finanzas.R.drawable.ic_pepe), null, Modifier.size(20.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("Ahorro semanal", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Ink)
-                        }
-                        Text("Pepe elige una cantidad segura cada semana", fontSize = 12.sp, color = Muted)
-                    }
-                    Switch(weeklyTip, onWeeklyTip, colors = SwitchDefaults.colors(checkedTrackColor = Ink, checkedThumbColor = Color.White))
-                }
-                val bars = weekly.map { (l, v) -> if (l == "Esta" && thisWeek != null) l to maxOf(v, thisWeek) else l to v }
-                val max = bars.maxOfOrNull { it.second }?.takeIf { it > 0 } ?: 1.0
-                Row(Modifier.fillMaxWidth().height(128.dp).padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
-                    bars.forEach { (label, v) ->
-                        val current = label == "Esta"
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(if (v > 0) "${Math.round(v)} €" else "", fontSize = 11.sp, color = if (current) Color(0xFF2E6B3F) else Muted)
-                            Box(Modifier.fillMaxWidth().height((64 * v / max).coerceAtLeast(4.0).dp).clip(RoundedCornerShape(8.dp)).background(if (current) Color(0xFF2E6B3F) else Color(0xFFEDE6D6)))
-                            Text(if (current) "Esta" else label, fontSize = 11.sp, color = Muted, modifier = Modifier.padding(top = 4.dp))
-                        }
-                    }
-                }
-            }
         }
     }
 }

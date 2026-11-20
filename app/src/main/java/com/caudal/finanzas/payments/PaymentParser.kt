@@ -38,8 +38,45 @@ object PaymentParser {
         "com.paypal.android.p2pmobile" to "PayPal",
     )
 
+    /**
+     * Apps cuyos avisos nunca son un pago tuyo: correo, mensajería y redes. Un email de "tu pedido de 30 €" o
+     * "te hemos reembolsado" no es un cargo en tu cuenta. Se ignoran siempre, aunque leas avisos de cualquier app.
+     */
+    val NEVER_APPS = setOf(
+        "com.google.android.gm", "com.google.android.gm.lite", "com.microsoft.office.outlook", "com.yahoo.mobile.client.android.mail",
+        "com.samsung.android.email.provider", "com.samsung.android.email", "ch.protonmail.android", "me.proton.android.mail",
+        "com.readdle.spark", "me.bluemail.mail", "com.fsck.k9", "net.thunderbird.android", "com.android.email", "com.google.android.apps.inbox",
+        "com.whatsapp", "com.whatsapp.w4b", "org.telegram.messenger", "org.thoughtcrime.securesms", "com.facebook.orca", "com.instagram.android",
+        "com.twitter.android", "com.zhiliaoapp.musically", "com.discord", "com.slack", "com.google.android.apps.messaging", "com.samsung.android.messaging",
+        "com.google.android.youtube", "com.android.vending",
+    )
+
+    /** Señales de que el texto es un correo o un mensaje, no el aviso de un cargo. */
+    private val EMAIL_LIKE = Regex("[\\w.+-]+@[\\w-]+\\.[\\w.]+|\\basunto\\b|\\bsubject\\b|^(re|rv|fw|fwd)\\s*:|newsletter|tu pedido|your order|ha sido enviado|has been shipped|seguimiento del envío|darse de baja|unsubscribe", RegexOption.IGNORE_CASE)
+
+    /** Devoluciones: dinero que vuelve a ti (un ingreso, no un gasto). */
+    private val REFUND = listOf(
+        "devoluci", "devuelto", "te devolvemos", "hemos devuelto", "reembols", "reintegr", "abonad", "abono", "retroces", "anulaci",
+        "refund", "returned", "chargeback", "reversal",
+    )
+
+    fun looksLikeEmail(title: String?, text: String?): Boolean = EMAIL_LIKE.containsMatchIn(listOfNotNull(title, text).joinToString("\n"))
+
+    /** Una devolución con su importe y comercio (para apuntarla como ingreso). */
+    fun parseRefund(title: String?, text: String?): DetectedPayment? {
+        val full = listOfNotNull(title, text).joinToString("\n").trim()
+        val lower = full.lowercase(Locale.ROOT)
+        if (REFUND.none { it in lower } || "rechazad" in lower || "denegad" in lower) return null
+        val (rawNumber, rawCurrency) = AMOUNT_AFTER.find(full)?.let { it.groupValues[1] to it.groupValues[2] }
+            ?: AMOUNT_BEFORE.find(full)?.let { it.groupValues[2] to it.groupValues[1] } ?: return null
+        val amount = parseNumber(rawNumber)?.takeIf { it > 0 } ?: return null
+        val merchant = text?.let { MERCHANT.find(it)?.groupValues?.get(1) } ?: title?.let { MERCHANT.find(it)?.groupValues?.get(1) }
+        return DetectedPayment(amount, currencyCode(rawCurrency), merchant?.let(::cleanMerchant), full)
+    }
+
     private val EXCLUDE = listOf(
         "devoluci", "reembols", "ingreso", "recibid", "abono", "te han enviado", "te ha enviado",
+        "devuelto", "te devolvemos", "reintegr", "abonad", "retroces", "returned", "chargeback", "reversal",
         "rechazad", "denegad", "no se ha podido", "fallid", "cancelad", "anulad",
         "refund", "received", "declined", "failed", "cancelled", "canceled",
         // Verificaciones de compra online (aún no es un pago: llegará otro aviso si se completa).
@@ -72,6 +109,8 @@ object PaymentParser {
     fun parse(title: String?, text: String?, isWallet: Boolean): DetectedPayment? {
         val full = listOfNotNull(title, text).joinToString("\n").trim()
         if (full.isEmpty()) return null
+        // Un correo ("Tu pedido…", "RE: factura", una dirección @) no es un cargo en tu cuenta.
+        if (EMAIL_LIKE.containsMatchIn(full)) return null
         val lower = full.lowercase(Locale.ROOT)
         if (EXCLUDE.any { it in lower }) return null
         if (!isWallet && PAYMENT_WORDS.none { it in lower }) return null

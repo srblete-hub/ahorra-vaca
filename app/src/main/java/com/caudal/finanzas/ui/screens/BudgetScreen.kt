@@ -476,7 +476,7 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             }
         }
     }
-    MoveSelectionBar(Modifier.align(Alignment.BottomCenter).padding(bottom = args.contentPadding.calculateBottomPadding()))
+    MoveSelectionBar(Modifier.align(Alignment.BottomCenter).padding(bottom = args.contentPadding.calculateBottomPadding()), onMerge = { ids, name -> vm.mergeExpenses(ids, name) })
     }
 }
 

@@ -230,3 +230,71 @@ fun MonthCompareCard(c: MonthCompare) {
         }
     }
 }
+
+// ---------- Revolut: ¿en qué lo gastaste? ----------
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun RevolutAskCard(e: com.caudal.finanzas.data.Expense, onPick: (com.caudal.finanzas.domain.SpendTag) -> Unit, onTransfer: () -> Unit) {
+    val money = LocalMoney.current
+    val options = listOf(
+        com.caudal.finanzas.domain.SpendTag.FOOD, com.caudal.finanzas.domain.SpendTag.LEISURE, com.caudal.finanzas.domain.SpendTag.CLOTHES,
+        com.caudal.finanzas.domain.SpendTag.SUPER, com.caudal.finanzas.domain.SpendTag.TRANSPORT, com.caudal.finanzas.domain.SpendTag.SHOPPING,
+        com.caudal.finanzas.domain.SpendTag.TRAVEL, com.caudal.finanzas.domain.SpendTag.OTHER,
+    )
+    CardBox {
+        Header(Icons.Filled.Savings, Vaca.Pasto, Vaca.Prado, "¿En qué gastaste lo de Revolut?", "${money.format(e.amount)} el ${e.epochDay.let { java.time.LocalDate.ofEpochDay(it) }.let { "${it.dayOfMonth}/${it.monthValue}" }}")
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { t ->
+                Row(
+                    Modifier.clip(CircleShape).background(t.color().copy(alpha = 0.13f)).clickable { onPick(t) }.padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(t.icon(), null, Modifier.size(16.dp), tint = t.color())
+                    Spacer(Modifier.width(8.dp))
+                    Text(t.label, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Si solo lo moviste a tu cuenta de Revolut, no es un gasto.", Modifier.weight(1f), fontSize = 12.sp, color = P.muted)
+            Spacer(Modifier.width(8.dp))
+            Pill("Era un traspaso", false, onTransfer)
+        }
+    }
+}
+
+// ---------- Tus límites por categoría ----------
+
+/** Cuánto llevas en cada tipo de gasto este mes frente a tu límite (los que pusiste tú primero). */
+@Composable
+fun TagLimitsCard(items: List<com.caudal.finanzas.domain.TagBudget>, onEdit: (com.caudal.finanzas.domain.SpendTag) -> Unit) {
+    val money = LocalMoney.current
+    val shown = (items.filter { it.fixedByYou != null } + items.filter { it.fixedByYou == null && it.monthly > 0 }.sortedByDescending { it.spent / it.monthly })
+        .distinctBy { it.tag }.take(5)
+    if (shown.isEmpty()) return
+    CardBox {
+        Column {
+            Text("Tus límites del mes", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = P.ink)
+            Text("Toca uno para cambiarlo (por ejemplo, ropa 100 € al mes)", fontSize = 14.sp, color = P.muted)
+        }
+        shown.forEach { b ->
+            val frac = if (b.monthly > 0) b.spent / b.monthly else 0.0
+            val over = frac > 1
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { onEdit(b.tag) }.padding(vertical = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(b.tag.color().copy(alpha = 0.13f)), contentAlignment = Alignment.Center) {
+                        Icon(b.tag.icon(), null, Modifier.size(16.dp), tint = b.tag.color())
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Text(b.tag.label + if (b.fixedByYou != null) "" else " · sugerido", Modifier.weight(1f), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = P.ink)
+                    Text("${money.format(b.spent)} de ${money.format(b.monthly)}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = if (over) Vaca.UbreFuerte else P.ink)
+                }
+                Spacer(Modifier.height(8.dp))
+                Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(P.chip)) {
+                    Box(Modifier.fillMaxWidth(frac.coerceIn(0.0, 1.0).toFloat()).height(8.dp).clip(CircleShape).background(if (over) Vaca.Ubre else b.tag.color()))
+                }
+            }
+        }
+    }
+}

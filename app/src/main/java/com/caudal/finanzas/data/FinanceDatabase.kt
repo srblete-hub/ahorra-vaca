@@ -93,7 +93,8 @@ interface FinanceDao {
     @Query("SELECT * FROM bills ORDER BY day, id")
     fun bills(): Flow<List<RecurringBill>>
 
-    @Upsert suspend fun upsertBill(bill: RecurringBill)
+    /** Devuelve el id nuevo al crear (−1 si solo actualiza). */
+    @Upsert suspend fun upsertBill(bill: RecurringBill): Long
     @Delete suspend fun deleteBill(bill: RecurringBill)
 
     @Query("SELECT * FROM income_sources ORDER BY variable, dayFrom, id")

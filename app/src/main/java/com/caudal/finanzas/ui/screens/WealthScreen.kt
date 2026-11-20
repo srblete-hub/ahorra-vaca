@@ -195,12 +195,6 @@ fun WealthScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             } else item { SavingsGoalCard(null) { args.onEdit(Editing.GoalForm(null)) } }
             com.caudal.finanzas.domain.TypicalSpend.of(d)?.let { t -> item(key = "typical") { TypicalMonthCard(t) } }
             planning?.goals?.takeIf { it.isNotEmpty() }?.let { gs -> item(key = "goal-rings") { GoalsRingList(gs) { args.onEdit(Editing.GoalForm(it)) } } }
-            cash?.let { c -> item(key = "cash-plan-w") {
-                CashPlanCard(
-                    c, onCushion = { vm.setBankBuffer(it) },
-                    onMoveFromSavings = if (savings != null && !settings.savingsLocked) ({ args.onEdit(Editing.TransferForm(savings.id)) }) else null,
-                )
-            } }
         }
 
         item {

@@ -339,7 +339,8 @@ object PepeBot {
             SpendTag.SUPER to listOf("super", "mercadona", "compra"),
             SpendTag.LEISURE to listOf("ocio", "cine", "fiesta", "salir"),
             SpendTag.TRANSPORT to listOf("transporte", "gasolina", "uber", "metro", "coche"),
-            SpendTag.SHOPPING to listOf("ropa", "compras", "amazon", "vinted"),
+            SpendTag.CLOTHES to listOf("ropa", "zapatillas", "vinted", "zara"),
+            SpendTag.SHOPPING to listOf("compras", "amazon"),
             SpendTag.SPORT to listOf("deporte", "gimnasio", "gym", "padel", "futbol"),
         )
         return words.entries.firstOrNull { (_, ws) -> ws.any { " $it" in q } }?.key

@@ -293,7 +293,7 @@ fun BillSheet(
     categories: List<Category>,
     accounts: List<Account>,
     currency: String,
-    onSave: (com.caudal.finanzas.data.RecurringBill) -> Unit,
+    onSave: (com.caudal.finanzas.data.RecurringBill, Boolean) -> Unit,
     onDelete: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
@@ -311,6 +311,10 @@ fun BillSheet(
     val value = amount.toAmount()
     val dayNum = day.toIntOrNull()?.takeIf { it in 1..31 }
     val trialNum = trialDays.toIntOrNull()?.takeIf { it in 0..400 }
+    // ¿El cobro de este mes ya ha llegado? Entonces se puede descontar ya (si no, se descuenta solo el día que toque).
+    val dueThisMonth = dayNum != null && !yearly && dayNum <= today.dayOfMonth
+    // Al crearlo viene marcado; al editar uno que ya tenías, no (para no cobrarlo dos veces sin querer).
+    var payNow by remember { mutableStateOf(initial.id == 0L) }
     val es = java.util.Locale.forLanguageTag("es-ES")
 
     FormSheet(
@@ -319,7 +323,7 @@ fun BillSheet(
             onSave(initial.copy(
                 name = name.trim(), amount = value!!, day = dayNum!!, yearly = yearly, month = month, categoryId = categoryId, accountId = accountId,
                 remind = remind, trialEnds = if (trial) today.toEpochDay() + trialNum!! else null,
-            ))
+            ), dueThisMonth && payNow && !trial && accountId != null)
         },
         primaryEnabled = name.isNotBlank() && value != null && value > 0 && dayNum != null && categories.any { it.id == categoryId } && (!trial || trialNum != null),
         onDelete = onDelete,
@@ -336,6 +340,10 @@ fun BillSheet(
                 }
             }
         }
+        if (dueThisMonth && !trial) SwitchRow(
+            if (initial.id == 0L) "Ya me lo han cobrado este mes" else "Descontar el cobro de este mes", if (accountId != null) "Descontarlo ahora de la cuenta. Los próximos meses se descuenta solo el día $dayNum" else "Elige abajo de qué cuenta sale para descontarlo",
+            payNow,
+        ) { payNow = it }
         SwitchRow("Avisarme antes de cada cobro", "Te llega un aviso unos días antes (lo eliges en Tus suscripciones)", remind) { remind = it }
         SwitchRow("Es una prueba gratis", "Te aviso antes de que acabe para que la canceles si no la quieres", trial) { trial = it }
         if (trial) TextInput(trialDays, { trialDays = it.filter(Char::isDigit).take(3) }, "Días de prueba que te quedan", keyboardType = KeyboardType.Number)

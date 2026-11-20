@@ -39,7 +39,7 @@ object Budgeting {
     /** Reparto de partida si aún no hay historial. */
     private val DEFAULT_WEIGHTS = mapOf(
         SpendTag.SUPER to 35.0, SpendTag.FOOD to 15.0, SpendTag.TRANSPORT to 12.0, SpendTag.LEISURE to 10.0,
-        SpendTag.SHOPPING to 10.0, SpendTag.HEALTH to 5.0, SpendTag.SUBSCRIPTIONS to 3.0, SpendTag.OTHER to 10.0,
+        SpendTag.SHOPPING to 5.0, SpendTag.CLOTHES to 5.0, SpendTag.HEALTH to 5.0, SpendTag.SUBSCRIPTIONS to 3.0, SpendTag.OTHER to 10.0,
     )
 
     /** "TRANSPORT:30:W;SUPER:250:M" ↔ límites. Sin nada guardado: gasolina 30 € a la semana. */
@@ -283,10 +283,10 @@ object SavingProfile {
     fun weights(style: Int, goals: Set<String>): Map<SpendTag, Double>? {
         if (style < 0) return null
         val w = when (style) {
-            0 -> mutableMapOf(SpendTag.SUPER to 30.0, SpendTag.FOOD to 18.0, SpendTag.TRANSPORT to 12.0, SpendTag.LEISURE to 14.0, SpendTag.SHOPPING to 12.0, SpendTag.HEALTH to 5.0, SpendTag.SUBSCRIPTIONS to 4.0, SpendTag.OTHER to 5.0)
-            1 -> mutableMapOf(SpendTag.SUPER to 35.0, SpendTag.FOOD to 14.0, SpendTag.TRANSPORT to 12.0, SpendTag.LEISURE to 11.0, SpendTag.SHOPPING to 10.0, SpendTag.HEALTH to 6.0, SpendTag.SUBSCRIPTIONS to 4.0, SpendTag.OTHER to 8.0)
-            2 -> mutableMapOf(SpendTag.SUPER to 42.0, SpendTag.FOOD to 10.0, SpendTag.TRANSPORT to 13.0, SpendTag.LEISURE to 8.0, SpendTag.SHOPPING to 7.0, SpendTag.HEALTH to 7.0, SpendTag.SUBSCRIPTIONS to 3.0, SpendTag.OTHER to 10.0)
-            else -> mutableMapOf(SpendTag.SUPER to 48.0, SpendTag.FOOD to 6.0, SpendTag.TRANSPORT to 14.0, SpendTag.LEISURE to 5.0, SpendTag.SHOPPING to 5.0, SpendTag.HEALTH to 8.0, SpendTag.SUBSCRIPTIONS to 2.0, SpendTag.OTHER to 12.0)
+            0 -> mutableMapOf(SpendTag.SUPER to 30.0, SpendTag.FOOD to 18.0, SpendTag.TRANSPORT to 12.0, SpendTag.LEISURE to 14.0, SpendTag.SHOPPING to 6.0, SpendTag.CLOTHES to 6.0, SpendTag.HEALTH to 5.0, SpendTag.SUBSCRIPTIONS to 4.0, SpendTag.OTHER to 5.0)
+            1 -> mutableMapOf(SpendTag.SUPER to 35.0, SpendTag.FOOD to 14.0, SpendTag.TRANSPORT to 12.0, SpendTag.LEISURE to 11.0, SpendTag.SHOPPING to 5.0, SpendTag.CLOTHES to 5.0, SpendTag.HEALTH to 6.0, SpendTag.SUBSCRIPTIONS to 4.0, SpendTag.OTHER to 8.0)
+            2 -> mutableMapOf(SpendTag.SUPER to 42.0, SpendTag.FOOD to 10.0, SpendTag.TRANSPORT to 13.0, SpendTag.LEISURE to 8.0, SpendTag.SHOPPING to 3.5, SpendTag.CLOTHES to 3.5, SpendTag.HEALTH to 7.0, SpendTag.SUBSCRIPTIONS to 3.0, SpendTag.OTHER to 10.0)
+            else -> mutableMapOf(SpendTag.SUPER to 48.0, SpendTag.FOOD to 6.0, SpendTag.TRANSPORT to 14.0, SpendTag.LEISURE to 5.0, SpendTag.SHOPPING to 2.5, SpendTag.CLOTHES to 2.5, SpendTag.HEALTH to 8.0, SpendTag.SUBSCRIPTIONS to 2.0, SpendTag.OTHER to 12.0)
         }
         fun move(from: SpendTag, to: SpendTag, pts: Double) { val take = minOf(pts, w[from] ?: 0.0); w[from] = (w[from] ?: 0.0) - take; w[to] = (w[to] ?: 0.0) + take }
         if (LifeGoal.TRAVEL.name in goals) { move(SpendTag.SHOPPING, SpendTag.TRAVEL, 3.0); move(SpendTag.LEISURE, SpendTag.TRAVEL, 2.0) }

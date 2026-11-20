@@ -60,4 +60,19 @@ class PaymentParserTest {
         assertNull(bank("BBVA", "Tu saldo disponible es 2.340,10 €"))
         assertNull(bank("BBVA", "Compra en Mercadona"))
     }
+
+    @Test fun emailsAndRefundsAreNotExpenses() {
+        // Un correo de confirmación de pedido no es un cargo.
+        assertNull(PaymentParser.parse("Amazon.es", "Tu pedido de 34,99 € ha sido enviado. pedidos@amazon.es", isWallet = false))
+        assertNull(PaymentParser.parse("RE: Factura", "Adjunto el pago de 120 € del mes", isWallet = false))
+        // Una devolución no es un gasto…
+        assertNull(PaymentParser.parse("Santander", "Te hemos reembolsado 23,45 € de ZARA", isWallet = false))
+        assertNull(PaymentParser.parse("Santander", "Devuelto: 15,00 € en AMAZON", isWallet = false))
+        // …pero se reconoce para apuntarla como ingreso.
+        val r = PaymentParser.parseRefund("Santander", "Te hemos reembolsado 23,45 € en ZARA")
+        assertEquals(23.45, r!!.amount, 0.001)
+        assertTrue(PaymentParser.looksLikeEmail("Factura", "info@tienda.com"))
+        // Un pago normal sigue funcionando.
+        assertEquals(12.5, PaymentParser.parse("Santander", "Compra con tarjeta de 12,50 € en MERCADONA", isWallet = false)!!.amount, 0.001)
+    }
 }

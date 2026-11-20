@@ -1,5 +1,7 @@
 package com.caudal.finanzas.ui.screens
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -477,10 +479,15 @@ fun LazyListScope.statsSection(
 
 /** Barra con la suma de los movimientos seleccionados (gastos, ingresos y el neto). */
 @Composable
-fun MoveSelectionBar(modifier: Modifier = Modifier) {
+fun MoveSelectionBar(modifier: Modifier = Modifier, onMerge: ((List<Long>, String) -> Unit)? = null) {
     val picked = MoveSelection.picked.values.toList()
     if (picked.isEmpty()) return
     val money = LocalMoney.current
+    var naming by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val expenseIds = picked.filter { it.kind == MoveKind.EXPENSE }.mapNotNull { it.key.removePrefix("e").toLongOrNull() }
+    if (naming && onMerge != null) MergeDialog(picked.filter { it.kind == MoveKind.EXPENSE }, onDismiss = { naming = false }) { name ->
+        onMerge(expenseIds, name); naming = false; MoveSelection.clear()
+    }
     val out = picked.filter { it.kind == MoveKind.EXPENSE }.sumOf { -it.amount }
     val inc = picked.filter { it.kind == MoveKind.INCOME }.sumOf { it.amount }
     val transfers = picked.count { it.kind == MoveKind.TRANSFER }
@@ -502,6 +509,14 @@ fun MoveSelectionBar(modifier: Modifier = Modifier) {
             )
         }
         Spacer(Modifier.width(8.dp))
+        // Juntar en un evento: la entrada, las palomitas y la bebida del cine, en un solo "Cine jueves".
+        if (onMerge != null && expenseIds.size >= 2) {
+            Box(
+                Modifier.clip(CircleShape).background(Color(0xFFDCEBD3)).clickable { naming = true }.padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) { Text("Juntar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1F4D2C)) }
+            Spacer(Modifier.width(8.dp))
+        }
         Box(
             Modifier.clip(CircleShape).background(Color.White).clickable { MoveSelection.clear() }.padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center,
@@ -559,4 +574,30 @@ private fun AnalyticsHeader(a: com.caudal.finanzas.domain.Analytics) {
 private fun compactEuros(v: Double): String = when {
     v >= 1000 -> String.format(java.util.Locale.forLanguageTag("es-ES"), "%.1fK", v / 1000).replace(",0K", "K")
     else -> Math.round(v).toString()
+}
+
+/** Nombre del evento al juntar pagos. Propone "Cine jueves" a partir del primero y del día. */
+@Composable
+private fun MergeDialog(items: List<MoveItem>, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    val es = java.util.Locale.forLanguageTag("es-ES")
+    val first = items.minByOrNull { it.createdAt }
+    val suggestion = first?.let { f ->
+        val what = f.tag?.takeIf { it != SpendTag.OTHER }?.label ?: f.title
+        "$what ${f.day.dayOfWeek.getDisplayName(JTextStyle.FULL, es)}"
+    } ?: "Evento"
+    var name by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(suggestion) }
+    val money = LocalMoney.current
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = P.card,
+        title = { Text("Juntar en un evento", fontWeight = FontWeight.Bold, color = P.ink) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("${items.size} pagos · ${money.format(items.sumOf { -it.amount })}. Quedan como uno solo, con el detalle dentro.", fontSize = 14.sp, color = P.muted)
+                com.caudal.finanzas.ui.TextInput(name, { name = it }, "Nombre (Cine jueves, Cena con Juanpa…)")
+            }
+        },
+        confirmButton = { androidx.compose.material3.TextButton(onClick = { if (name.isNotBlank()) onSave(name.trim()) }) { Text("Juntar", color = P.gain, fontWeight = FontWeight.Bold) } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancelar", color = P.muted) } },
+    )
 }

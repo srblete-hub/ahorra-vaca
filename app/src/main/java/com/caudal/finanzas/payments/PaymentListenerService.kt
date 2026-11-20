@@ -32,6 +32,8 @@ class PaymentListenerService : NotificationListenerService() {
         if (n.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
 
         val pkg = sbn.packageName
+        // Correo, mensajería y redes: nunca son un pago (aunque leas avisos de cualquier app).
+        if (pkg in PaymentParser.NEVER_APPS) return
         val wallet = PaymentParser.WALLET_APPS[pkg]
         val appName = wallet ?: PaymentParser.BANK_APPS[pkg] ?: if (settings.cardAnyApp) pkg else return
 
@@ -42,6 +44,14 @@ class PaymentListenerService : NotificationListenerService() {
             if (PaymentParser.signature(b.raw) in settings.ignoredPayments) return
             scope.launch { PaymentRecorder.recordBizum(applicationContext, b, appName) }
             return
+        }
+        // Una devolución del banco o de la cartera: es dinero que vuelve, se apunta como ingreso.
+        if (!PaymentParser.looksLikeEmail(title, text) && (wallet != null || PaymentParser.BANK_APPS.containsKey(pkg))) {
+            PaymentParser.parseRefund(title, text)?.let { r ->
+                if (PaymentParser.signature(r.raw) in settings.ignoredPayments) return
+                scope.launch { PaymentRecorder.recordRefund(applicationContext, r) }
+                return
+            }
         }
         val payment = PaymentParser.parse(title, text, isWallet = wallet != null) ?: return
         // Avisos que marcaste como "no era un pago": no se vuelven a apuntar.
@@ -90,12 +100,26 @@ object PaymentRecorder {
 
     private const val DUPLICATE_WINDOW_MS = 3 * 60_000L
 
+    /** Devolución: ingreso en la cuenta de la tarjeta ("Devolución · Amazon"), sin repetir el mismo aviso. */
+    suspend fun recordRefund(context: Context, r: DetectedPayment, now: Long = System.currentTimeMillis()) {
+        val settings = Prefs.get(context).settings.value
+        if (!r.currency.equals(settings.currency, ignoreCase = true)) return
+        val dao = FinanceDatabase.get(context).dao()
+        val note = "Devolución" + (r.merchant?.let { " · $it" } ?: "")
+        if (dao.incomes().first().any { kotlin.math.abs(it.amount - r.amount) < 0.005 && it.note == note && now - it.createdAt < 10 * 60_000 }) return
+        val accountId = settings.cardAccountId.takeIf { id -> id != Settings.NONE && dao.accounts().first().any { it.id == id } }
+        dao.saveIncome(com.caudal.finanzas.data.Income(sourceId = null, amount = r.amount, note = note, epochDay = LocalDate.now().toEpochDay(), accountId = accountId, createdAt = now))
+    }
+
     /** Devuelve el gasto apuntado, o null si se descartó (otra moneda o repetido). */
     suspend fun record(context: Context, payment: DetectedPayment, appName: String, now: Long = System.currentTimeMillis()): Expense? {
         val settings = Prefs.get(context).settings.value
         if (!payment.currency.equals(settings.currency, ignoreCase = true)) return null
         val dao = FinanceDatabase.get(context).dao()
         if (dao.recentCardPayments(payment.amount, now - DUPLICATE_WINDOW_MS) > 0) return null
+        // Si es el cargo de un recibo que la app ya descontó sola (mismo importe, últimos 3 días), no se apunta otra vez.
+        val since = LocalDate.now().minusDays(3).toEpochDay()
+        if (dao.allExpenses().first().any { it.billId != null && it.epochDay >= since && kotlin.math.abs(it.amount - payment.amount) <= maxOf(0.05, it.amount * 0.1) }) return null
 
         val categories = dao.categories().first()
         // Se clasifica solo: por cómo clasificaste ese comercio antes o por palabras clave.

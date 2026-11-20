@@ -147,7 +147,7 @@ class FriendsWrappedTest {
         assertEquals("Bar Pepe", Merchants.clean("SUMUP *BAR PEPE"))
         assertEquals("Mercadona", Merchants.clean("MERCADONA 2345 MADRID"))
         assertEquals("Cafeteria Luna", Merchants.clean("CAFETERIA LUNA 23"))
-        assertEquals(SpendTag.SHOPPING, Classifier.guess("MPVinted*"))
+        assertEquals(SpendTag.CLOTHES, Classifier.guess("MPVinted*"))
         assertEquals(SpendTag.TRANSPORT, Classifier.guess("TELPARK"))
         val t = 1_000_000L
         val a = Expense(1, 1, 12.5, "Bar", 100, createdAt = t)
@@ -184,7 +184,7 @@ class FriendsWrappedTest {
         )
         val fmt: (Double) -> String = { "%.2f €".format(java.util.Locale.ROOT, it) }
         val c = BuyChecker.of("Camiseta Eme Studio", 25.0, d, null, null, null, fmt)
-        assertEquals(SpendTag.SHOPPING, c.tag)
+        assertEquals(SpendTag.CLOTHES, c.tag)
         // 1.600 € / 160 h = 10 €/h → 25 € son 2 h 30 min.
         assertEquals("2 h 30 min", c.facts.first { it.title == "Horas de trabajo" }.value)
         assertTrue(c.facts.any { it.value == "= 11 × Monster Energy" })

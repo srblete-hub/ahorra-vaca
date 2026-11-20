@@ -168,3 +168,19 @@ object MonthComparer {
         return MonthCompare(month, days, a.sumOf { it.amount }, b.sumOf { it.amount }, rows)
     }
 }
+
+// ---------- Revolut ----------
+
+/**
+ * Lo que pasas a Revolut suele ser para pagar otra cosa con su tarjeta. Si en tus movimientos hay un pago
+ * a Revolut sin repartir (la nota solo dice "Revolut"), la app te pregunta en qué se gastó.
+ */
+object RevolutAsk {
+    fun pending(d: FinanceData): List<Expense> = d.spending
+        .filter { e ->
+            val n = Classifier.normalize(e.note)
+            "revolut" in n && "·" !in e.note && e.epochDay >= d.today.minusDays(30).toEpochDay() &&
+                (e.tag.isBlank() || e.tag == SpendTag.OTHER.name)
+        }
+        .sortedByDescending { it.epochDay }
+}

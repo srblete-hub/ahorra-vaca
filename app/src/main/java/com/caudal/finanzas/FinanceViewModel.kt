@@ -121,6 +121,29 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
     fun setBalance(account: Account, balance: Double) = viewModelScope.launch { dao.upsertAccount(account.copy(balance = balance)) }
 
     fun save(bill: RecurringBill) = viewModelScope.launch { dao.upsertBill(bill) }
+
+    /**
+     * Guarda un gasto fijo. Si es nuevo, los cobros desde hoy se descuentan solos; con [payNow], el de este mes
+     * (que ya te han cobrado) se descuenta ahora de su cuenta.
+     */
+    fun saveBill(bill: RecurringBill, payNow: Boolean) = viewModelScope.launch {
+        val newId = dao.upsertBill(bill)
+        val id = if (bill.id != 0L) bill.id else newId
+        val app: android.app.Application = getApplication()
+        if (bill.id == 0L) com.caudal.finanzas.payments.BillCharger.markSeen(app, id)
+        if (payNow) {
+            val today = java.time.LocalDate.now()
+            val m = YearMonth.from(today)
+            val due = m.atDay(minOf(bill.day, m.lengthOfMonth())).let { if (it.isAfter(today)) today else it }
+            dao.saveExpense(
+                Expense(
+                    categoryId = bill.categoryId, amount = bill.amount, note = bill.name, epochDay = due.toEpochDay(), accountId = bill.accountId,
+                    billId = id, tag = if (com.caudal.finanzas.domain.BillReminders.isSubscription(bill)) com.caudal.finanzas.domain.SpendTag.SUBSCRIPTIONS.name else "",
+                ),
+            )
+            _messages.emit("Descontado: ${bill.name}")
+        }
+    }
     fun delete(bill: RecurringBill) = viewModelScope.launch { dao.deleteBill(bill) }
 
     /** Apunta el pago de este mes de un gasto fijo (y lo descuenta de su cuenta). */
@@ -465,6 +488,8 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
         }
         viewModelScope.launch { applyMonthlyInterest() }
         viewModelScope.launch { markPaidSalary() }
+        // Suscripciones y recibos cuyo día de cobro ha llegado: se descuentan solos.
+        viewModelScope.launch { runCatching { com.caudal.finanzas.payments.BillCharger.chargeDue(getApplication()) } }
     }
 
     /**
@@ -495,6 +520,30 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
 
     fun save(expense: Expense) = viewModelScope.launch { dao.saveExpense(expense) }
     fun delete(expense: Expense) = viewModelScope.launch { dao.removeExpense(expense) }
+
+    /**
+     * Junta varios gastos en uno ("Cine jueves"): suma los importes, guarda el detalle en el texto y borra los sueltos.
+     * El dinero que sale de cada cuenta no cambia, porque cada cuenta conserva lo suyo si eran de cuentas distintas.
+     */
+    fun mergeExpenses(ids: List<Long>, name: String) = viewModelScope.launch {
+        val all = allExpenses.value.filter { it.id in ids }.sortedBy { it.createdAt }
+        if (all.size < 2) return@launch
+        // Si vienen de cuentas distintas, se junta por cuenta para no descuadrar saldos.
+        all.groupBy { it.accountId }.values.forEach { group ->
+            if (group.size < 2) return@forEach
+            val base = group.first()
+            val detail = "Evento: " + group.joinToString(" · ") { "${com.caudal.finanzas.domain.Merchants.clean(it.note).ifBlank { "pago" }} ${"%.2f".format(java.util.Locale.forLanguageTag("es-ES"), it.amount)} €" }
+            group.forEach { dao.removeExpense(it) }
+            dao.saveExpense(base.copy(id = 0, amount = group.sumOf { it.amount }, note = name, rawText = detail.take(300), fromCard = false))
+        }
+        _messages.emit("Juntado en \"$name\"")
+    }
+
+    /** Lo que pasaste a Revolut: dices en qué se gastó y queda con su tipo ("Revolut · Ocio"). */
+    fun assignRevolut(e: Expense, tag: com.caudal.finanzas.domain.SpendTag) = viewModelScope.launch {
+        val cat = com.caudal.finanzas.domain.Classifier.bucketFor(tag, categories.value) ?: e.categoryId
+        dao.saveExpense(e.copy(tag = tag.name, note = "Revolut · ${tag.label}", categoryId = cat))
+    }
 
     /** Deslizar para refrescar en la ficha: vuelve a pedir precio, gráfico y estadísticas (gratis). */
     fun reloadAsset(symbol: String, id: String, isCrypto: Boolean, days: Int, candles: Boolean, cur: String?) {

@@ -83,7 +83,7 @@ private fun Ring(fraction: Double, color: Color, optimal: Double?, size: Dp, con
 
 /** El panel: gasto de la semana y presión de gasto. Cada cuadro abre su ficha ([onOpen] con su clave). */
 @Composable
-fun PulseHeader(p: Pulse, onOpen: (String) -> Unit) {
+fun PulseHeader(p: Pulse, typical: com.caudal.finanzas.domain.TypicalMonth? = null, onOpen: (String) -> Unit) {
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(Bg).padding(vertical = 24.dp, horizontal = 12.dp)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MonitorBox("GASTO DE\nLA SEMANA", Modifier.weight(1f), { onOpen("week") }) {
@@ -97,15 +97,26 @@ fun PulseHeader(p: Pulse, onOpen: (String) -> Unit) {
                     Text("óptimo hoy: ${p.optimalScore.toInt()}", color = Color(0xFFFFFDF8).copy(alpha = 0.8f), fontSize = 14.sp)
                 }
             }
-            MonitorBox("PRESIÓN\nDE GASTO", Modifier.weight(1f), { onOpen("pressure") }) {
-                val c = zoneColor(p.pressureZone)
-                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(c.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
-                    Text(String.format(es, "%.1f", p.pressure), color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            // Ritmo del mes: lo gastado hasta hoy frente a lo que sueles llevar a estas alturas (sin fijos).
+            MonitorBox("RITMO\nDEL MES", Modifier.weight(1f), { onOpen("rhythm") }) {
+                val idx = typical?.let { t -> (t.now.size - 1).coerceIn(0, t.typical.size - 1) }
+                val expected = if (typical != null && idx != null) typical.typical[idx] else 0.0
+                val diff = typical?.let { t -> t.now.last() - expected }
+                val zone = when {
+                    diff == null || diff <= 0 -> Zone.GREEN
+                    diff <= expected * 0.15 -> Zone.YELLOW
+                    else -> Zone.RED
                 }
-                Spacer(Modifier.width(8.dp))
+                val c = zoneColor(zone)
                 Column {
-                    Text(p.pressureLabel, color = c, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
-                    Text("hoy", color = Color(0xFFFFFDF8).copy(alpha = 0.8f), fontSize = 14.sp)
+                    Text(
+                        if (diff == null) "—" else (if (diff > 0) "+" else "−") + String.format(es, "%.0f €", kotlin.math.abs(diff)),
+                        color = c, fontWeight = FontWeight.Bold, fontSize = 20.sp,
+                    )
+                    Text(
+                        when { diff == null -> "aún sin meses"; diff > 0 -> "sobre lo normal"; else -> "bajo lo normal" },
+                        color = Color(0xFFFFFDF8).copy(alpha = 0.8f), fontSize = 14.sp,
+                    )
                 }
             }
         }

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Redeem
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material.icons.filled.SwapHoriz
@@ -67,6 +68,7 @@ fun SpendTag.color(): Color = when (this) {
     SpendTag.HOME -> Color(0xFF5E5CE6)
     SpendTag.SUBSCRIPTIONS -> Color(0xFFFF375F)
     SpendTag.SHOPPING -> Color(0xFFBF5AF2)
+    SpendTag.CLOTHES -> Color(0xFFE0607A)
     SpendTag.HEALTH -> Color(0xFF30B0C7)
     SpendTag.LEISURE -> Color(0xFFFFD60A)
     SpendTag.SPORT -> Color(0xFF30B0C7)
@@ -84,6 +86,7 @@ fun SpendTag.icon(): ImageVector = when (this) {
     SpendTag.HOME -> Icons.Filled.Home
     SpendTag.SUBSCRIPTIONS -> Icons.Filled.MusicNote
     SpendTag.SHOPPING -> Icons.Filled.ShoppingBag
+    SpendTag.CLOTHES -> Icons.Filled.Checkroom
     SpendTag.HEALTH -> Icons.Filled.FavoriteBorder
     SpendTag.LEISURE -> Icons.Filled.SportsEsports
     SpendTag.SPORT -> Icons.Filled.SportsSoccer

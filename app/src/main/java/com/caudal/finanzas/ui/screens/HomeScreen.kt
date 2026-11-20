@@ -144,7 +144,8 @@ fun ExpenseRow(e: Expense, categories: List<Category>, accounts: List<Account>, 
         leading = {
             Box {
                 val t = e.spendTag()
-                if (cat?.isSavings == true) IconTile(categoryIcon(cat), SeriesColors[1]) else IconTile(t.icon(), t.color())
+                // El logo real del comercio (Alcampo, Zara…) y, si no se encuentra, el icono de su tipo.
+                if (cat?.isSavings == true) IconTile(categoryIcon(cat), SeriesColors[1]) else com.caudal.finanzas.ui.MerchantLogo(e.note, t, 40.dp)
                 if (e.fromCard) {
                     Box(
                         Modifier.align(Alignment.BottomEnd).size(16.dp).clip(CircleShape).background(P.card).padding(2.dp).clip(CircleShape).background(P.brand),
@@ -307,10 +308,41 @@ fun HomeScreen(
                 )
             }
 
-            // ---------- Panel: colchón, margen y gasto de la semana ----------
+            // ---------- Suscripciones, justo debajo de los movimientos ----------
+            if (p != null) {
+                val subs = com.caudal.finanzas.domain.BillReminders.upcoming(p.data, p.data.bills.filter(com.caudal.finanzas.domain.BillReminders::isSubscription))
+                val pendingSubs = com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.actions?.count { it.key !in settings.reviewedSubs } ?: 0
+                item(key = "subs-check") { SubscriptionsCard(subs, p.data.today, pendingSubs) { subsOpen = true } }
+            }
+
+            // ---------- Revolut: ¿en qué te gastaste lo que pasaste? ----------
+            if (p != null) com.caudal.finanzas.domain.RevolutAsk.pending(p.data).firstOrNull()?.let { e ->
+                item(key = "revolut-${e.id}") {
+                    RevolutAskCard(
+                        e, onPick = { tag -> vm.assignRevolut(e, tag) },
+                        onTransfer = { args.onEdit(Editing.ConvertTransfer(e)) },
+                    )
+                }
+            }
+
+            // ---------- Pepe ----------
+            if (p != null) item {
+                val pepeTip = remember(p, settings.bankBuffer) {
+                    com.caudal.finanzas.domain.PepeBot.tips(
+                        com.caudal.finanzas.domain.PepeBot.Ctx(p.data, com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer), p.goals.firstOrNull(), settings.userName, money::format),
+                    ).firstOrNull()
+                }
+                PepeCard(pepeTip) { q -> pepeAsk = q }
+            }
+
+            // ---------- Edad financiera, debajo de Pepe ----------
+            item { FinancialAgeMini(p?.age) { args.onOpen(Overlay.AGE) } }
+
+            // ---------- Panel: gasto de la semana y ritmo del mes ----------
             if (p != null) {
                 val pulse = com.caudal.finanzas.domain.PulseCalculator.of(p.data, p.budget, p.bankPlan, money::format)
-                item { PulseHeader(pulse) { pulseInfo = it } }
+                val typical = com.caudal.finanzas.domain.TypicalSpend.of(p.data)
+                item { PulseHeader(pulse, typical) { if (it == "rhythm") onOpenTab(Tab.BUDGET) else pulseInfo = it } }
                 pulseInfo?.let { key ->
                     item(key = "pulse-info") { PulseInfoSheet(key, pulse) { pulseInfo = null } }
                 }
@@ -333,14 +365,9 @@ fun HomeScreen(
                 }
             }
 
-            // ---------- Pregúntale a Pepe (contesta Claude con tu suscripción) ----------
-            if (p != null) item {
-                val pepeTip = remember(p, settings.bankBuffer) {
-                    com.caudal.finanzas.domain.PepeBot.tips(
-                        com.caudal.finanzas.domain.PepeBot.Ctx(p.data, com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer), p.goals.firstOrNull(), settings.userName, money::format),
-                    ).firstOrNull()
-                }
-                PepeCard(pepeTip) { q -> pepeAsk = q }
+            // ---------- Tus límites por categoría (ropa 100 €/mes…) ----------
+            if (p != null) p.budget?.let { b ->
+                item(key = "tag-limits") { TagLimitsCard(b.items, onEdit = { args.onEdit(Editing.TagLimitForm(it)) }) }
             }
 
             // ---------- Recibos que pasan en los próximos días ----------
@@ -349,16 +376,8 @@ fun HomeScreen(
                 item(key = "upcoming-bills") { UpcomingBillsCard(up, bank, p.data.today) }
             }
 
-            // ---------- Tu dinero hasta la nómina (visual) ----------
+            // Pepe te recomienda pasar lo que sobra por encima del colchón a tu ahorro.
             if (p != null) com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer)?.let { c ->
-                val savingsId = p.data.accounts.filter { it.isSaving() }.maxByOrNull { it.balance }?.id
-                item(key = "cash-plan") {
-                    CashPlanCard(
-                        c, onCushion = { vm.setBankBuffer(it) },
-                        onMoveFromSavings = if (savingsId != null && !settings.savingsLocked) ({ args.onEdit(Editing.TransferForm(savingsId)) }) else null,
-                    )
-                }
-                // Pepe te recomienda: pasar lo que sobra por encima del colchón a tu ahorro.
                 val tip = com.caudal.finanzas.domain.PepeSuggest.of(p.data, c, p.goals.firstOrNull(), money::format)
                 if (tip != null && settings.weeklyTip && settings.pepeTipHiddenWeek != com.caudal.finanzas.domain.PepeSuggest.weekKey(LocalDate.now())) item(key = "pepe-tip") {
                     PepeTipCard(tip, onMove = { vm.moveMoney(tip.fromId, tip.toId, tip.amount, "Pepe: al ahorro") }, onLater = { vm.hidePepeTip() })
@@ -367,12 +386,6 @@ fun HomeScreen(
             // Lectura semanal: en qué se te fue el dinero sin darte cuenta.
             if (p != null) com.caudal.finanzas.domain.WeeklyReader.of(p.data, money::format)?.let { r ->
                 item(key = "weekly-read") { WeeklyReadCard(r, onLimit = { args.onEdit(Editing.TagLimitForm(it)) }, onDetails = { args.onEdit(Editing.TagDetail(it)) }) }
-            }
-            // Suscripciones: cuánto pagas, el próximo cobro y las ideas para pagar menos.
-            if (p != null) {
-                val subs = com.caudal.finanzas.domain.BillReminders.upcoming(p.data, p.data.bills.filter(com.caudal.finanzas.domain.BillReminders::isSubscription))
-                val pending = com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.actions?.count { it.key !in settings.reviewedSubs } ?: 0
-                item(key = "subs-check") { SubscriptionsCard(subs, p.data.today, pending) { subsOpen = true } }
             }
             // Hucha de redondeo: los céntimos de la semana pasada, al ahorro.
             if (p != null) {
@@ -405,36 +418,6 @@ fun HomeScreen(
                 }
             }
 
-            // ---------- Objetivo y edad financiera ----------
-            item {
-                GoalsSection(
-                    p?.goals ?: emptyList(),
-                    swapText = p?.let { remember(it, money) { com.caudal.finanzas.domain.GoalList.swapImpact(it.goalList, it.data, it.bankPlan, money::format) } },
-                    onAdd = { args.onEdit(Editing.GoalForm()) },
-                    onEdit = { args.onEdit(Editing.GoalForm(it)) },
-                    onMove = { i, by -> vm.moveGoal(i, by) },
-                    onApplyPct = null,
-                )
-            }
-
-            // ---------- Edad financiera (más arriba) ----------
-            item { FinancialAgeMini(p?.age) { args.onOpen(Overlay.AGE) } }
-
-            // ---------- Tus ahorros trabajando ----------
-            item {
-                MoneyWorkingSection(
-                    accounts, wealth.available,
-                    suggestedMonthly(income, categories.filter { it.isSavings }.sumOf { it.percent }),
-                    args.onEdit,
-                )
-            }
-
-            // ---------- ¿Lo compro o no? ----------
-            if (p != null) {
-                item { BuyCheckCard { n, pr -> buyCheck = com.caudal.finanzas.domain.BuyChecker.of(n, pr, p.data, p.bankPlan, p.budget, p.goals.firstOrNull(), money::format) } }
-            }
-
-
             // ---------- Ingresos variables: ¿ya sabes cuánto te pagan este mes? ----------
             if (p != null && LocalDate.now().dayOfMonth >= 3) {
                 val m = java.time.YearMonth.now()
@@ -452,14 +435,7 @@ fun HomeScreen(
                 if (anomalies.isNotEmpty()) item { AnomaliesCard(anomalies) { a -> a.expense?.let { args.onEdit(Editing.ExpenseForm(it)) } } }
             }
 
-            // ---------- Nómina, recibos y cambios ----------
-            if (p != null) {
-                com.caudal.finanzas.domain.PaymentOrganizer.analyze(p.data, p.bankPlan, money::format)?.takeIf { it.crunch }?.let { c -> item { BillCalendarCard(c) } }
-                val trends = com.caudal.finanzas.domain.TrendDetector.find(p.data, money::format)
-                if (trends.isNotEmpty()) item { TrendsCard(trends) }
-            }
-
-            // ---------- Análisis y chat ----------
+            // ---------- Atajos: ¿me lo compro? y análisis ----------
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ShortcutCard("¿Me lo compro?", "Mira cómo te afecta", Icons.Filled.ShoppingCart, SeriesColors[4], Modifier.weight(1f)) { args.onOpen(Overlay.PURCHASE) }
@@ -467,109 +443,8 @@ fun HomeScreen(
                 }
             }
 
-            // ---------- Cuentas ----------
-            item { SectionTitle("Cuentas") }
-            item {
-                val total = wealth.total.takeIf { it > 0 } ?: 1.0
-                val rows = accounts.map { a ->
-                    Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { AccountLogo(a.name, 48.dp) },
-                        a.name to (if (a.interestRate > 0) "${pct(a.interestRate)} TAE · ahora +${money.format(com.caudal.finanzas.domain.InterestMath.monthlyInterest(a.balance, a.interestRate))}/mes" else a.type.label),
-                        a.signedBalance() to { args.onOpenAccount(a) },
-                    )
-                } + listOfNotNull(
-                    if (crypto.isNotEmpty()) Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { Initials("₿", Color(0xFFF7931A), 40.dp) },
-                        "Criptomonedas" to "${crypto.size} monedas",
-                        crypto.sumOf { it.amount * it.price } to { onOpenInvest(InvestKind.CRYPTO) },
-                    ) else null,
-                    if (stocks.isNotEmpty()) Triple<@Composable () -> Unit, Pair<String, String>, Pair<Double, () -> Unit>>(
-                        { Initials("↗", Color(0xFFBF5AF2), 40.dp) },
-                        "Acciones y ETF" to "${stocks.size} posiciones",
-                        stocks.sumOf { it.shares * it.price } to { onOpenInvest(InvestKind.STOCKS) },
-                    ) else null,
-                )
-                CardList(rows) { (logo, texts, data) ->
-                    ListRow(
-                        texts.first, subtitle = texts.second, onClick = data.second, leading = logo,
-                        trailing = { AmountTrailing(money.format(data.first), if (data.first >= 0) pct(data.first / total * 100) else "deuda", color = if (data.first < 0) P.loss else P.ink) },
-                    )
-                }
-            }
-            item {
-                MCard(onClick = { onOpenTab(Tab.WEALTH) }, padding = 16.dp) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text("Ver gráficos", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = P.ink)
-                            Text("Por cuenta y evolución de tu patrimonio", fontSize = 14.sp, color = P.muted)
-                        }
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = P.muted)
-                    }
-                }
-            }
-
-            // ---------- Tus criptomonedas y acciones ----------
-            if (crypto.isNotEmpty()) {
-                item { SectionTitle("Tus criptomonedas") }
-                item { HoldingsList(crypto.map { Holding(it.symbol, it.name, it.amount, it.avgBuyPrice, it.price) }) { onOpenInvest(InvestKind.CRYPTO) } }
-            }
-            if (stocks.isNotEmpty()) {
-                item { SectionTitle("Tus acciones") }
-                item { HoldingsList(stocks.map { Holding(it.ticker, it.name.ifBlank { it.ticker }, it.shares, it.avgBuyPrice, it.price) }) { onOpenInvest(InvestKind.STOCKS) } }
-            }
-
-            // ---------- Puedes gastar hoy + futuro ----------
-            if (p != null) {
-                if (p.bankPlan == null) item { SafeToSpendCard(p.safe) }
-                item { FutureMiniCard(p.forecast.points.take(31), onOpenFuture) }
-            }
-
-            if (p != null) {
-                item { WhereDidItGoCard(p.comparison) }
-                item {
-                    val level = p.level
-                    val next = p.achievements.filter { !it.unlocked }.maxByOrNull { it.progress }
-                    MCard(onClick = { onOpenTab(Tab.PROFILE) }, padding = 16.dp) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(48.dp).clip(CircleShape).background(SeriesColors[3].copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
-                                Text("${level.number}", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = SeriesColors[3])
-                            }
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text("Nivel ${level.number} · ${level.name}", style = MaterialTheme.typography.titleMedium, color = P.ink)
-                                Text(
-                                    "${p.achievements.count { it.unlocked }} de ${p.achievements.size} logros" + (next?.let { " · siguiente: ${it.title}" } ?: ""),
-                                    style = MaterialTheme.typography.bodySmall, color = P.muted, maxLines = 1,
-                                )
-                            }
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = P.muted)
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        ProgressLine(level.progress(p.points), SeriesColors[3])
-                    }
-                }
-            }
-        }
-
-        // ---------- Este mes ----------
-        item { SectionTitle(if (isCurrent) "Este mes" else "Ese mes") }
-        item { MonthSelector(month, vm::shiftMonth) }
-        item {
-            MonthFlowCard(
-                received = monthIncome.received,
-                spent = expenses.sumOf { it.amount },
-                spendLimit = allowed.takeIf { income > 0 } ?: 0.0,
-                estimated = monthIncome.sources.any { it.isEstimate },
-            )
-        }
-
-        if (nextIncome != null) {
-            item {
-                MCard(padding = 0.dp) {
-                    Overline("Próximo cobro", Modifier.padding(start = 16.dp, top = 16.dp))
-                    IncomeSourceRow(nextIncome, month, accounts, args.onEdit)
-                }
-            }
+            // ---------- Tu futuro ----------
+            if (p != null) item { FutureMiniCard(p.forecast.points.take(31), onOpenFuture) }
         }
 
         if (!settings.cardPayments) {
@@ -612,22 +487,6 @@ fun HomeScreen(
                         }
                         Text("Revisar", style = MaterialTheme.typography.labelLarge, color = P.gain)
                     }
-                }
-            }
-        }
-
-        item {
-            SectionTitle("Movimientos") {
-                if (moves.isNotEmpty()) Text("${moves.size}", style = MaterialTheme.typography.titleMedium, color = P.muted, modifier = Modifier.padding(end = 4.dp))
-            }
-        }
-        item {
-            if (moves.isEmpty()) {
-                EmptyState(Icons.AutoMirrored.Filled.ReceiptLong, "Sin movimientos este mes", "Pulsa + para apuntar un gasto, o activa los pagos con tarjeta para que se apunten solos.")
-            } else {
-                CardList(moves, key = { if (it is Expense) "e${it.id}" else "i${(it as com.caudal.finanzas.data.Income).id}" }) { m ->
-                    if (m is Expense) ExpenseRow(m, categories, accounts, onClick = { args.onEdit(Editing.ExpenseForm(m)) })
-                    else IncomeRow(m as com.caudal.finanzas.data.Income, accounts, onClick = { args.onEdit(Editing.IncomeForm(m)) })
                 }
             }
         }
@@ -718,7 +577,7 @@ private fun RecentMovesCard(
                         m.e.note.ifBlank { t.label },
                         subtitle = listOfNotNull(dayLabel(m.e.epochDay), acc?.let { "de $it" } ?: "sin cuenta", if (m.e.fromCard) "tarjeta" else null).joinToString(" · "),
                         onClick = { onEdit(Editing.ExpenseForm(m.e)) },
-                        leading = { IconTile(t.icon(), t.color()) },
+                        leading = { com.caudal.finanzas.ui.MerchantLogo(m.e.note, t, 40.dp) },
                         trailing = { AmountTrailing("−" + money.format(m.e.amount), t.label) },
                     )
                 }

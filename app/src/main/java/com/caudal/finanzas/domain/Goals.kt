@@ -71,7 +71,8 @@ object Goals {
     fun monthsLeft(d: FinanceData, goal: Goal) = max(0, ChronoUnit.MONTHS.between(d.today.withDayOfMonth(1), goal.deadline.withDayOfMonth(1)).toInt())
 
     fun status(goal: Goal, d: FinanceData, plan: BankPlan?, fmt: (Double) -> String): GoalStatus {
-        val current = d.wealth.savings + d.wealth.invested
+        // Sin cripto ni acciones: el colchón es dinero que no sube y baja.
+        val current = d.wealth.savings
         val rate = rateOf(d)
         val pace = paceOf(d, plan)
         val months = monthsLeft(d, goal)
@@ -150,6 +151,16 @@ object FinancialAging {
             "Patrimonio para tu edad", "%.1fx tu sueldo anual".format(multiple),
             ((expected - multiple) * 1.2).coerceIn(-4.0, 4.0),
             "Referencia habitual a tu edad: unas ${"%.1f".format(expected)} veces lo que ganas en un año (1× a los 30, 3,5× a los 40, 6× a los 50). Orientativo.",
+        )
+
+        // Dato real: riqueza neta mediana de los hogares en España (Banco de España, Encuesta Financiera de las Familias 2022).
+        // Menores de 35 años: 20.000 €. Todos los hogares: 142.700 €. Incluye la vivienda, así que es una referencia, no una meta.
+        val (refWealth, refWho) = if (realAge < 35) 20_000.0 to "los hogares de menos de 35 años" else 142_700.0 to "todos los hogares"
+        val vsSpain = w.total / refWealth
+        f += AgeFactor(
+            "Frente a la media de España", if (vsSpain >= 1) "%.1fx la mediana".format(vsSpain) else "%.0f %% de la mediana".format(vsSpain * 100),
+            when { vsSpain >= 3 -> -3.0; vsSpain >= 1.5 -> -2.0; vsSpain >= 1 -> -1.0; vsSpain >= 0.5 -> 0.5; else -> 2.0 },
+            "La mitad de $refWho en España tiene menos de ${"%,.0f".format(java.util.Locale.forLanguageTag("es-ES"), refWealth)} € de patrimonio neto, con la casa incluida (Banco de España, Encuesta Financiera de las Familias 2022).",
         )
 
         val closed = d.closedMonths(3).filter { d.receivedIn(it) > 0 }
@@ -240,7 +251,8 @@ object GoalList {
         val rate = Goals.rateOf(d)
         val r = InterestMath.monthlyRate(rate)
         val pace = Goals.paceOf(d, plan)
-        var left = max(0.0, d.wealth.savings + d.wealth.invested - extraNow)
+        // Solo cuenta el ahorro de verdad (cuentas de ahorro, hucha…): cripto y acciones suben y bajan, no son un colchón.
+        var left = max(0.0, d.wealth.savings - extraNow)
         val current = goals.map { g -> min(g.target, left).also { left -= it } }
         val bal = current.toMutableList()
         val req = goals.mapIndexed { i, g -> Goals.requiredMonthly(current[i], g.target, rate, Goals.monthsLeft(d, g)) }

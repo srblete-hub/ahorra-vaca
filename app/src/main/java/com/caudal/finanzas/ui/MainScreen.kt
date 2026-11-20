@@ -379,7 +379,7 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
             Editing.TripForm -> com.caudal.finanzas.ui.screens.TripSheet(settings.currency, onStart = { n, b, d -> vm.startTrip(n, b, d); close() }, onDismiss = close)
             is Editing.BillForm -> BillSheet(
                 e.bill, categories, accounts, settings.currency,
-                onSave = { vm.save(it); close() },
+                onSave = { b, payNow -> vm.saveBill(b, payNow); close() },
                 onDelete = if (e.bill.id != 0L) ({ confirm = "\"${e.bill.name}\"" to { vm.delete(e.bill); close() } }) else null,
                 onDismiss = close,
             )

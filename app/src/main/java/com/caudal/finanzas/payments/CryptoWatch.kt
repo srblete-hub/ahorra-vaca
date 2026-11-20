@@ -89,6 +89,7 @@ class CryptoAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 runCatching { CryptoWatch.check(context.applicationContext) }
+                runCatching { BillCharger.chargeDue(context.applicationContext) }
                 runCatching { BillWatch.check(context.applicationContext) }
                 runCatching { VacaWidget.refresh(context.applicationContext) }
             } finally { pending.finish() }

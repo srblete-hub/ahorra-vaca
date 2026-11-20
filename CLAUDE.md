@@ -30,7 +30,10 @@ Paquete: `com.caudal.finanzas` (el proyecto se llamó antes "Caudal").
 - **Inversión**: Cripto (precio de la moneda en **dólares**, lo tuyo en **euros**) y Acciones; mercado populares aunque no tengas; ficha con gráfico, velas, estadísticas, por qué se habla, dónde comprar; deslizar para refrescar.
 - **Perfil**: tick azul de verificado, tarjeta "Tu Wrapped" (degradado azul solo en la tarjeta; dentro, colores variados) con ficha para compartir.
 - **Noticias** (icono arriba, junto a Ajustes): estilo TikTok, sin repetir las vistas, botón "¿Cómo me afecta?" (`NewsImpactAnalyzer`, reglas fijas).
-- Botón **+**: transferencia entre cuentas, me deben/debo, gasto, ingreso, cuenta, cripto, acción, gasto fijo.
+- Botón **+**: transferencia entre cuentas, me deben/debo, gasto, ingreso, cuenta, cripto, acción, gasto fijo, modo viaje.
+- **Modo viaje** (`Trips`, en `domain/Extras.kt`): lo gastado en los días del viaje cuenta como fijo (`Budgeting.isFixed`) para no desvirtuar la media.
+- También en Inicio: suscripciones, hucha de redondeo (semana cerrada) y retos de la vaca. En Movimientos → Resumen: frente al mes anterior (mismos días).
+- Fuera de la app: widget (`VacaWidget`), atajos del icono (`res/xml/shortcuts.xml`), compartir texto/ticket, y avisos (`BillWatch`, con la alarma de cada hora: cobros, pruebas gratis, poco saldo y resumen de la noche a las 21:00).
 
 ## Código
 - `domain/`: lógica pura (Planning/BankPlan, Budget, Pulse, Signals, Goals, Wrapped, Debts, NewsImpact…). Con pruebas en `app/src/test`.

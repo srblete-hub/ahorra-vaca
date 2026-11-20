@@ -346,7 +346,7 @@ class AppTourTest {
         compose.onAllNodes(hasScrollToIndexAction() and androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange)).onFirst().performTouchInput { swipeUp(startY = centerY, endY = centerY - 600f) }
         compose.waitForIdle()
         shot("18z_inicio_cuentas")
-        compose.onAllNodes(accountRow).onFirst().performClick()
+        compose.onAllNodes(accountRow).onFirst().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.waitUntil(5_000) { exists("Ajustar saldo") }
         shot("19_cuenta")
         compose.onNodeWithText("Transferir").performClick()

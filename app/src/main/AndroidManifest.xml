@@ -30,6 +30,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Atajos al mantener pulsado el icono: apuntar gasto, Pepe y suscripciones. -->
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
             <!-- "Compartir → Ahorra, vaca": un aviso del banco, un gasto de Tricount o la foto de un ticket. -->
             <intent-filter android:label="Apuntar en Ahorra, vaca">
                 <action android:name="android.intent.action.SEND" />
@@ -48,6 +50,14 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
+        </receiver>
+
+        <!-- Widget de la pantalla de inicio. -->
+        <receiver android:name=".payments.VacaWidget" android:exported="false" android:label="Ahorra, vaca">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_vaca_info" />
         </receiver>
 
         <service

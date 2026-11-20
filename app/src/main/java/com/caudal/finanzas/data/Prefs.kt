@@ -52,6 +52,15 @@ data class Settings(
     val blockScreenshots: Boolean = false,
     /** Con cuántos días de antelación avisar de cada cobro (0 = no avisar). */
     val billRemindDays: Int = 2,
+    /** Aviso de las 21:00 con el resumen del día. */
+    val nightSummary: Boolean = true,
+    /** Viajes ("nombre|presupuesto|inicio|fin;…"). */
+    val tripsRaw: String = "",
+    /** Reto en marcha ("id|día de inicio") y retos cumplidos ("id|día;…"). */
+    val challengeRaw: String = "",
+    val challengesDone: String = "",
+    /** Semana (lunes, epochDay) de la hucha de redondeo ya pasada o descartada. */
+    val roundUpWeek: Long = 0,
     /** Objetivos en orden de prioridad: "nombre|objetivo|inicio|fecha" por línea. */
     val goalsRaw: String = "",
     /** Gastos que esperas que te devuelvan. */
@@ -127,6 +136,11 @@ class Prefs private constructor(context: Context) {
         tagLimitsRaw = sp.getString(TAG_LIMITS, null),
         blockScreenshots = sp.getBoolean(BLOCK_SHOTS, false),
         billRemindDays = sp.getInt(BILL_REMIND, 2),
+        nightSummary = sp.getBoolean(NIGHT, true),
+        tripsRaw = (sp.getString(TRIPS, "") ?: "").also { com.caudal.finanzas.domain.Trips.all = com.caudal.finanzas.domain.Trip.parseAll(it) },
+        challengeRaw = sp.getString(CHALLENGE, "") ?: "",
+        challengesDone = sp.getString(CHALLENGES_DONE, "") ?: "",
+        roundUpWeek = sp.getLong(ROUND_UP, 0),
         refundIds = (sp.getStringSet(REFUNDS, emptySet()) ?: emptySet()).mapNotNull { it.toLongOrNull() }.toSet(),
         dayChanges = (sp.getString(DAY_CHANGES, "") ?: "").split(';').mapNotNull { p ->
             p.split(':').takeIf { it.size == 2 }?.let { (k, v) -> v.toDoubleOrNull()?.let { k to it } }
@@ -218,6 +232,14 @@ class Prefs private constructor(context: Context) {
     fun setSavingsLocked(v: Boolean) = edit { putBoolean(SAVINGS_LOCKED, v) }
     fun setWeeklyTip(v: Boolean) = edit { putBoolean(WEEKLY_TIP, v) }
     fun setBillRemindDays(v: Int) = edit { putInt(BILL_REMIND, v) }
+    fun setNightSummary(v: Boolean) = edit { putBoolean(NIGHT, v) }
+    fun setTrips(raw: String) = edit { putString(TRIPS, raw) }
+    fun setChallenge(raw: String) = edit { putString(CHALLENGE, raw) }
+    fun addChallengeDone(id: String, day: Long) = edit {
+        putString(CHALLENGES_DONE, listOfNotNull(sp.getString(CHALLENGES_DONE, "")?.takeIf { it.isNotBlank() }, "$id|$day").joinToString(";"))
+        putString(CHALLENGE, "")
+    }
+    fun setRoundUpWeek(v: Long) = edit { putLong(ROUND_UP, v) }
     fun toggleReviewedSub(key: String) {
         val now = sp.getStringSet(REVIEWED_SUBS, emptySet()) ?: emptySet()
         edit { putStringSet(REVIEWED_SUBS, if (key in now) now - key else now + key) }
@@ -293,6 +315,11 @@ class Prefs private constructor(context: Context) {
         private const val WEEKLY_TIP = "weekly_tip"
         private const val REVIEWED_SUBS = "reviewed_subs"
         private const val BILL_REMIND = "bill_remind_days"
+        private const val NIGHT = "night_summary"
+        private const val TRIPS = "trips"
+        private const val CHALLENGE = "challenge"
+        private const val CHALLENGES_DONE = "challenges_done"
+        private const val ROUND_UP = "round_up_week"
         private const val SEEN_NEWS = "seen_news"
         private const val RECENT_TICKERS = "recent_tickers"
         private const val TRICOUNT = "tricount"

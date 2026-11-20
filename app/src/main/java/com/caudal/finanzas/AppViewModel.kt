@@ -64,6 +64,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Lo que llega al compartir con la app desde otra; [MainScreen] lo abre rellenado. */
     val shared = MutableStateFlow<com.caudal.finanzas.domain.SharedEntry?>(null)
     val readingTicket = MutableStateFlow(false)
+    /** Qué abrir al entrar desde un atajo o el widget: "add", "pepe" o "subs". */
+    val openRequest = MutableStateFlow<String?>(null)
     fun receiveShared(e: com.caudal.finanzas.domain.SharedEntry?) {
         if (e != null) readingTicket.value = false
         shared.value = e

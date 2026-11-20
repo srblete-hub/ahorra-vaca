@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -250,6 +251,13 @@ fun SettingsScreen(appVm: AppViewModel, vm: FinanceViewModel, activity: Fragment
                             else appVm.setBiometric(false)
                         }
                     },
+                )
+                Divider()
+                ListRow(
+                    "Resumen de la noche",
+                    subtitle = "A las 21:00, lo que has gastado hoy frente a lo que tocaba y si mañana te cobran algo",
+                    leading = { IconTile(Icons.Filled.Bedtime, SeriesColors[0]) },
+                    trailing = { AppSwitch(settings.nightSummary) { com.caudal.finanzas.data.Prefs.get(context).setNightSummary(it) } },
                 )
                 Divider()
                 ListRow(

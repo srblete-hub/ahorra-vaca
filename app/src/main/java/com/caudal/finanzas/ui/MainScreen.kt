@@ -145,6 +145,18 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
     LaunchedEffect(Unit) { vm.newAchievements.collect { celebrate = celebrate + it } }
     // Algo compartido desde otra app (aviso del banco, Tricount, foto de un ticket): se abre el gasto ya rellenado para confirmarlo.
     val shared by appVm.shared.collectAsStateWithLifecycle()
+    // Atajos del icono y "+" del widget.
+    val request by appVm.openRequest.collectAsStateWithLifecycle()
+    var homeRequest by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(request, categories) {
+        val r = request ?: return@LaunchedEffect
+        if (r == "add") {
+            if (categories.isEmpty()) return@LaunchedEffect
+            val bank = accounts.firstOrNull { it.id == settings.cardAccountId }?.id ?: accounts.firstOrNull { it.type == com.caudal.finanzas.data.AccountType.BANK }?.id
+            editing = Editing.ExpenseForm(com.caudal.finanzas.data.Expense(categoryId = categories.firstOrNull { !it.isSavings }?.id ?: 0, amount = 0.0, epochDay = java.time.LocalDate.now().toEpochDay(), accountId = bank))
+        } else { tab = Tab.HOME; homeRequest = r }
+        appVm.openRequest.value = null
+    }
     val reading by appVm.readingTicket.collectAsStateWithLifecycle()
     LaunchedEffect(reading) { if (reading) snackbar.showSnackbar("Leyendo el ticket…") }
     LaunchedEffect(shared, categories, accounts) {
@@ -226,6 +238,7 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
                         vm, settings, args,
                         onOpenSettings = { showSettings = true }, onStartSetup = { appVm.setOnboardingDone(false) },
                         onOpenFuture = { showFuture = true }, onOpenTab = { tab = it }, onOpenInvest = { investKind = it; tab = Tab.INVEST },
+                        request = homeRequest, onRequestDone = { homeRequest = null },
                     )
                     Tab.WEALTH -> WealthScreen(vm, settings, args, onOpenInvest = { investKind = it; tab = Tab.INVEST }, onStartSetup = { appVm.setOnboardingDone(false) })
                     Tab.BUDGET -> BudgetScreen(vm, settings, args, onOpenFuture = { showFuture = true })
@@ -347,6 +360,7 @@ fun MainScreen(appVm: AppViewModel, activity: FragmentActivity) {
             Editing.AgeForm -> com.caudal.finanzas.ui.screens.AgeSheet(settings.birthYear, onSave = { vm.setBirthYear(it); close() }, onDismiss = close)
             Editing.PlanForm -> PlanSheet(settings.planName, settings.planReserve, settings.currency, onSave = { n, a -> vm.setPlan(n, a); close() }, onDismiss = close)
             is Editing.BalanceForm -> BalanceSheet(e.account, settings.currency, onSave = { vm.setBalance(e.account, it); close() }, onDismiss = close)
+            Editing.TripForm -> com.caudal.finanzas.ui.screens.TripSheet(settings.currency, onStart = { n, b, d -> vm.startTrip(n, b, d); close() }, onDismiss = close)
             is Editing.BillForm -> BillSheet(
                 e.bill, categories, accounts, settings.currency,
                 onSave = { vm.save(it); close() },

@@ -34,6 +34,7 @@ import com.caudal.finanzas.domain.SpendTag
 import com.caudal.finanzas.domain.spendTag
 import com.caudal.finanzas.domain.isDebt
 import com.caudal.finanzas.domain.isSaving
+import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Savings
@@ -94,6 +95,8 @@ sealed interface Editing {
     data class IncomeSourceForm(val source: com.caudal.finanzas.data.IncomeSource) : Editing
     data class IncomeForm(val income: com.caudal.finanzas.data.Income) : Editing
     data class BillForm(val bill: com.caudal.finanzas.data.RecurringBill) : Editing
+    /** Empezar un viaje con su presupuesto. */
+    data object TripForm : Editing
     data class TransferForm(val fromAccountId: Long) : Editing
     data class BalanceForm(val account: Account) : Editing
     /** Escribir gastos como una frase. */
@@ -402,6 +405,7 @@ fun AddChooserSheet(onPick: (Editing) -> Unit, onDismiss: () -> Unit, categories
             Triple(Icons.Filled.CurrencyBitcoin, "Criptomoneda", "Con su precio en vivo"),
             Triple(Icons.AutoMirrored.Filled.TrendingUp, "Acción o ETF", "Con su ticker de bolsa"),
             Triple(Icons.Filled.Home, "Gasto fijo", "Alquiler, suscripciones, seguros… cada mes o cada año"),
+            Triple(Icons.Filled.Flight, "Modo viaje", "Un presupuesto para el viaje, aparte de tu día a día"),
         )
         options.forEachIndexed { i, (icon, title, sub) ->
             Row(
@@ -420,6 +424,7 @@ fun AddChooserSheet(onPick: (Editing) -> Unit, onDismiss: () -> Unit, categories
                             2 -> Editing.AccountForm(Account(name = "", type = AccountType.BANK, balance = 0.0))
                             3 -> Editing.CoinSearch
                             4 -> Editing.StockForm(StockHolding(ticker = "", name = "", shares = 0.0, avgBuyPrice = 0.0))
+                            6 -> Editing.TripForm
                             else -> Editing.BillForm(newBill(categories, defaultAccount))
                         },
                     )

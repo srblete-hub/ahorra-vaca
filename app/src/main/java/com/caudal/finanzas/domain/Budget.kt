@@ -70,6 +70,8 @@ object Budgeting {
      */
     fun isFixed(e: com.caudal.finanzas.data.Expense, bills: List<com.caudal.finanzas.data.RecurringBill>): Boolean {
         if (isBillPayment(e, bills)) return true
+        // Lo gastado en un viaje va aparte: no desvirtúa la media del día a día.
+        if (Trips.covers(e)) return true
         val n = Classifier.normalize(e.note)
         return HOUSING.any { it in n } || (e.spendTag() == SpendTag.HOME && e.amount >= 250)
     }

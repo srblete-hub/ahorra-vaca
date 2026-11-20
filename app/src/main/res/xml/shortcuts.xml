@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Al mantener pulsado el icono de la app. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:icon="@drawable/shortcut_add"
+        android:shortcutId="add"
+        android:shortcutLongLabel="@string/shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_add">
+        <intent
+            android:action="com.caudal.finanzas.ADD"
+            android:targetClass="com.caudal.finanzas.MainActivity"
+            android:targetPackage="com.caudal.finanzas" />
+    </shortcut>
+    <shortcut
+        android:icon="@drawable/ic_pepe"
+        android:shortcutId="pepe"
+        android:shortcutLongLabel="@string/shortcut_pepe"
+        android:shortcutShortLabel="@string/shortcut_pepe">
+        <intent
+            android:action="com.caudal.finanzas.PEPE"
+            android:targetClass="com.caudal.finanzas.MainActivity"
+            android:targetPackage="com.caudal.finanzas" />
+    </shortcut>
+    <shortcut
+        android:icon="@drawable/shortcut_subs"
+        android:shortcutId="subs"
+        android:shortcutLongLabel="@string/shortcut_subs"
+        android:shortcutShortLabel="@string/shortcut_subs">
+        <intent
+            android:action="com.caudal.finanzas.SUBS"
+            android:targetClass="com.caudal.finanzas.MainActivity"
+            android:targetPackage="com.caudal.finanzas" />
+    </shortcut>
+</shortcuts>

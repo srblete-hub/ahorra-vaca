@@ -90,6 +90,7 @@ class CryptoAlarmReceiver : BroadcastReceiver() {
             try {
                 runCatching { CryptoWatch.check(context.applicationContext) }
                 runCatching { BillWatch.check(context.applicationContext) }
+                runCatching { VacaWidget.refresh(context.applicationContext) }
             } finally { pending.finish() }
         }
     }

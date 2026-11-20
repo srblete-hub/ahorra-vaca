@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ahorra, vaca</string>
+    <string name="widget_description">Lo que te queda hoy, el banco y el próximo cobro</string>
+    <string name="widget_today">Hoy te quedan</string>
+    <string name="shortcut_add">Apuntar gasto</string>
+    <string name="shortcut_pepe">Hablar con Pepe</string>
+    <string name="shortcut_subs">Suscripciones</string>
 </resources>

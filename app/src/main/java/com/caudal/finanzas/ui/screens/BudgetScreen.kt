@@ -263,6 +263,11 @@ fun BudgetScreen(vm: FinanceViewModel, settings: Settings, args: ScreenArgs, onO
             }
         }
 
+        // ---------- Frente al mes anterior ----------
+        planning?.data?.let { d -> com.caudal.finanzas.domain.MonthComparer.of(d, month) }?.let { c ->
+            item { MonthCompareCard(c) }
+        }
+
         // ---------- La rueda: en qué puedes gastar ----------
         planning?.budget?.takeIf { it.base > 0 && isCurrent }?.let { b ->
             item { BudgetWheelCard(b, onProfile = { args.onEdit(Editing.ProfileForm) }) { args.onEdit(Editing.TagDetail(it)) } }

@@ -2,6 +2,7 @@ package com.caudal.finanzas
 
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import kotlinx.coroutines.launch
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -60,6 +61,12 @@ class MainActivity : FragmentActivity() {
 
     /** "Compartir → Ahorra, vaca": texto (aviso del banco, Tricount…) o la foto de un ticket. */
     private fun handleShare(intent: android.content.Intent?) {
+        // Atajos del icono y botón "+" del widget.
+        when (intent?.action) {
+            "com.caudal.finanzas.ADD" -> { appVm.openRequest.value = "add"; return }
+            "com.caudal.finanzas.PEPE" -> { appVm.openRequest.value = "pepe"; return }
+            "com.caudal.finanzas.SUBS" -> { appVm.openRequest.value = "subs"; return }
+        }
         if (intent?.action != android.content.Intent.ACTION_SEND) return
         val type = intent.type ?: return
         val today = java.time.LocalDate.now()
@@ -80,6 +87,9 @@ class MainActivity : FragmentActivity() {
 
     override fun onStop() {
         super.onStop()
+        // Al salir, el widget se pone al día con lo que hayas apuntado.
+        val app = applicationContext
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { runCatching { com.caudal.finanzas.payments.VacaWidget.refresh(app) } }
         if (!isChangingConfigurations) backgroundedAt = SystemClock.elapsedRealtime()
     }
 

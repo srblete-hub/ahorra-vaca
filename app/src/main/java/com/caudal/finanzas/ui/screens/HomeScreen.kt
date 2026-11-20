@@ -181,6 +181,9 @@ fun HomeScreen(
     onOpenFuture: () -> Unit,
     onOpenTab: (Tab) -> Unit,
     onOpenInvest: (InvestKind) -> Unit,
+    /** Desde un atajo del icono: "pepe" abre el chat, "subs" las suscripciones. */
+    request: String? = null,
+    onRequestDone: () -> Unit = {},
 ) {
     val categories by vm.categories.collectAsStateWithLifecycle()
     val expenses by vm.monthExpenses.collectAsStateWithLifecycle()
@@ -203,6 +206,11 @@ fun HomeScreen(
     var subsOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { vm.refreshIfStale() }
+    LaunchedEffect(request, planning != null) {
+        if (planning == null) return@LaunchedEffect
+        when (request) { "pepe" -> pepeAsk = ""; "subs" -> subsOpen = true; else -> return@LaunchedEffect }
+        onRequestDone()
+    }
 
     val hour = LocalTime.now().hour
     val greeting = when (hour) { in 6..13 -> "Buenos días"; in 14..20 -> "Buenas tardes"; else -> "Buenas noches" }
@@ -287,6 +295,10 @@ fun HomeScreen(
                 }
             }
 
+            // ---------- Modo viaje: lo que te queda del presupuesto del viaje ----------
+            if (p != null) com.caudal.finanzas.domain.Trips.active(p.data.today)?.let { t ->
+                item(key = "trip") { TripCard(com.caudal.finanzas.domain.Trips.status(p.data, t), onEnd = { vm.endTrip() }) }
+            }
             // ---------- Últimos movimientos, de todas las cuentas ----------
             item {
                 RecentMovesCard(
@@ -361,6 +373,36 @@ fun HomeScreen(
                 val subs = com.caudal.finanzas.domain.BillReminders.upcoming(p.data, p.data.bills.filter(com.caudal.finanzas.domain.BillReminders::isSubscription))
                 val pending = com.caudal.finanzas.domain.SubscriptionChecker.of(p.data)?.actions?.count { it.key !in settings.reviewedSubs } ?: 0
                 item(key = "subs-check") { SubscriptionsCard(subs, p.data.today, pending) { subsOpen = true } }
+            }
+            // Hucha de redondeo: los céntimos de la semana pasada, al ahorro.
+            if (p != null) {
+                val week = com.caudal.finanzas.domain.RoundUp.lastWeek(p.data.today).toEpochDay()
+                val round = com.caudal.finanzas.domain.RoundUp.of(p.data)
+                val bankId = p.data.accounts.firstOrNull { it.type == com.caudal.finanzas.data.AccountType.BANK }?.id
+                val saveId = p.data.accounts.filter { it.isSaving() }.maxByOrNull { it.balance }?.id
+                if (round >= 0.5 && settings.roundUpWeek != week && bankId != null && saveId != null) item(key = "round-up") {
+                    RoundUpCard(
+                        round, transfers.filter { it.note == "Hucha de redondeo" }.sumOf { it.amount },
+                        onMove = { vm.moveRoundUp(bankId, saveId, round, week) }, onSkip = { vm.skipRoundUp(week) },
+                    )
+                }
+            }
+            // Retos de la vaca.
+            if (p != null) {
+                val perDay = com.caudal.finanzas.domain.CashPlanner.of(p.data, settings.bankBuffer)?.perDayBefore ?: 0.0
+                val active = settings.challengeRaw.split('|').takeIf { it.size == 2 }?.let { (id, day) ->
+                    com.caudal.finanzas.domain.Challenges.byId(id)?.let { c ->
+                        day.toLongOrNull()?.let { com.caudal.finanzas.domain.Challenges.status(p.data, c, LocalDate.ofEpochDay(it), perDay) }
+                    }
+                }
+                val litres = settings.challengesDone.split(';').mapNotNull { com.caudal.finanzas.domain.Challenges.byId(it.substringBefore('|'))?.litres }.sum()
+                item(key = "challenges") {
+                    if (active?.done == true) LaunchedEffect(settings.challengeRaw) { vm.completeChallenge(active.challenge) }
+                    ChallengeCard(
+                        active?.takeIf { !it.done }, com.caudal.finanzas.domain.Challenges.suggest(p.data), litres,
+                        onStart = { vm.startChallenge(it.id) }, onDrop = { vm.dropChallenge() },
+                    )
+                }
             }
 
             // ---------- Objetivo y edad financiera ----------

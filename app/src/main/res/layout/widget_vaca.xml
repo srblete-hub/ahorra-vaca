@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget de Ahorra, vaca: lo que te queda hoy, el banco y el próximo cobro. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/bricolage_variable"
+            android:text="@string/widget_today"
+            android:textColor="#B3F6F1E6"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/widget_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/bricolage_variable"
+            android:maxLines="1"
+            android:text="—"
+            android:textColor="#F6F1E6"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_bank"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/bricolage_variable"
+            android:maxLines="1"
+            android:textColor="#B3F6F1E6"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/widget_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/widget_pill_bg"
+            android:ellipsize="end"
+            android:fontFamily="@font/bricolage_variable"
+            android:maxLines="1"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textColor="#F6F1E6"
+            android:textSize="12sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_add"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/widget_add_bg"
+        android:contentDescription="@string/shortcut_add"
+        android:fontFamily="@font/bricolage_variable"
+        android:gravity="center"
+        android:text="+"
+        android:textColor="#2E6B3F"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+</FrameLayout>

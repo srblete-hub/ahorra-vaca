@@ -515,6 +515,29 @@ class FinanceViewModel(app: Application) : AndroidViewModel(app) {
     fun setWeeklyTip(v: Boolean) = prefs.setWeeklyTip(v)
     fun toggleReviewedSub(key: String) = prefs.toggleReviewedSub(key)
     fun setBillRemindDays(v: Int) = prefs.setBillRemindDays(v)
+    fun setNightSummary(v: Boolean) = prefs.setNightSummary(v)
+    fun startChallenge(id: String) = prefs.setChallenge("$id|${java.time.LocalDate.now().toEpochDay()}")
+    fun dropChallenge() = prefs.setChallenge("")
+    fun completeChallenge(c: com.caudal.finanzas.domain.Challenge) = viewModelScope.launch {
+        prefs.addChallengeDone(c.id, java.time.LocalDate.now().toEpochDay())
+        _messages.emit("¡Reto cumplido! La vaca te da ${c.litres} ${if (c.litres == 1) "litro" else "litros"} de leche")
+    }
+    fun skipRoundUp(week: Long) = prefs.setRoundUpWeek(week)
+    fun moveRoundUp(fromId: Long, toId: Long, amount: Double, week: Long) {
+        prefs.setRoundUpWeek(week)
+        moveMoney(fromId, toId, amount, "Hucha de redondeo")
+    }
+    /** Empieza un viaje hoy (sustituye al que esté en marcha). */
+    fun startTrip(name: String, budget: Double, days: Int) {
+        val today = java.time.LocalDate.now().toEpochDay()
+        val others = com.caudal.finanzas.domain.Trips.all.filter { !it.covers(today) }
+        prefs.setTrips(com.caudal.finanzas.domain.Trip.encodeAll(others + com.caudal.finanzas.domain.Trip(name.trim().ifBlank { "Viaje" }, budget, today, today + days - 1)))
+    }
+    /** Termina el viaje hoy: lo gastado hasta ahora sigue contando como viaje. */
+    fun endTrip() {
+        val today = java.time.LocalDate.now().toEpochDay()
+        prefs.setTrips(com.caudal.finanzas.domain.Trip.encodeAll(com.caudal.finanzas.domain.Trips.all.map { if (it.covers(today)) it.copy(end = today) else it }))
+    }
     /** Apunta un traspaso entre tus cuentas (lo que propone Pepe). */
     fun moveMoney(fromId: Long, toId: Long, amount: Double, note: String) = viewModelScope.launch {
         dao.saveTransfer(com.caudal.finanzas.data.Transfer(fromAccountId = fromId, toAccountId = toId, amount = amount, note = note, epochDay = java.time.LocalDate.now().toEpochDay()))
